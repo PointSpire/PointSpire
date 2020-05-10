@@ -5,7 +5,8 @@
     "es6": true
   },
   "extends": [
-    "google"
+    "google",
+    "plugin:jsdoc/recommended"
   ],
   "globals": {
     "Atomics": "readonly",
@@ -14,5 +15,10 @@
   "parserOptions": {
     "ecmaVersion": 11
   },
-  "rules": {}
+  "plugins": [
+    "jsdoc"
+  ],
+  "rules": {
+    "valid-jsdoc": "off"
+  }
 }
