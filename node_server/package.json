@@ -8,6 +8,7 @@
     "lint": "./node_modules/.bin/eslint . --fix"
   },
   "dependencies": {
+    "@types/mongoose": "^5.7.18",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "dotenv": "^8.2.0",
