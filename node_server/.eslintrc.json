@@ -13,11 +13,31 @@
     "Atomics": "readonly",
     "SharedArrayBuffer": "readonly"
   },
-  "parserOptions": {
-    "ecmaVersion": 11
-  },
-  "plugins": ["jsdoc"],
+  "plugins": [
+    "jsdoc",
+    "prettier"
+  ],
   "rules": {
+    /* Disabled because this feature was deprecated in normal ESLint */
     "valid-jsdoc": "off"
-  }
+  },
+  "overrides": [
+    {
+      "files": [
+        "*.ts"
+      ],
+      "parser": "@typescript-eslint/parser",
+      "parserOptions": {
+        "ecmaVersion": 2020
+      },
+      /* Sets up a similar rule-set for TypeScript files only */
+      "extends": [
+        "google",
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:@typescript-eslint/recommended-requiring-type-checking",
+        "plugin:prettier/recommended"
+      ]
+    }
+  ]
 }
