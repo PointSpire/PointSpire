@@ -18,7 +18,7 @@ function createApiRouter(db) {
 
   // tasks endpoint for all the tasks in the database
   router.get('/tasks', (req, res, next) => {
-
+    // TODO Build out the collection and model code
   });
   return router;
 }
