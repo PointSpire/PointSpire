@@ -6,7 +6,8 @@
   },
   "extends": [
     "google",
-    "plugin:jsdoc/recommended"
+    "plugin:jsdoc/recommended",
+    "plugin:prettier/recommended"
   ],
   "globals": {
     "Atomics": "readonly",
@@ -15,9 +16,7 @@
   "parserOptions": {
     "ecmaVersion": 11
   },
-  "plugins": [
-    "jsdoc"
-  ],
+  "plugins": ["jsdoc"],
   "rules": {
     "valid-jsdoc": "off"
   }
