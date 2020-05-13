@@ -182,3 +182,8 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+### PointSpire Specific
+
+# Build folder
+build
