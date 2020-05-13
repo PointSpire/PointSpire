@@ -4,7 +4,9 @@ import path from 'path';
 import dotenv from 'dotenv';
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-import mongoose from 'mongoose';
+import mongoose, { Error } from 'mongoose';
+import http from 'http';
+const debug = require('debug')('node-server:server');
 
 /**
  * Allows usage of the .env file in the root directory of `node_server`. Should
@@ -13,7 +15,7 @@ import mongoose from 'mongoose';
 dotenv.config();
 
 const indexRouter = require('./src/main/routes/index');
-const apiRouter = require('./src/main/routes/api');
+import apiRouter from './src/main/routes/api';
 
 const app = express();
 
@@ -59,11 +61,6 @@ new Promise<string>((resolve, reject) => {
   setupRoutes(db);
 });
 
-// catch 404 and forward to error handler
-app.use(function (req, res, next) {
-  next(createError(404));
-});
-
 /**
  * Sets up the routes for the application.
  *
@@ -74,4 +71,44 @@ function setupRoutes(db: typeof mongoose) {
   app.use('/api', apiRouter(db));
 }
 
-module.exports = app;
+const server = http.createServer(app);
+
+/**
+ * Normalize a port into a number, string, or false.
+ *
+ * @param {string} val
+ */
+function normalizePort(val: string) {
+  const port = parseInt(val, 10);
+
+  if (isNaN(port)) {
+    // named pipe
+    return val;
+  }
+
+  if (port >= 0) {
+    // port number
+    return port;
+  }
+
+  return false;
+}
+
+function onListening() {
+  const addr = server.address();
+  let binding: string = 'unknown';
+  if (addr !== null) {
+    binding = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
+  }
+  console.log('Listening on ' + binding);
+}
+
+/**
+ * Listen on provided port, on all network interfaces.
+ */
+const port = normalizePort(process.env.PORT || '8055');
+app.set('port', port);
+server.listen(port);
+server.on('listening', onListening);
+
+export default app;

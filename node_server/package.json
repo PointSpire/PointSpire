@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "npm-run-all clean tsc start-node",
-    "start-node": "node ./bin/www",
+    "start-node": "node ./build/app",
     "clean": "rimraf build",
     "tsc": "tsc",
     "lint": "./node_modules/.bin/eslint . --fix"
