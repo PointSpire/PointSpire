@@ -12,8 +12,8 @@ import mongoose from 'mongoose';
  */
 dotenv.config();
 
-const indexRouter = require('./routes/index');
-const apiRouter = require('./routes/api');
+const indexRouter = require('./src/main/routes/index');
+const apiRouter = require('./src/main/routes/api');
 
 const app = express();
 
