@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "tsc && node ./bin/www",
+    "start": "npm-run-all clean tsc start-node",
+    "start-node": "node ./bin/www",
+    "clean": "rimraf build",
     "tsc": "tsc",
     "lint": "./node_modules/.bin/eslint . --fix"
   },
