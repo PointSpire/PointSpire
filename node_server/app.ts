@@ -17,6 +17,10 @@ dotenv.config();
 const indexRouter = require('./src/main/routes/index');
 import apiRouter from './src/main/routes/api';
 
+/**
+ * @emits `started` when the server is finished setting up and connected to 
+ * the database as well as listening
+ */
 const app = express();
 
 // view engine setup
@@ -59,6 +63,7 @@ new Promise<string>((resolve, reject) => {
 }).then(db => {
   console.log('Connection successfully made to the database');
   setupRoutes(db);
+  startServer();
 });
 
 /**
@@ -70,8 +75,6 @@ function setupRoutes(db: typeof mongoose) {
   app.use('/', indexRouter);
   app.use('/api', apiRouter(db));
 }
-
-const server = http.createServer(app);
 
 /**
  * Normalize a port into a number, string, or false.
@@ -94,6 +97,8 @@ function normalizePort(val: string) {
   return false;
 }
 
+const server = http.createServer(app);
+
 function onListening() {
   const addr = server.address();
   let binding: string = 'unknown';
@@ -101,14 +106,18 @@ function onListening() {
     binding = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
   }
   console.log('Listening on ' + binding);
+  app.emit('started');
 }
 
 /**
  * Listen on provided port, on all network interfaces.
  */
-const port = normalizePort(process.env.PORT || '8055');
-app.set('port', port);
-server.listen(port);
-server.on('listening', onListening);
+function startServer() {
+  const port = normalizePort(process.env.PORT || '8055');
+  app.set('port', port);
+  server.listen(port);
+  server.on('listening', onListening);
+}
+
 
 export default app;

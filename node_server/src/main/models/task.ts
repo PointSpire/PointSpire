@@ -1,4 +1,4 @@
-import mongoose, { model, Model, Schema, Document } from 'mongoose';
+import mongoose, { Model, Schema, Document } from 'mongoose';
 
 /**
  * The mongoose schema for a Task in the database.
@@ -22,12 +22,22 @@ export interface TaskDoc extends Document {
 };
 
 /**
- * A `Task` class that represents a task in the MongoDB. This extends the 
- * mongoose `Model` type. 
+ * A `Task` class that represents a task in the MongoDB. This extends 
+ * the mongoose `Model` type. 
  *
  * This can be used for example with:
  * ```
  * let newTask = new Task({title: 'A new task'});
  * ```
  */
-export const Task: Model<TaskDoc> = model('Task', taskSchema);
+export interface TaskModel extends Model<TaskDoc>{};
+
+/**
+ * Creates a `Task` model from a given connected mongoose MongoDB database.
+ * 
+ * @param {mongoose} db the connected mongoose MongoDB connection
+ * @returns {TaskModel} the `Task` class
+ */
+export function createTaskModel(db: typeof mongoose): TaskModel {
+  return db.model('Task', taskSchema);
+}
