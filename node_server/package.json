@@ -11,12 +11,13 @@
     "test": "mocha -r ts-node/register src/test/**"
   },
   "comments": {
-    "generalInformation": "Turning on line wrapping in your IDE for this file would be very helpful for sanity haha. Also this comments portion is NOT built in to npm. It is just a space to add comments because JSON doesn't allow you to do that.",
+    "generalInformation": "Turning on line wrapping in your IDE for this file would be very helpful for sanity haha. See this link: https://code.visualstudio.com/docs/getstarted/settings#_language-specific-editor-settings. Also this comments portion is NOT built in to npm. It is just a space to add comments because JSON doesn't allow you to do that.",
     "devDependencies": {
       "@typescript-eslint/eslint-plugin": "Locked to 2.31.x because there was an issue as of 5/12/2020 with 2.32.x that was causing builds to fail. It was being worked on by the devs that same day. So this can be upgraded when it is fixed.",
       "@typescript-eslint/parser": "See comment above",
       "nodemon": "Runs the node server on updates 😁",
-      "rimraf": "Allows for quick rm -rf capabilities with npm"
+      "rimraf": "Allows for quick rm -rf capabilities with npm",
+      "ts-node": "Run node in hot-reloading fashion with typescript files"
     }
   },
   "dependencies": {
