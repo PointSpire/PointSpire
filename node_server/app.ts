@@ -1,12 +1,10 @@
-const createError = require('http-errors');
 import express from 'express';
 import path from 'path';
 import dotenv from 'dotenv';
-const cookieParser = require('cookie-parser');
-const logger = require('morgan');
-import mongoose, { Error } from 'mongoose';
+import cookieParser = require('cookie-parser');
+import logger from 'morgan';
+import mongoose from 'mongoose';
 import http from 'http';
-const debug = require('debug')('node-server:server');
 
 /**
  * Allows usage of the .env file in the root directory of `node_server`. Should
@@ -14,14 +12,16 @@ const debug = require('debug')('node-server:server');
  */
 dotenv.config();
 
-const indexRouter = require('./src/main/routes/index');
+import indexRouter from './src/main/routes/index';
 import apiRouter from './src/main/routes/api';
 
 /**
- * @emits `started` when the server is finished setting up and connected to 
+ * @fires started when the server is finished setting up and connected to
  * the database as well as listening
  */
 const app = express();
+
+const server = http.createServer(app);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -44,34 +44,12 @@ const mongooseConnectionOptions = {
   useUnifiedTopology: true,
 };
 
-// Connect to the database
-new Promise<string>((resolve, reject) => {
-  if (process.env.MONGODB_DEV_URL) {
-    const url: string = process.env.MONGODB_DEV_URL;
-    resolve(url);
-  } else {
-    console.error("MONGODB_DEV_URL is undefined in the .env file.");
-    reject();
-  }
-}).then(url => {
-  return mongoose.connect(url, mongooseConnectionOptions, err => {
-    if (err) {
-      console.error('Database connection could not be established');
-      console.error(err);
-    }
-  })
-}).then(db => {
-  console.log('Connection successfully made to the database');
-  setupRoutes(db);
-  startServer();
-});
-
 /**
  * Sets up the routes for the application.
  *
  * @param {mongoose} db The connected MnogoDB object
  */
-function setupRoutes(db: typeof mongoose) {
+function setupRoutes(db: typeof mongoose): void {
   app.use('/', indexRouter);
   app.use('/api', apiRouter(db));
 }
@@ -79,9 +57,10 @@ function setupRoutes(db: typeof mongoose) {
 /**
  * Normalize a port into a number, string, or false.
  *
- * @param {string} val
+ * @param {string} val the port value to normalize
+ * @returns {boolean|number|string} the normalized port
  */
-function normalizePort(val: string) {
+function normalizePort(val: string): boolean | number | string {
   const port = parseInt(val, 10);
 
   if (isNaN(port)) {
@@ -97,11 +76,12 @@ function normalizePort(val: string) {
   return false;
 }
 
-const server = http.createServer(app);
-
-function onListening() {
+/**
+ * Reports the binding of the server and emits the `started` event on the app.
+ */
+function onListening(): void {
   const addr = server.address();
-  let binding: string = 'unknown';
+  let binding = 'unknown';
   if (addr !== null) {
     binding = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
   }
@@ -112,12 +92,37 @@ function onListening() {
 /**
  * Listen on provided port, on all network interfaces.
  */
-function startServer() {
+function startServer(): void {
   const port = normalizePort(process.env.PORT || '8055');
   app.set('port', port);
   server.listen(port);
   server.on('listening', onListening);
 }
 
+// Connect to the database
+new Promise<string>((resolve, reject) => {
+  if (process.env.MONGODB_DEV_URL) {
+    const url: string = process.env.MONGODB_DEV_URL;
+    resolve(url);
+  } else {
+    reject(new Error('MONGODB_DEV_URL is undefined in the .env file.'));
+  }
+})
+  .then(url => {
+    return mongoose.connect(url, mongooseConnectionOptions, err => {
+      if (err) {
+        console.error('Database connection could not be established');
+        console.error(err);
+      }
+    });
+  })
+  .then(db => {
+    console.log('Connection successfully made to the database');
+    setupRoutes(db);
+    startServer();
+  })
+  .catch(err => {
+    console.error(err.message);
+  });
 
 export default app;

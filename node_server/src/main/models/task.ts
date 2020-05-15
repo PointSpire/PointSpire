@@ -11,30 +11,30 @@ const taskSchema = new Schema({
 });
 
 /**
- * The type representing a Task document in the database. This extends the 
+ * The type representing a Task document in the database. This extends the
  * mongoose `Document` type.
  */
 export interface TaskDoc extends Document {
-  title: string,
-  note: string,
-  date: Date,
-  author: mongoose.Schema.Types.ObjectId
-};
+  title: string;
+  note: string;
+  date: Date;
+  author: mongoose.Schema.Types.ObjectId;
+}
 
 /**
- * A `Task` class that represents a task in the MongoDB. This extends 
- * the mongoose `Model` type. 
+ * A `Task` class that represents a task in the MongoDB. This extends
+ * the mongoose `Model` type.
  *
  * This can be used for example with:
  * ```
  * let newTask = new Task({title: 'A new task'});
  * ```
  */
-export interface TaskModel extends Model<TaskDoc>{};
+export type TaskModel = Model<TaskDoc>;
 
 /**
  * Creates a `Task` model from a given connected mongoose MongoDB database.
- * 
+ *
  * @param {mongoose} db the connected mongoose MongoDB connection
  * @returns {TaskModel} the `Task` class
  */

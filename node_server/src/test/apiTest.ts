@@ -14,20 +14,21 @@ const assert = chai.assert;
 before(done => {
   app.on('started', () => {
     done();
-  })
+  });
 });
 
 describe('/api endpoint', () => {
   describe('GET /tasks', () => {
-    it('should get all tasks from the MongoDB', (done) => {
-      chai.request(app)
-        .get("/api/tasks")
+    it('should get all tasks from the MongoDB', done => {
+      chai
+        .request(app)
+        .get('/api/tasks')
         .end((err, res) => {
           assert.isNull(err);
           assert.equal(res.status, 200);
           assert.typeOf(res.body, 'array');
           done();
-        })
-    })
-  })
-})
+        });
+    });
+  });
+});
