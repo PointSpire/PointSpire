@@ -13,23 +13,21 @@
     "Atomics": "readonly",
     "SharedArrayBuffer": "readonly"
   },
-  "plugins": [
-    "jsdoc",
-    "prettier"
-  ],
+  "plugins": ["jsdoc", "prettier"],
   "rules": {
     /* Disabled because this feature was deprecated in normal ESLint */
     "valid-jsdoc": "off"
   },
   "overrides": [
     {
-      "files": [
-        "*.ts"
-      ],
+      "files": ["*.ts"],
       "parser": "@typescript-eslint/parser",
       "parserOptions": {
-        "ecmaVersion": 2020
+        "ecmaVersion": 2020,
+        "project": "./tsconfig.json"
       },
+      "plugins": ["prettier"],
+
       /* Sets up a similar rule-set for TypeScript files only */
       "extends": [
         "google",
@@ -37,7 +35,19 @@
         "plugin:@typescript-eslint/recommended",
         "plugin:@typescript-eslint/recommended-requiring-type-checking",
         "plugin:prettier/recommended"
-      ]
+      ],
+
+      "rules": {
+        "valid-jsdoc": "off",
+
+        /* Disabled because it conflicts with TypeScript */
+        "new-cap": "off",
+
+        /* Disabled because this rule isn't picking up the TypeScript 
+        definitions even though they are displaying on hover like expected 
+        within the JSDoc documentation */
+        "jsdoc/no-undefined-types": "off"
+      }
     }
   ]
 }
