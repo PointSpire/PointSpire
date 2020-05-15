@@ -12,6 +12,11 @@
   },
   "comments": {
     "generalInformation": "Turning on line wrapping in your IDE for this file would be very helpful for sanity haha. See this link: https://code.visualstudio.com/docs/getstarted/settings#_language-specific-editor-settings. Also this comments portion is NOT built in to npm. It is just a space to add comments because JSON doesn't allow you to do that.",
+    "scripts": {
+      "start": "Will start the server as if it were in production. This cleans the build folder, runs the typescript compiler, and starts up node. ",
+      "lint": "Runs the linting process on the files in `node_server` with exceptions stated earlier for the `.eslintignore` file and the configuration in the config file",
+      "test": "Will run all the tests in the `src/test` folder."
+    },
     "devDependencies": {
       "@typescript-eslint/eslint-plugin": "Locked to 2.31.x because there was an issue as of 5/12/2020 with 2.32.x that was causing builds to fail. It was being worked on by the devs that same day. So this can be upgraded when it is fixed.",
       "@typescript-eslint/parser": "See comment above",
