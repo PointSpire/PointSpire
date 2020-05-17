@@ -1,0 +1,2 @@
+lanuage: node_js
+script: cd node_server && npm install && npm test
