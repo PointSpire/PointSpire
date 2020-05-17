@@ -8,7 +8,7 @@
     "clean": "rimraf build",
     "tsc": "tsc",
     "lint": "./node_modules/.bin/eslint . --fix",
-    "test": "mocha -r ts-node/register src/test/**"
+    "test": "mocha -r ts-node/register src/test/** --exit"
   },
   "comments": {
     "generalInformation": "Turning on line wrapping in your IDE for this file would be very helpful for sanity haha. See this link: https://code.visualstudio.com/docs/getstarted/settings#_language-specific-editor-settings. Also this comments portion is NOT built in to npm. It is just a space to add comments because JSON doesn't allow you to do that.",
