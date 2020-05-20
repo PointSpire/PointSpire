@@ -12,7 +12,7 @@ When a code reviewer has a more complete understanding of how and why a particul
 ### Developer Checklist:
 
 - [ ] My code compiles and runs locally
-- [ ] The code follows the `CodingStandards.md` file
+- [ ] The code follows the `QualityPolicy.md` file
 - [ ] My code has been developer-tested and includes unit tests
 - [ ] I have considered proper use of exceptions
 - [ ] I have eliminated IDE warnings

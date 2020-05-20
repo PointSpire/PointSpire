@@ -11,7 +11,3 @@
    - React
 - View (Front-end)
    - React
-   
-## Quality Policy
-
-- Use Typescript where possible
