@@ -1,42 +1,54 @@
 {
   "extends": [
     "react-app",
+    "plugin:react/recommended",
     "airbnb",
     "plugin:prettier/recommended"
   ],
-  "plugins": [
-    "prettier"
-  ],
+  "plugins": ["prettier"],
   "overrides": [
     {
       /* Sets this override to .ts files and .tsx files */
-      "files": [
-        "**/*.ts?(x)"
-      ],
+      "files": ["**/*.ts?(x)"],
       "parser": "@typescript-eslint/parser",
       "parserOptions": {
         "ecmaVersion": 2020,
-        "project": "./tsconfig.json"
+        "project": "./tsconfig.json",
+        "sourceType": "module",
+        "ecmaFeatures": {
+          "jsx": true
+        }
       },
-      "plugins": [
-        "prettier"
-      ],
+      "settings": {
+        "react": {
+          "version": "detect"
+        },
+        /* Used to correctly import .tsx files and not flag it */
+        "import/resolver": {
+          "node": {
+            "extensions": [".js", ".jsx", ".ts", ".tsx"]
+          }
+        }
+      },
+      "plugins": ["prettier", "@typescript-eslint"],
       /* Sets up a similar rule-set for TypeScript files only */
       "extends": [
-        "google",
+        "react-app",
+        "airbnb",
         "plugin:@typescript-eslint/eslint-recommended",
         "plugin:@typescript-eslint/recommended",
         "plugin:@typescript-eslint/recommended-requiring-type-checking",
         "plugin:prettier/recommended"
       ],
       "rules": {
-        "valid-jsdoc": "off",
+        "import/extensions": "off",
         /* Disabled because it conflicts with TypeScript */
         "new-cap": "off",
         /* Disabled because this rule isn't picking up the TypeScript 
         definitions even though they are displaying on hover like expected 
         within the JSDoc documentation */
-        "jsdoc/no-undefined-types": "off"
+        "jsdoc/no-undefined-types": "off",
+        "react/jsx-filename-extension": [1, { "extensions": [".tsx", ".jsx"] }]
       }
     }
   ]
