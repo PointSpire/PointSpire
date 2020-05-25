@@ -7,6 +7,7 @@
     "start-node": "node ./build/app",
     "clean": "rimraf build",
     "tsc": "tsc",
+    "dev": "ts-node app.ts",
     "lint": "./node_modules/.bin/eslint . --fix",
     "test": "NODE_ENV=test mocha -r ts-node/register src/test/** --exit"
   },
@@ -15,6 +16,7 @@
     "scripts": {
       "start": "Will start the server as if it were in production. This cleans the build folder, runs the typescript compiler, and starts up node. ",
       "lint": "Runs the linting process on the files in `node_server` with exceptions stated earlier for the `.eslintignore` file and the configuration in the config file",
+      "dev": "Runs the node application in a hot-reloading fashion",
       "test": "Will run all the tests in the `src/test` folder and first sets the NODE_ENV system variable to test. This is picked up by the logger to change how it logs things."
     },
     "devDependencies": {
