@@ -8,7 +8,6 @@ const projectSchema = new Schema({
   title: String,
   note: String,
   date: { type: Date, default: Date.now },
-  author: mongoose.Schema.Types.ObjectId,
 });
 
 /**
