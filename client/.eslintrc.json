@@ -1,0 +1,80 @@
+{
+  "extends": [
+    "react-app",
+    "plugin:react/recommended",
+    "airbnb",
+    "plugin:prettier/recommended"
+  ],
+  "env": {
+    "browser": true,
+    "node": true,
+    "jest": true
+  },
+  "plugins": [
+    "prettier"
+  ],
+  "overrides": [
+    {
+      /* Sets this override to .ts files and .tsx files */
+      "files": [
+        "**/*.ts?(x)"
+      ],
+      "parser": "@typescript-eslint/parser",
+      "parserOptions": {
+        "ecmaVersion": 2020,
+        "project": "./tsconfig.json",
+        "sourceType": "module",
+        "ecmaFeatures": {
+          "jsx": true
+        }
+      },
+      "settings": {
+        "react": {
+          "version": "detect"
+        },
+        /* Used to correctly import .tsx files and not flag it */
+        "import/resolver": {
+          "node": {
+            "extensions": [
+              ".js",
+              ".jsx",
+              ".ts",
+              ".tsx"
+            ]
+          }
+        }
+      },
+      "plugins": [
+        "prettier",
+        "@typescript-eslint"
+      ],
+      /* Sets up a similar rule-set for TypeScript files only */
+      "extends": [
+        "react-app",
+        "airbnb",
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:@typescript-eslint/recommended-requiring-type-checking",
+        "plugin:prettier/recommended"
+      ],
+      "rules": {
+        "import/extensions": "off",
+        /* Disabled because it conflicts with TypeScript */
+        "new-cap": "off",
+        /* Disabled because this rule isn't picking up the TypeScript 
+        definitions even though they are displaying on hover like expected 
+        within the JSDoc documentation */
+        "jsdoc/no-undefined-types": "off",
+        "react/jsx-filename-extension": [
+          1,
+          {
+            "extensions": [
+              ".tsx",
+              ".jsx"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
