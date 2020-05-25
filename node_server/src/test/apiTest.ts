@@ -31,4 +31,21 @@ describe('/api endpoint', () => {
         });
     });
   });
+  describe('GET /projects', () => {
+    it('should return a 405 and request an ID', done => {
+      chai
+        .request(app)
+        .get('/api/projects')
+        .end((err, res) => {
+          assert.isNull(err);
+          assert.equal(res.status, 405);
+          assert.equal(
+            res.text,
+            'Please specify a project ID by using /api/projects/24 where ' +
+              '"24" is the ID of the project.'
+          );
+          done();
+        });
+    });
+  });
 });

@@ -27,7 +27,17 @@ const server = http.createServer(app);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
-app.use(logger('dev'));
+/**
+ * Sets up logging for the application. If the environment variable `NODE_ENV`
+ * is set to `test` then logging is disabled.
+ */
+function setupLogger(): void {
+  if (process.env.NODE_ENV !== 'test') {
+    app.use(logger('dev'));
+  }
+}
+
+setupLogger();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
