@@ -11,3 +11,7 @@
    - React
 - View (Front-end)
    - React
+
+## Project Artifacts
+
+- [Data Model Diagram](https://drive.google.com/file/d/1Tg2oqtFEII-8tDwPRz2UPc-ru1ZW962t/view?usp=sharing)
