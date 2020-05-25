@@ -1,6 +1,8 @@
 import mongoose, { Model, Schema } from 'mongoose';
 import { TaskDoc } from './task';
 
+const ObjectId = mongoose.Types.ObjectId;
+
 /**
  * The mongoose schema for a Project in the database.
  */
@@ -8,13 +10,16 @@ const projectSchema = new Schema({
   title: String,
   note: String,
   date: { type: Date, default: Date.now },
+  subtasks: [ObjectId],
 });
 
 /**
  * The type representing a Project document in the database. This extends the
  * `TaskDoc` type.
  */
-export type ProjectDoc = TaskDoc;
+export interface ProjectDoc extends TaskDoc {
+  subtasks: Array<typeof ObjectId>;
+}
 
 /**
  * A `Project` class that represents a project in the MongoDB. This extends
