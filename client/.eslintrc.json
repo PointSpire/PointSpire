@@ -1,29 +1,15 @@
 {
-  "env": {
-    "node": true,
-    "commonjs": true,
-    "es6": true
-  },
   "extends": [
-    "google",
-    "plugin:jsdoc/recommended",
+    "react-app",
+    "airbnb",
     "plugin:prettier/recommended"
   ],
-  "globals": {
-    "Atomics": "readonly",
-    "SharedArrayBuffer": "readonly"
-  },
   "plugins": [
-    "jsdoc",
     "prettier"
   ],
-  "rules": {
-    /* Disabled because this feature was deprecated in normal ESLint */
-    "valid-jsdoc": "off"
-  },
   "overrides": [
     {
-      /* Set this override to .ts files and .tsx files */
+      /* Sets this override to .ts files and .tsx files */
       "files": [
         "**/*.ts?(x)"
       ],
