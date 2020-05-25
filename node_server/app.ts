@@ -93,9 +93,9 @@ function onListening(): void {
   const addr = server.address();
   let binding = 'unknown';
   if (addr !== null) {
-    binding = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
+    binding = typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`;
   }
-  console.log('Listening on ' + binding);
+  console.log(`Listening on ${binding}`);
   app.emit('started');
 }
 
