@@ -42,14 +42,14 @@ function createUsersRouter(db: typeof mongoose): Router {
    * Adds a new user to the database with the provided userName. If successful,
    * it returns the new user document.
    */
-  router.post('/', (req, res) => {
+  router.post('/', async (req, res) => {
     if (req.body && req.body.userName) {
       if (req.body._id) {
         delete req.body._id;
       }
       let newUser = new User({ userName: req.body.userName });
       newUser = Object.assign(newUser, req.body);
-      newUser.save();
+      await newUser.save();
       res.status(201);
       res.json(newUser);
     } else {
@@ -162,7 +162,7 @@ function createUsersRouter(db: typeof mongoose): Router {
   router.delete('/:userId', (req, res, next) => {
     checkUserId(req.params.userId)
       .then(userDoc => {
-        User.deleteOne({ _id: req.params.userId });
+        User.deleteOne({ _id: req.params.userId }).exec();
         res.status(200);
         res.json(userDoc);
       })
