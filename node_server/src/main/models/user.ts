@@ -36,7 +36,7 @@ export interface UserDoc extends Document {
  *
  * This can be used for example with:
  * ```
- * let newUser = new User({username: 'daxxn'});
+ * let newUser = new User({userName: 'daxxn'});
  * ```
  */
 export type UserModel = Model<UserDoc>;
