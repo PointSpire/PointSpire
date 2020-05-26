@@ -86,7 +86,7 @@ function createProjectsRouter(db: typeof mongoose): Router {
       .then(projectDoc => {
         if (req.body && req.body.taskTitle) {
           const newTask = new Task({
-            title: req.body.taskName,
+            title: req.body.taskTitle,
           });
           newTask.save();
           projectDoc.subtasks.push(newTask._id);
