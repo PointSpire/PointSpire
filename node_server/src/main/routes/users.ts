@@ -15,6 +15,9 @@ const errorDescriptions = {
     ` the "projectTitle" defined.`,
   userUpdateNotDefined:
     `No content was provided in the body to update ` + `the user with.`,
+  newUserDetailsNotDefined:
+    `Details for the new user were not specified in ` +
+    `the body of the message. Please define at least the userName in the body.`,
 };
 
 /**
@@ -33,6 +36,26 @@ function createUsersRouter(db: typeof mongoose): Router {
       'Please specify a user ID by using /api/users/24 where ' +
         '"24" is the ID of the user.'
     );
+  });
+
+  /**
+   * Adds a new user to the database with the provided userName. If successful,
+   * it returns the new user document.
+   */
+  router.post('/', (req, res) => {
+    if (req.body && req.body.userName) {
+      if (req.body._id) {
+        delete req.body._id;
+      }
+      let newUser = new User({ userName: req.body.userName });
+      newUser = Object.assign(newUser, req.body);
+      newUser.save();
+      res.status(201);
+      res.json(newUser);
+    } else {
+      res.status(400);
+      res.send(errorDescriptions.newUserDetailsNotDefined);
+    }
   });
 
   /**
@@ -63,6 +86,10 @@ function createUsersRouter(db: typeof mongoose): Router {
     });
   }
 
+  /**
+   * Gets a user with the spcified userId. If successful, it returns the user
+   * document.
+   */
   router.get('/:userId', (req, res, next) => {
     checkUserId(req.params.userId)
       .then(userDoc => {
