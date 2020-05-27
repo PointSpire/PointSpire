@@ -70,7 +70,7 @@ function createProjectsRouter(db: typeof mongoose): Router {
   /**
    * Returns the project document with the specified ID.
    */
-  router.get('/:projectId', (req, res, next) => {
+  router.get('/:projectId', (req, res) => {
     checkProjectId(req.params.projectId)
       .then(projectDoc => {
         res.status(200);
