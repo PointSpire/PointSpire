@@ -1,6 +1,6 @@
 import chai from 'chai';
 import chaiHttp from 'chai-http';
-import Globals from './globals';
+import Globals from './Globals';
 
 // Configure chai
 chai.use(chaiHttp);

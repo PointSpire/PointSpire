@@ -12,7 +12,7 @@
  */
 
 import app from '../../app';
-import Globals from './globals';
+import Globals from './Globals';
 
 /**
  * Waits for the server to be started before running tests
