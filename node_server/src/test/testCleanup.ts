@@ -19,7 +19,8 @@ describe('DELETE /api/users/id', () => {
           assert.isNull(err);
           assert.equal(res.status, 200);
           assert.typeOf(res.body, 'object');
-          assert.deepEqual(res.body, testUser);
+          assert.equal(res.body._id, testUser._id);
+          assert.equal(res.body.userName, testUser.userName);
           done();
         });
     } else {
