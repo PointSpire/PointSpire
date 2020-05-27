@@ -106,14 +106,14 @@ function createUsersRouter(db: typeof mongoose): Router {
    */
   router.post('/:userId/projects', (req, res, next) => {
     checkUserId(req.params.userId)
-      .then(userDoc => {
+      .then(async userDoc => {
         if (req.body && req.body.projectTitle) {
           const newProject = new Project({
             title: req.body.projectTitle,
           });
-          newProject.save();
+          await newProject.save();
           userDoc.projects.push(newProject._id);
-          userDoc.save();
+          await userDoc.save();
           res.status(201);
           res.json(newProject);
         } else {
