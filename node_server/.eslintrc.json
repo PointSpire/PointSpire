@@ -46,11 +46,7 @@
         /* Disabled because this rule isn't picking up the TypeScript 
         definitions even though they are displaying on hover like expected 
         within the JSDoc documentation */
-        "jsdoc/no-undefined-types": "off",
-
-        /* Turns off linebreaks because of the different line break styles
-        of windows and linux systems */
-        "linebreak-style":"off"
+        "jsdoc/no-undefined-types": "off"
       }
     }
   ]
