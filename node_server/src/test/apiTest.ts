@@ -68,5 +68,15 @@ describe('api/projects', () => {
             });
         });
     });
+    it('should return a 400 if the id is invalid', done => {
+      chai
+        .request(Globals.app)
+        .get(`/api/projects/3`)
+        .end((err, res) => {
+          assert.isNull(err);
+          assert.equal(res.status, 400);
+          done();
+        });
+    });
   });
 });

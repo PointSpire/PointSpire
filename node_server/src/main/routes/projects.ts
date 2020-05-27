@@ -77,7 +77,8 @@ function createProjectsRouter(db: typeof mongoose): Router {
         res.json(projectDoc);
       })
       .catch(err => {
-        next(err);
+        res.status(400);
+        res.send(err);
       });
   });
 
