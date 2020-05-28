@@ -159,16 +159,25 @@ function createUsersRouter(db: typeof mongoose): Router {
    * Deletes the user with the given userId. If successful, it returns
    * the deleted document.
    */
-  router.delete('/:userId', (req, res, next) => {
-    checkUserId(req.params.userId)
-      .then(userDoc => {
-        User.deleteOne({ _id: req.params.userId }).exec();
-        res.status(200);
-        res.json(userDoc);
-      })
-      .catch(err => {
-        next(err);
-      });
+  router.delete('/:userId', async (req, res) => {
+    try {
+      const userDoc = await checkUserId(req.params.userId);
+
+      // Run the mongoDB operations in parallel
+      await Promise.all([
+        Project.deleteMany({
+          _id: {
+            $in: userDoc.projects,
+          },
+        }).exec(),
+        User.deleteOne({ _id: req.params.userId }).exec(),
+      ]);
+
+      res.status(200);
+      res.json(userDoc);
+    } catch (err) {
+      res.send(err);
+    }
   });
 
   return router;
