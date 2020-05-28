@@ -9,6 +9,24 @@ chai.use(chaiHttp);
 // Use the assert style
 const assert = chai.assert;
 
+/**
+ * Generates a testProject ProjectDoc by making a request to the server. It
+ * also asserts that the returned item came back correctly.
+ */
+async function generateTestProject(): Promise<ProjectDoc> {
+  const res = await chai
+    .request(Globals.app)
+    .post(`/api/users/${Globals.testUser._id}/projects`)
+    .send({
+      projectTitle: 'testProject',
+    });
+  assert.typeOf(res.body, 'object');
+  assert.typeOf(res.body._id, 'string');
+  assert.equal(res.body.title, 'testProject');
+  const testProject: ProjectDoc = res.body;
+  return testProject;
+}
+
 describe('GET /api/tasks', () => {
   it('should get all tasks from the MongoDB', done => {
     chai
@@ -41,32 +59,13 @@ describe('api/projects', () => {
     });
   });
   describe('GET /id', () => {
-    it('should return the project specified by the given id if the id is valid', done => {
-      // Add a project to test
-      chai
+    it('should return the project specified by the given id if the id is valid', async () => {
+      const testProject = await generateTestProject();
+      const res = await chai
         .request(Globals.app)
-        .post(`/api/users/${Globals.testUser._id}/projects`)
-        .send({
-          projectTitle: 'testProject',
-        })
-        .end((err, res) => {
-          assert.isNull(err);
-          assert.typeOf(res.body, 'object');
-          assert.typeOf(res.body._id, 'string');
-          assert.equal(res.body.title, 'testProject');
-          const testProject: ProjectDoc = res.body;
-
-          // Make sure the project is being returned
-          chai
-            .request(Globals.app)
-            .get(`/api/projects/${testProject._id}`)
-            .end((err, res) => {
-              assert.isNull(err);
-              assert.equal(res.status, 200);
-              assert.deepEqual(res.body, testProject);
-              done();
-            });
-        });
+        .get(`/api/projects/${testProject._id}`);
+      assert.equal(res.status, 200);
+      assert.deepEqual(res.body, testProject);
     });
     it('should return a 400 if the id is invalid', done => {
       chai
