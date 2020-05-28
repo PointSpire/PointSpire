@@ -79,9 +79,20 @@ describe('api/projects', () => {
     });
   });
   describe('PATCH /id', () => {
-    it('should modify a project by adding the content of the body', done => {
-      assert.fail('Not implemented yet');
-      done();
+    it('should modify a project by adding the content of the body', async () => {
+      const testProject = await generateTestProject();
+      const res = await chai
+        .request(Globals.app)
+        .patch(`/api/projects/${testProject._id}`)
+        .send({
+          note: 'Some test note',
+          title: 'A new title',
+        });
+      assert.equal(res.status, 200);
+      assert.typeOf(res.body, 'object');
+      const returnedProject: ProjectDoc = res.body;
+      assert.equal(returnedProject.note, 'Some test note');
+      assert.equal(returnedProject.title, 'A new title');
     });
   });
   describe('DELETE /id', () => {
