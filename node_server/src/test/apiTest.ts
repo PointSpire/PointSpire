@@ -79,4 +79,30 @@ describe('api/projects', () => {
         });
     });
   });
+  describe('PATCH /id', () => {
+    it('should modify a project by adding the content of the body', done => {
+      assert.fail('Not implemented yet');
+      done();
+    });
+  });
+  describe('DELETE /id', () => {
+    it(
+      'should delete the project with the id from the projects collection and' +
+        ' from the user which has that project',
+      done => {
+        assert.fail('Not implemented');
+        done();
+      }
+    );
+  });
+  describe('POST /id/subtasks', () => {
+    it('should add a subtask if valid content is sent', done => {
+      assert.fail('Not implemented');
+      done();
+    });
+    it('should not add a subtask if invalid content is sent', done => {
+      assert.fail('Not implemented');
+      done();
+    });
+  });
 });
