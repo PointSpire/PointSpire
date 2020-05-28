@@ -6,6 +6,7 @@ import {
   createProjectModel,
 } from '../models/project';
 import { createTaskModel, TaskModel } from '../models/task';
+import { createUserModel, UserModel } from '../models/user';
 
 const router = express.Router();
 
@@ -30,6 +31,7 @@ const errorDescriptions = {
 function createProjectsRouter(db: typeof mongoose): Router {
   const Project: ProjectModel = createProjectModel(db);
   const Task: TaskModel = createTaskModel(db);
+  const User: UserModel = createUserModel(db);
 
   router.get('/', (req, res) => {
     res.status(405);
@@ -138,13 +140,18 @@ function createProjectsRouter(db: typeof mongoose): Router {
   });
 
   /**
-   * Deletes the project with the given projectId. If successful, it returns
-   * the deleted document.
+   * Deletes the project with the given projectId and deletes that projectId
+   * from any user which has it in their `projects` array. If successful,
+   * it returns the deleted document.
    */
   router.delete('/:projectId', (req, res, next) => {
     checkProjectId(req.params.projectId)
       .then(projectDoc => {
         Project.deleteOne({ _id: req.params.projectId });
+        User.updateOne(
+          { projects: projectDoc._id },
+          { $pull: { projects: projectDoc._id } }
+        );
         res.status(200);
         res.json(projectDoc);
       })
