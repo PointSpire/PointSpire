@@ -20,7 +20,7 @@ async function generateTestProject(): Promise<ProjectDoc> {
     .request(Globals.app)
     .post(`/api/users/${Globals.testUser._id}/projects`)
     .send({
-      projectTitle: 'testProject',
+      title: 'testProject',
     });
   assert.typeOf(res.body, 'object');
   assert.typeOf(res.body._id, 'string');

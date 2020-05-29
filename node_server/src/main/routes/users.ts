@@ -90,13 +90,14 @@ function createUsersRouter(db: typeof mongoose): Router {
    * Gets a user with the spcified userId. If successful, it returns the user
    * document.
    */
-  router.get('/:userId', (req, res, next) => {
+  router.get('/:userId', (req, res) => {
     checkUserId(req.params.userId)
       .then(userDoc => {
         res.json(userDoc);
       })
       .catch(err => {
-        next(err);
+        res.status(400);
+        res.json(err);
       });
   });
 
@@ -104,13 +105,11 @@ function createUsersRouter(db: typeof mongoose): Router {
    * Creates a new project for the given user ID. If successful, it returns
    * the newly created project.
    */
-  router.post('/:userId/projects', (req, res, next) => {
+  router.post('/:userId/projects', (req, res) => {
     checkUserId(req.params.userId)
       .then(async userDoc => {
-        if (req.body && req.body.projectTitle) {
-          const newProject = new Project({
-            title: req.body.projectTitle,
-          });
+        if (req.body && req.body.title) {
+          const newProject = new Project(req.body);
           await newProject.save();
           userDoc.projects.push(newProject._id);
           await userDoc.save();
@@ -121,7 +120,8 @@ function createUsersRouter(db: typeof mongoose): Router {
         }
       })
       .catch(err => {
-        next(err);
+        res.status(400);
+        res.json(err);
       });
   });
 
