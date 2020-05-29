@@ -80,7 +80,7 @@ function createProjectsRouter(db: typeof mongoose): Router {
       })
       .catch(err => {
         res.status(400);
-        res.send(err);
+        res.json(err);
       });
   });
 
@@ -88,25 +88,26 @@ function createProjectsRouter(db: typeof mongoose): Router {
    * Creates a new subtask for the given project ID. If successful, it returns
    * the newly created task.
    */
-  router.post('/:projectId/subtasks', (req, res, next) => {
-    checkProjectId(req.params.projectId)
-      .then(projectDoc => {
-        if (req.body && req.body.taskTitle) {
-          const newTask = new Task({
-            title: req.body.taskTitle,
-          });
-          newTask.save();
-          projectDoc.subtasks.push(newTask._id);
-          projectDoc.save();
-          res.status(201);
-          res.json(newTask);
-        } else {
-          throw new Error(errorDescriptions.taskNotDefined);
-        }
-      })
-      .catch(err => {
-        next(err);
-      });
+  router.post('/:projectId/subtasks', async (req, res) => {
+    try {
+      const projectDoc = await checkProjectId(req.params.projectId);
+      if (req.body && req.body.title) {
+        const newTask = new Task(req.body);
+
+        // Save task before adding it to the project so it has an ID
+        await newTask.save();
+
+        projectDoc.subtasks.push(newTask._id);
+        await projectDoc.save();
+        res.status(201);
+        res.json(newTask);
+      } else {
+        throw new Error(errorDescriptions.taskNotDefined);
+      }
+    } catch (err) {
+      res.status(400);
+      res.json(err);
+    }
   });
 
   /**
@@ -144,20 +145,23 @@ function createProjectsRouter(db: typeof mongoose): Router {
    * from any user which has it in their `projects` array. If successful,
    * it returns the deleted document.
    */
-  router.delete('/:projectId', (req, res, next) => {
-    checkProjectId(req.params.projectId)
-      .then(projectDoc => {
-        Project.deleteOne({ _id: req.params.projectId });
+  router.delete('/:projectId', async (req, res) => {
+    try {
+      const projectDoc = await checkProjectId(req.params.projectId);
+      await Promise.all([
+        Project.deleteOne({ _id: projectDoc._id }).exec(),
         User.updateOne(
           { projects: projectDoc._id },
           { $pull: { projects: projectDoc._id } }
-        );
-        res.status(200);
-        res.json(projectDoc);
-      })
-      .catch(err => {
-        next(err);
-      });
+        ).exec(),
+      ]);
+      res.status(200);
+      res.json(projectDoc);
+    } catch (err) {
+      // DELETE ME
+      console.log('Error thrown');
+      res.json(err);
+    }
   });
 
   return router;
