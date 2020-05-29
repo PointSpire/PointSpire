@@ -3,7 +3,6 @@ import chaiHttp from 'chai-http';
 import Globals from './Globals';
 import { ProjectDoc } from '../main/models/project';
 import { UserDoc } from '../main/models/user';
-import { TaskDoc } from '../main/models/task';
 
 // Configure chai
 chai.use(chaiHttp);
@@ -32,8 +31,9 @@ async function generateTestUser(): Promise<UserDoc> {
  *
  * @param {string} id the id of the user to delete
  */
-function removeUser(id: string): void {
-  chai.request(Globals.app).delete(`/api/users/${id}`);
+async function removeUser(id: string): Promise<boolean> {
+  await chai.request(Globals.app).delete(`/api/users/${id}`);
+  return true;
 }
 
 describe('GET', () => {
@@ -93,7 +93,7 @@ describe('PATCH /id', () => {
     const returnedUser: UserDoc = res.body;
     assert.equal(returnedUser.firstName, 'Some test name');
     assert.equal(returnedUser.lastName, 'Some test last name');
-    removeUser(testUser._id);
+    await removeUser(testUser._id);
   });
 });
 
@@ -130,7 +130,7 @@ describe('DELETE /id', () => {
         .get(`/api/projects/${addedProject._id}`);
       assert.equal(projectDeleteRes.status, 400);
 
-      removeUser(testUser._id);
+      await removeUser(testUser._id);
     }
   );
 });
@@ -149,12 +149,13 @@ describe('POST /id/projects', () => {
     assert.typeOf(res.body, 'object');
     assert.equal(res.body.title, 'Some new project');
     assert.equal(res.body.note, 'Some project note');
-    const newProject: TaskDoc = res.body;
+    const newProject: ProjectDoc = res.body;
     const userRes = await chai
       .request(Globals.app)
       .get(`/api/users/${testUser._id}`);
     const returnedUser: UserDoc = userRes.body;
     assert.equal(returnedUser.projects.includes(newProject._id), true);
+    await removeUser(testUser._id);
   });
   it('should not add a project if invalid content is sent', async () => {
     const testUser = await generateTestUser();
@@ -170,5 +171,6 @@ describe('POST /id/projects', () => {
       .get(`/api/users/${testUser._id}`);
     const returnedUser: UserDoc = userRes.body;
     assert.deepEqual(returnedUser, testUser);
+    await removeUser(testUser._id);
   });
 });

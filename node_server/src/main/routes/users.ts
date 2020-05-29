@@ -2,6 +2,7 @@ import express, { Router } from 'express';
 import mongoose from 'mongoose';
 import { ProjectModel, createProjectModel } from '../models/project';
 import { UserModel, createUserModel, UserDoc } from '../models/user';
+import { TaskModel, createTaskModel } from '../models/task';
 
 const router = express.Router();
 
@@ -29,6 +30,7 @@ const errorDescriptions = {
 function createUsersRouter(db: typeof mongoose): Router {
   const User: UserModel = createUserModel(db);
   const Project: ProjectModel = createProjectModel(db);
+  const Task: TaskModel = createTaskModel(db);
 
   router.get('/', (req, res) => {
     res.status(405);
@@ -165,6 +167,8 @@ function createUsersRouter(db: typeof mongoose): Router {
 
       // Run the mongoDB operations in parallel
       await Promise.all([
+        // TODO: Put task deletion in here.
+
         Project.deleteMany({
           _id: {
             $in: userDoc.projects,
