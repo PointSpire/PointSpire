@@ -148,9 +148,20 @@ describe('api/projects', () => {
       const returnedProject: ProjectDoc = projectRes.body;
       assert.equal(returnedProject.subtasks.includes(newTask._id), true);
     });
-    it('should not add a subtask if invalid content is sent', done => {
-      assert.fail('Not implemented');
-      done();
+    it('should not add a subtask if invalid content is sent', async () => {
+      const testProject = await generateTestProject();
+      const res = await chai
+        .request(Globals.app)
+        .post(`/api/projects/${testProject._id}/subtasks`)
+        .send({
+          note: 'Some task note',
+        });
+      assert.equal(res.status, 400);
+      const projectRes = await chai
+        .request(Globals.app)
+        .get(`/api/projects/${testProject._id}`);
+      const returnedProject: ProjectDoc = projectRes.body;
+      assert.deepEqual(returnedProject, testProject);
     });
   });
 });
