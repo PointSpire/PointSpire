@@ -1,4 +1,5 @@
 import mongoose, { Model, Schema, Document } from 'mongoose';
+import { ProjectDoc } from './project';
 
 const ObjectId = mongoose.Types.ObjectId;
 
@@ -15,7 +16,12 @@ const userSchema = new Schema({
   lastName: String,
   githubId: String,
   dateCreated: { type: Date, default: Date.now },
-  projects: [ObjectId],
+  projects: [
+    {
+      type: ObjectId,
+      ref: 'Project',
+    },
+  ],
 });
 
 /**
@@ -27,7 +33,7 @@ export interface UserDoc extends Document {
   lastName: string;
   githubId: string;
   dateCreated: Date;
-  projects: Array<typeof ObjectId>;
+  projects: Array<typeof ObjectId> | Array<ProjectDoc>;
 }
 
 /**

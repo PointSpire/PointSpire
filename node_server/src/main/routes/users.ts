@@ -1,7 +1,13 @@
 import express, { Router } from 'express';
 import mongoose from 'mongoose';
-import { ProjectModel, createProjectModel } from '../models/project';
+import {
+  ProjectModel,
+  createProjectModel,
+  ProjectDoc,
+  isProjectDocArr,
+} from '../models/project';
 import { UserModel, createUserModel, UserDoc } from '../models/user';
+import { TaskModel, createTaskModel } from '../models/task';
 
 const router = express.Router();
 
@@ -29,6 +35,7 @@ const errorDescriptions = {
 function createUsersRouter(db: typeof mongoose): Router {
   const User: UserModel = createUserModel(db);
   const Project: ProjectModel = createProjectModel(db);
+  const Task: TaskModel = createTaskModel(db);
 
   router.get('/', (req, res) => {
     res.status(405);
@@ -161,23 +168,39 @@ function createUsersRouter(db: typeof mongoose): Router {
    */
   router.delete('/:userId', async (req, res) => {
     try {
-      const userDoc = await checkUserId(req.params.userId);
+      // Populate the returned userDoc with the project docs
+      const userDoc = await User.findOne({ _id: req.params.userId })
+        .populate('projects')
+        .exec();
 
-      // Run the mongoDB operations in parallel
-      await Promise.all([
-        // TODO: Put task deletion in here.
-
-        Project.deleteMany({
+      // Delete each subtask of each project.
+      if (userDoc && userDoc.projects && isProjectDocArr(userDoc.projects)) {
+        const projects: Array<ProjectDoc> = userDoc.projects;
+        await Promise.all(
+          projects.map(async project => {
+            await Task.deleteMany({
+              _id: {
+                $in: project.subtasks,
+              },
+            });
+          })
+        );
+        // Delete the projects
+        const projectIds: typeof mongoose.Types.ObjectId[] = projects.map(
+          project => {
+            return project._id;
+          }
+        );
+        await Project.deleteMany({
           _id: {
-            $in: userDoc.projects,
+            $in: projectIds,
           },
-        }).exec(),
-        User.deleteOne({ _id: req.params.userId }).exec(),
-      ]);
-
-      res.status(200);
+        });
+      }
+      await User.deleteOne({ _id: req.params.userId }).exec(), res.status(200);
       res.json(userDoc);
     } catch (err) {
+      res.status(400);
       res.send(err);
     }
   });
