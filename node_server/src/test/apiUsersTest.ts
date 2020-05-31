@@ -1,8 +1,9 @@
 import chai from 'chai';
 import chaiHttp from 'chai-http';
 import Globals from './Globals';
-import { ProjectDoc } from '../main/models/project';
+import { ProjectDoc, isProjectDocArr } from '../main/models/project';
 import { UserDoc } from '../main/models/user';
+import { TaskDoc, isTaskDocArr } from '../main/models/task';
 
 // Configure chai
 chai.use(chaiHttp);
@@ -150,11 +151,48 @@ describe('POST /id/projects', () => {
     assert.equal(res.body.title, 'Some new project');
     assert.equal(res.body.note, 'Some project note');
     const newProject: ProjectDoc = res.body;
+
+    // Add a task to the new project
+    const taskAddRes = await chai
+      .request(Globals.app)
+      .post(`/api/projects/${newProject._id}/subtasks`)
+      .send({
+        title: 'Some new task',
+      });
+    assert.equal(taskAddRes.status, 201);
+    assert.typeOf(taskAddRes.body, 'object');
+    assert.equal(taskAddRes.body.title, 'Some new task');
+    const newTask: TaskDoc = taskAddRes.body;
+
     const userRes = await chai
       .request(Globals.app)
       .get(`/api/users/${testUser._id}`);
     const returnedUser: UserDoc = userRes.body;
-    assert.equal(returnedUser.projects.includes(newProject._id), true);
+
+    if (isProjectDocArr(returnedUser.projects)) {
+      const matchedProject = returnedUser.projects.find(project => {
+        return project._id == newProject._id;
+      });
+      assert.isTrue(matchedProject !== undefined);
+      if (matchedProject && isTaskDocArr(matchedProject.subtasks)) {
+        assert.isTrue(
+          matchedProject.subtasks.find(task => {
+            return task._id == newTask._id;
+          }) !== undefined
+        );
+      } else {
+        assert.fail(
+          'User request returned a ProjectDoc array but did not ' +
+            'have a project that contained a subtask array when it had a task' +
+            'assigned to it.'
+        );
+      }
+    } else {
+      assert.fail(
+        'User request did not return ProjectDoc array when it' +
+          'should have a project assigned to it.'
+      );
+    }
     await removeUser(testUser._id);
   });
   it('should not add a project if invalid content is sent', async () => {
