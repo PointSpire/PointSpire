@@ -7,7 +7,6 @@ const taskSchema = new Schema({
   title: String,
   note: String,
   date: { type: Date, default: Date.now },
-  author: mongoose.Schema.Types.ObjectId,
 });
 
 /**
@@ -18,7 +17,6 @@ export interface TaskDoc extends Document {
   title: string;
   note: string;
   date: Date;
-  author: mongoose.Schema.Types.ObjectId;
 }
 
 /**

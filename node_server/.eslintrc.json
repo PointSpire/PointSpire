@@ -40,6 +40,9 @@
       "rules": {
         "valid-jsdoc": "off",
 
+        /* Template literals are cool yo */
+        "prefer-template": "error",
+
         /* Disabled because it conflicts with TypeScript */
         "new-cap": "off",
 
