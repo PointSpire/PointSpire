@@ -107,6 +107,7 @@ function createUsersRouter(db: typeof mongoose): Router {
           },
         })
         .exec();
+      res.status(200);
       res.json(userDoc);
     } catch (err) {
       res.status(400);
