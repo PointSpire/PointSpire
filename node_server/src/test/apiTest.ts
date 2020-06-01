@@ -9,17 +9,18 @@ chai.use(chaiHttp);
 const assert = chai.assert;
 
 describe('GET /api/tasks', () => {
-  it('should get all tasks from the MongoDB', done => {
-    chai
-      .request(Globals.app)
-      .get('/api/tasks')
-      .end((err, res) => {
-        assert.isNull(err);
-        assert.equal(res.status, 200);
-        assert.typeOf(res.body, 'array');
-        done();
-      });
-  });
+  // it('should get all tasks from the MongoDB', done => {
+  //   chai
+  //     .request(Globals.app)
+  //     .get('/api/tasks')
+  //     .end((err, res) => {
+  //       assert.isNull(err);
+  //       assert.equal(res.status, 200);
+  //       assert.typeOf(res.body, 'array');
+  //       done();
+  //     });
+  // });
+  require('./apiTaskTest');
 });
 describe('api/projects', () => {
   require('./apiProjectsTest');
