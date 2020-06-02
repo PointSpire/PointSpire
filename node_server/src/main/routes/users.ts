@@ -95,17 +95,23 @@ function createUsersRouter(db: typeof mongoose): Router {
 
   /**
    * Gets a user with the spcified userId. If successful, it returns the user
-   * document.
+   * document and the populated tree of objects.
    */
-  router.get('/:userId', (req, res) => {
-    checkUserId(req.params.userId)
-      .then(userDoc => {
-        res.json(userDoc);
-      })
-      .catch(err => {
-        res.status(400);
-        res.json(err);
-      });
+  router.get('/:userId', async (req, res) => {
+    try {
+      const userDoc = await User.findOne({ _id: req.params.userId })
+        .populate({
+          path: 'projects',
+          populate: {
+            path: 'subtasks',
+          },
+        })
+        .exec();
+      res.json(userDoc);
+    } catch (err) {
+      res.status(400);
+      res.send(err);
+    }
   });
 
   /**
