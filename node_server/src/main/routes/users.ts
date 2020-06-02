@@ -144,7 +144,7 @@ function createUsersRouter(db: typeof mongoose): Router {
    * values specified in the request body. If successful, it returns the
    * updated document.
    */
-  router.patch('/:userId', (req, res, next) => {
+  router.patch('/:userId', (req, res) => {
     checkUserId(req.params.userId)
       .then(userDoc => {
         if (req.body) {
@@ -165,7 +165,8 @@ function createUsersRouter(db: typeof mongoose): Router {
         res.json(userDoc);
       })
       .catch(err => {
-        next(err);
+        res.status(400);
+        res.send(err);
       });
   });
 
