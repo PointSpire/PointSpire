@@ -58,5 +58,7 @@ export type TaskModel = Model<TaskDoc>;
  * @returns {TaskModel} the `Task` class
  */
 export function createTaskModel(db: typeof mongoose): TaskModel {
+  // REMOVE LATER
+  console.log('in createTaskModel');
   return db.model('Task', taskSchema);
 }

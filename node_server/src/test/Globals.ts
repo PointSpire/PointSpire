@@ -1,6 +1,6 @@
 import { Express } from 'express';
 import { UserDoc } from '../main/models/user';
-import { TaskDoc } from '../main/models/task';
+import { ProjectDoc } from '../main/models/project';
 
 /**
  * Holds the global variables for the tests.
@@ -8,5 +8,5 @@ import { TaskDoc } from '../main/models/task';
 export default class Globals {
   public static app: Express;
   public static testUser: UserDoc;
-  public static testTask: TaskDoc;
+  public static testProject: ProjectDoc;
 }

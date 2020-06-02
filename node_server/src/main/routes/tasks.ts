@@ -7,6 +7,8 @@ const router = express.Router();
 const messenger = {
   queryError: 'Theres an error in the query',
   noTaskFound: 'No task matches the ID',
+  queryNotAllowed:
+    'Please specify a task ID by using /api/tasks/2 where "2" is the ID of the task.',
   taskDeleted: (title: string): string => {
     return `Task Deleted: ${title}`;
   },
@@ -28,17 +30,11 @@ const messenger = {
  * @returns {Router} returns the built Router.
  */
 function createTasksRouter(db: typeof mongoose): Router {
+  console.log('in createTasksRouter');
   const Task: TaskModel = createTaskModel(db);
 
-  router.get('/', (req, res, next) => {
-    Task.find().exec((err, tasks) => {
-      if (err) {
-        console.error(messenger.queryError);
-        next(err);
-      } else {
-        res.status(200).json(tasks);
-      }
-    });
+  router.get('/', (req, res) => {
+    res.status(405).send(messenger.queryNotAllowed);
   });
 
   /**
@@ -48,9 +44,12 @@ function createTasksRouter(db: typeof mongoose): Router {
    * @returns {Promise<TaskDoc>} promise created to handle the check when completed.
    */
   function checkTaskid(taskId: string): Promise<TaskDoc> {
+    console.log('did it actually use checkTaskId');
     return new Promise<TaskDoc>((resolve, reject) => {
-      Task.findById(taskId).exec((err, foundTask) => {
+      Task.findOne({ _id: taskId }).exec((err, foundTask) => {
         if (err) {
+          // REMOVE LATER
+          console.log('in checkTaskId/findbyid/iferr');
           reject(err);
         } else if (foundTask === (undefined || null)) {
           const err = new Error(messenger.queryIdError(taskId));
@@ -62,17 +61,21 @@ function createTasksRouter(db: typeof mongoose): Router {
     });
   }
 
-  router.get('/:taskId', (req, res, next) => {
-    Task.findById(req.params.taskId).exec((err, task) => {
-      if (err) {
-        console.error(messenger.queryError);
-        next(err);
-      } else if (task === (undefined || null)) {
-        res.status(500).send(messenger.queryIdError(req.params.taskId));
-      } else {
-        res.status(200).json(task);
-      }
-    });
+  router.get('/:taskId', (req, res) => {
+    console.log('in first part of GET');
+    checkTaskid(req.params.taskId)
+      .then(foundTask => {
+        // REMOVE LATER
+        console.log(JSON.stringify(foundTask, null, 2));
+        res.status(200).json(foundTask);
+      })
+      .catch(err => {
+        // REMOVE LATER
+        const errLoc = 'in api/tasks/:taskId - CATCH';
+        console.log(errLoc);
+        console.log(JSON.stringify(err, null, 2));
+        res.status(400).send(err);
+      });
   });
 
   router.post('/:taskId', async (req, res) => {

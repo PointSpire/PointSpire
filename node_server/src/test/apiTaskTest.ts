@@ -126,7 +126,7 @@ async function generateTestTask(): Promise<TaskDoc> {
   // });
   const res = await chai
     .request(Globals.app)
-    .post(`api/tasks`)
+    .post(`api/projects/${Globals.testProject._id}/subtasks`)
     .send(selectedTask);
   assert.typeOf(res.body, 'object');
   assert.typeOf(res.body._id, 'string');
@@ -167,19 +167,18 @@ describe('GET', () => {
 
 describe('GET /id', () => {
   it('Should get the task by id and return it, if the id is found.', async () => {
-    const res = await chai
+    const testTask = await generateTestTask();
+    const taskResponse = await chai
       .request(Globals.app)
-      .get(`/api/tasks/${Globals.testTask._id}`);
+      .get(`api/tasks/${testTask._id}`);
+    assert.equal(taskResponse.status, 200);
+    assert.exists(taskResponse.body, 'res.body not defined.');
 
-    assert.equal(res.status, 200);
-    assert.exists(res.body, 'res.body not defined.');
-
-    const testTask: TaskDoc = res.body;
-    assert.equal(testTask._id, Globals.testTask._id);
-    assert.equal(testTask.title, Globals.testTask.title);
-    assert.equal(testTask.note, Globals.testTask.note);
-    assert.equal(testTask.date, Globals.testTask.date);
-    assert.equal(testTask.subTask, Globals.testTask.subTask);
+    assert.equal(taskResponse.body._id, testTask._id);
+    assert.equal(taskResponse.body.title, testTask.title);
+    assert.equal(taskResponse.body.note, testTask.note);
+    assert.equal(taskResponse.body.date, testTask.date);
+    assert.equal(taskResponse.body.subTask, testTask.subTask);
   });
   it('Should return 400 if the id is not found', done => {
     chai
