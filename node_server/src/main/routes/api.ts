@@ -5,7 +5,7 @@ import { TaskModel, createTaskModel } from '../models/task';
 import projectsRouter from './projects';
 import usersRouter from './users';
 import swaggerUI from 'swagger-ui-express';
-import swaggerDoc = require('../swagger.json');
+import swaggerSpec from '../swagger';
 
 /**
  * Creates the express Router for the `/api` endpoint.
@@ -37,7 +37,7 @@ function createApiRouter(db: typeof mongoose): Router {
    * Setup the swagger front end for the API. This needs to be specified last
    * so that it doesn't get in the way of the other paths.
    */
-  router.use('/', swaggerUI.serve, swaggerUI.setup(swaggerDoc));
+  router.use('/', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 
   return router;
 }

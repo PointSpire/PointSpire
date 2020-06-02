@@ -70,7 +70,21 @@ function createProjectsRouter(db: typeof mongoose): Router {
   }
 
   /**
-   * Returns the project document with the specified ID.
+   * @swagger
+   * /projects/{projectId}:
+   *  get:
+   *    summary: Gets the project with the specified ID
+   *    responses:
+   *      200:
+   *        description: The project was successfully found and returned
+   *        content:
+   *          'application/json':
+   *            schema:
+   *              $ref: '#/components/schemas/projectObjectWithIds'
+   *      400:
+   *        description: The project ID didn't correspond to one in the database or there was an error while accessing the database.
+   *  parameters:
+   *  - $ref: '#/components/parameters/projectIdParam'
    */
   router.get('/:projectId', (req, res) => {
     checkProjectId(req.params.projectId)

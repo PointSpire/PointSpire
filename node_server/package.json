@@ -37,6 +37,7 @@
     "mongoose": "^5.9.13",
     "morgan": "~1.9.1",
     "pug": "^2.0.4",
+    "swagger-jsdoc": "^4.0.0",
     "swagger-ui-express": "^4.1.4",
     "typescript": "^3.8.3"
   },
@@ -48,6 +49,7 @@
     "@types/mongoose": "^5.7.18",
     "@types/morgan": "^1.9.0",
     "@types/node": "^14.0.0",
+    "@types/swagger-jsdoc": "^3.0.2",
     "@types/swagger-ui-express": "^4.1.2",
     "@typescript-eslint/eslint-plugin": "~2.31.0",
     "@typescript-eslint/parser": "~2.31.0",
