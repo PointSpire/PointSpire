@@ -39,9 +39,12 @@
 
       "rules": {
         "valid-jsdoc": "off",
-        "jsdoc/check-tag-names": {
-          "defined-tags": ["swagger"]
-        },
+        "jsdoc/check-tag-names": [
+          "warn",
+          {
+            "definedTags": ["swagger"]
+          }
+        ],
 
         /* Template literals are cool yo */
         "prefer-template": "error",
