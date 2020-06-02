@@ -26,6 +26,7 @@ class TaskTester {
       'idk what to do',
       'my head hurts',
     ],
+    emptyString: '',
     length: 4,
   };
 
@@ -68,72 +69,42 @@ class TaskTester {
   }
 }
 
-// #region OLD - need to confirm class implementation before deletion.
-// Selection for a random value
-// const selection = {
-//   titles: [
-//     'just do it',
-//     'get project done',
-//     'try to help tony',
-//     'fill my brain',
-//   ],
-//   notes: [
-//     'why u no done',
-//     'how much longer',
-//     'idk what to do',
-//     'my head hurts',
-//   ],
-//   length: 4,
-// };
+/**
+ * Wrapper class for generateTestTask.
+ */
+class TaskContainer {
+  public doc: TaskDoc;
+  public values: TaskTester;
 
-// /**
-//  * Returns an object to use to run the tests.
-//  * Its not necessary but i thought it would be fun.
-//  *
-//  * @returns {object} Object to use for the test.
-//  */
-// function selectTaskValues():  {
-//   const titleRoll: number = Math.round(Math.random() * selection.length);
-//   const noteRoll: number = Math.round(Math.random() * selection.length);
-
-//   let selTitle = selection.titles[0];
-//   let selNote = selection.notes[0];
-
-//   if (titleRoll <= selection.length && titleRoll >= 0) {
-//     selTitle = selection.titles[titleRoll];
-//   }
-
-//   if (noteRoll <= selection.length && noteRoll >= 0) {
-//     selNote = selection.notes[noteRoll];
-//   }
-
-//   return {
-//     title: selTitle,
-//     note: selNote,
-//   }
-// }
-// #endregion
-
-const selectedTask = TaskTester.selectTaskValues();
+  /**
+   * Creates a new TaskContainer
+   *
+   * @param {TaskDoc} doc TaskDoc task created
+   * @param {TaskTester} values Task values used in TaskDoc
+   */
+  constructor(doc: TaskDoc, values: TaskTester) {
+    this.doc = doc;
+    this.values = values;
+  }
+}
 
 /**
  * Generates a new testUser UserDoc by making a request to the server. It
  * also asserts that the returned item came back correctly.
  */
-async function generateTestTask(): Promise<TaskDoc> {
-  // const res = await chai.request(Globals.app).post(`/api/tasks`).send({
-  //   title: 'someTestTask',
-  // });
+async function generateTestTask(): Promise<TaskContainer> {
+  const selectedTask = TaskTester.selectTaskValues();
+
   const res = await chai
     .request(Globals.app)
-    .post(`api/projects/${Globals.testProject._id}/subtasks`)
+    .post(`/api/projects/${Globals.testProject._id}/subtasks`)
     .send(selectedTask);
   assert.typeOf(res.body, 'object');
   assert.typeOf(res.body._id, 'string');
   assert.equal(res.body.title, selectedTask.title);
   assert.equal(res.body.note, selectedTask.note);
   const testTask: TaskDoc = res.body;
-  return testTask;
+  return new TaskContainer(testTask, selectedTask);
 }
 
 /**
@@ -167,23 +138,25 @@ describe('GET', () => {
 
 describe('GET /id', () => {
   it('Should get the task by id and return it, if the id is found.', async () => {
-    const testTask = await generateTestTask();
+    const container = await generateTestTask();
+    const testTask = container.doc;
+
     const taskResponse = await chai
       .request(Globals.app)
-      .get(`api/tasks/${testTask._id}`);
+      .get(`/api/tasks/${testTask._id}`);
     assert.equal(taskResponse.status, 200);
     assert.exists(taskResponse.body, 'res.body not defined.');
 
-    assert.equal(taskResponse.body._id, testTask._id);
-    assert.equal(taskResponse.body.title, testTask.title);
-    assert.equal(taskResponse.body.note, testTask.note);
-    assert.equal(taskResponse.body.date, testTask.date);
-    assert.equal(taskResponse.body.subTask, testTask.subTask);
+    const foundTask: TaskDoc = taskResponse.body;
+    assert.equal(foundTask._id, testTask._id);
+    assert.equal(foundTask.title, testTask.title);
+    assert.equal(foundTask.note, testTask.note);
+    assert.equal(foundTask.date, testTask.date);
   });
   it('Should return 400 if the id is not found', done => {
     chai
       .request(Globals.app)
-      .get(`api/tasks/42`)
+      .get(`/api/tasks/42`)
       .end((err, res) => {
         assert.isNull(err);
         assert.equal(res.status, 400);
@@ -194,7 +167,10 @@ describe('GET /id', () => {
 
 describe('PATCH /id', () => {
   it('should modify a task by adding the content of the body', async () => {
-    const testTask = await generateTestTask();
+    const container = await generateTestTask();
+    const testTask = container.doc;
+    const selectedTask = container.values;
+
     const res = await chai
       .request(Globals.app)
       .patch(`/api/tasks/${testTask._id}`)
@@ -210,42 +186,27 @@ describe('PATCH /id', () => {
 
 describe('DELETE /id', () => {
   it('should delete a task and any subtasks that are associated with it.', async () => {
-    const testTask = await generateTestTask();
-
-    const subTaskRes = await chai
-      .request(Globals.app)
-      .post(`/api/users/${testTask._id}`)
-      .send({
-        title: 'some subTask title',
-      });
-    assert.equal(subTaskRes.status, 200);
-    assert.typeOf(subTaskRes.body, 'object');
-    assert.equal(subTaskRes.body.title, 'some subTask title');
-    const addedSubTask: TaskDoc = subTaskRes.body;
+    const container = await generateTestTask();
+    const testTask = container.doc;
 
     const deleteRes = await chai
       .request(Globals.app)
       .delete(`/api/tasks/${testTask._id}`);
     assert.equal(deleteRes.status, 200);
     assert.typeOf(deleteRes.body, 'object');
-    assert.equal(deleteRes.body._id, testTask._id);
-
-    const taskDelRes = await chai
-      .request(Globals.app)
-      .get(`/api/tasks/${addedSubTask._id}`);
-    assert.equal(taskDelRes.status, 400);
+    assert.equal(deleteRes.body.ok, 1);
 
     await removeTask(testTask._id);
   });
 });
 
 describe('POST /id', () => {
-  it('should add a task to a project or task if valid', async () => {
-    // Generates the main task values.
-    const testSelection = TaskTester.selectTaskValues();
-
+  it('should add a task if ID is valid', async () => {
     // Creates the POST request for the main task.
-    const testTask = await generateTestTask();
+    const container = await generateTestTask();
+    const testTask = container.doc;
+    const testSelection = container.values;
+
     const res = await chai
       .request(Globals.app)
       .post(`/api/tasks/${testTask._id}`)
@@ -254,37 +215,28 @@ describe('POST /id', () => {
     // Check main task
     assert.equal(res.status, 201);
     assert.typeOf(res.body, 'object');
-    assert.equal(res.body.title, testSelection.title);
-    assert.equal(res.body.note, testSelection.note);
-
-    // create task from returned POST response.
-    const newMainTask: TaskDoc = res.body;
-    const taskRes = await chai
-      .request(`/api/tasks/${testTask._id}`)
-      .get(`/api/tasks/${testTask._id}`);
-
-    const returnedTask: TaskDoc = taskRes.body;
-    assert.equal(returnedTask.subTask.includes(newMainTask._id), true);
+    assert.equal(res.body._id, testTask._id);
+    assert.equal(res.body.title, testTask.title);
+    assert.equal(res.body.note, testTask.note);
     await removeTask(testTask._id);
   });
   it('should not add a task if id is invalid', async () => {
-    const testTask = await generateTestTask();
+    const container = await generateTestTask();
+    const testTask = container.doc;
+
     const res = await chai
       .request(Globals.app)
-      .post(`/api/tasks/${testTask._id} + dfkjns`)
+      .post(`/api/tasks/${testTask._id}dfkjns`)
       .send({
         title: 'bad task title',
         note: 'bad task note',
       });
-    assert.equal(res.status, 500);
+    assert.equal(res.status, 400);
     const checkForTask = await chai
       .request(Globals.app)
-      .get(`/api/tasks/${testTask._id}`)
-      .end((err, res) => {
-        assert.isNotNull(err);
-        assert.equal(checkForTask.status, 500);
-        console.log(res);
-      });
+      .get(`/api/tasks/${res.body._id}`);
+    assert.typeOf(checkForTask.body, 'object');
+    assert.equal(checkForTask.status, 400);
     await removeTask(testTask._id);
   });
 });

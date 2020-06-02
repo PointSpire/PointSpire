@@ -1,5 +1,5 @@
 import mongoose, { Model, Schema, Document } from 'mongoose';
-const ObjectId = Schema.Types.ObjectId;
+// const ObjectId = Schema.Types.ObjectId;
 
 /**
  * The mongoose schema for a Task in the database.
@@ -8,7 +8,7 @@ const taskSchema = new Schema({
   title: String,
   note: String,
   date: { type: Date, default: Date.now },
-  subTask: [{ type: ObjectId, ref: 'Task', default: [] }],
+  // subtasks: [{ type: ObjectId, ref: 'Task', default: [] }],
 });
 
 /**
@@ -19,7 +19,7 @@ export interface TaskDoc extends Document {
   title: string;
   note: string;
   date: Date;
-  subTask: Array<typeof ObjectId>;
+  // subtasks: Array<typeof ObjectId>;
 }
 
 /**
@@ -28,17 +28,17 @@ export interface TaskDoc extends Document {
  * @param {TaskDoc} task Task to examine.
  * @returns {boolean} true if array is occupied.
  */
-export function isSubTasksEmpty(task: TaskDoc): boolean {
-  if (!task.subTask) {
-    return false;
-  }
+// export function isSubTasksEmpty(task: TaskDoc): boolean {
+//   if (!task.subtasks) {
+//     return false;
+//   }
 
-  if (task.subTask.length === 0) {
-    return false;
-  }
+//   if (task.subtasks.length === 0) {
+//     return false;
+//   }
 
-  return true;
-}
+//   return true;
+// }
 
 /**
  * A `Task` class that represents a task in the MongoDB. This extends
@@ -58,7 +58,5 @@ export type TaskModel = Model<TaskDoc>;
  * @returns {TaskModel} the `Task` class
  */
 export function createTaskModel(db: typeof mongoose): TaskModel {
-  // REMOVE LATER
-  console.log('in createTaskModel');
   return db.model('Task', taskSchema);
 }
