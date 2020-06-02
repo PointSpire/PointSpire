@@ -1,5 +1,11 @@
 {
   "openapi": "3.0.3",
+  "servers": [
+    {
+      "url": "http://localhost:8055/api",
+      "description": "Local Development Server"
+    }
+  ],
   "info": {
     "version": "1.0.0",
     "title": "PointSpire API",
@@ -41,8 +47,14 @@
             "type": "string"
           },
           "dateCreated": {
-            "description": "A Date object representing the date this user was created.",
-            "type": "object"
+            "description": "A Date string representing the date this user was created. This can be used as a valid Date object in JavaScript.",
+            "type": "string"
+          },
+          "_id": {
+            "type": "string"
+          },
+          "__v": {
+            "type": "integer"
           }
         }
       },
@@ -200,6 +212,12 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/userObjectWithIds"
+                },
+                "example": {
+                  "_id": "5ed5b0b3c38d2174aafc363b",
+                  "userName": "testUser",
+                  "dateCreated": "2020-06-02T01:51:47.787Z",
+                  "__v": 0
                 }
               }
             }
