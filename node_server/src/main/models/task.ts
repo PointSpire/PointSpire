@@ -20,7 +20,7 @@ export interface TaskDoc extends Document {
   title: string;
   note: string;
   date: Date;
-  subtasks: Array<typeof ObjectId>;
+  subtasks: Array<typeof ObjectId> | Array<TaskDoc>;
 }
 
 /**
