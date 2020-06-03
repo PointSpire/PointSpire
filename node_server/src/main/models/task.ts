@@ -9,6 +9,7 @@ const taskSchema = new Schema({
   title: String,
   note: String,
   date: { type: Date, default: Date.now },
+  subtasks: { type: ObjectId, ref: 'Task' },
 });
 
 /**
@@ -19,6 +20,7 @@ export interface TaskDoc extends Document {
   title: string;
   note: string;
   date: Date;
+  subtasks: Array<typeof ObjectId>;
 }
 
 /**
