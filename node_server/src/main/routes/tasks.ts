@@ -6,6 +6,7 @@ const router = express.Router();
 
 /**
  * Simple message controller for response messages.
+ * Its not really necessary, but fun to write. ;)
  */
 const messenger = {
   queryError: 'Theres an error in the query',
@@ -75,7 +76,9 @@ function createTasksRouter(db: typeof mongoose): Router {
   });
 
   /**
-   * POST request, finds a task and posts a new TaskDoc to it.
+   * POST request, creates a new TaskDoc.
+   * This needs work. I dont think this is the functionality
+   * we want.
    */
   router.post('/:taskId', async (req, res) => {
     try {
