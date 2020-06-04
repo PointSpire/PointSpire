@@ -9,7 +9,13 @@ const taskSchema = new Schema({
   title: String,
   note: String,
   date: { type: Date, default: Date.now },
-  subtasks: { type: ObjectId, ref: 'Task' },
+  subtasks: [
+    {
+      type: ObjectId,
+      ref: 'Task',
+      default: new Array<typeof ObjectId>(),
+    },
+  ],
 });
 
 /**

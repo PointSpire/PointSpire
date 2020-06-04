@@ -7,7 +7,7 @@ import {
   isProjectDocArr,
 } from '../models/project';
 import { UserModel, createUserModel, UserDoc } from '../models/user';
-import { TaskModel, createTaskModel } from '../models/task';
+import { TaskModel, createTaskModel, isTaskDocArr } from '../models/task';
 
 const router = express.Router();
 
@@ -94,6 +94,60 @@ function createUsersRouter(db: typeof mongoose): Router {
   }
 
   /**
+   * Generates the populated UserDoc with all of the projects, subtasks, and
+   * any levels deep subtasks of that UserDoc.
+   *
+   * @param {string} userId the userId to use for getting the userDoc
+   * @returns {Promise<UserDoc>} the populated UserDoc in Promise form
+   */
+  async function getPopulatedUserTreeDoc(userId: string): Promise<UserDoc> {
+    const userDoc = await User.findOne({ _id: userId })
+      .populate({
+        path: 'projects',
+        populate: {
+          path: 'subtasks',
+        },
+      })
+      .exec();
+    if (userDoc && userDoc.projects && isProjectDocArr(userDoc.projects)) {
+      for (const project of userDoc.projects) {
+        if (isTaskDocArr(project.subtasks)) {
+          console.log(
+            'It got to the inner function of the getPopulatedUserTree' +
+              'method.'
+          );
+          const taskIds = project.subtasks.map(task => {
+            return task._id;
+          });
+          console.log('The taskIds are:', JSON.stringify(taskIds, null, 2));
+          const data = await Task.aggregate()
+            .match({
+              _id: {
+                $in: taskIds,
+              },
+            })
+            .graphLookup({
+              from: 'Task',
+              startWith: taskIds,
+              connectFromField: 'subtasks',
+              connectToField: '_id',
+              as: 'children',
+              depthField: 'level',
+              maxDepth: 5,
+            });
+          console.log(`Data for project with id: ${project._id}:
+          ${JSON.stringify(data, null, 2)}`);
+        }
+      }
+    }
+    if (userDoc) {
+      return userDoc;
+    } else {
+      throw new Error('userDoc was null');
+    }
+  }
+
+  /**
    * Gets a user with the spcified userId. If successful, it returns the user
    * document and the populated tree of objects.
    */
@@ -111,6 +165,39 @@ function createUsersRouter(db: typeof mongoose): Router {
     } catch (err) {
       res.status(400);
       res.send(err);
+    }
+  });
+
+  router.get('/tree/test', async (req, res) => {
+    try {
+      console.log('It got here 1');
+      const testUser = new User({ userName: 'Some tree test user' });
+      for (let i = 0; i < 1; i++) {
+        console.log('It got here 2');
+        const newProject = new Project({ title: 'A test project' });
+        for (let j = 0; j < 1; j++) {
+          const newTask = new Task({ title: 'Some tree test task' });
+          for (let k = 0; k < 1; k++) {
+            const newSubTask = new Task({
+              title: 'Some subtask of a task for the tree',
+            });
+            await newSubTask.save();
+            newTask.subtasks.push(newSubTask._id);
+          }
+          await newTask.save();
+          newProject.subtasks.push(newTask._id);
+        }
+        await newProject.save();
+        testUser.projects.push(newProject._id);
+      }
+      await testUser.save();
+      console.log('It got here');
+      const userDoc = await getPopulatedUserTreeDoc(testUser._id);
+      // console.log(JSON.stringify(userDoc, null, 2));
+      res.status(200).json(userDoc);
+    } catch (err) {
+      console.error(err);
+      res.status(400).send(err);
     }
   });
 

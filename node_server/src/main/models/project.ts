@@ -13,7 +13,7 @@ const projectSchema = new Schema({
   },
   note: String,
   date: { type: Date, default: Date.now },
-  subtasks: [{ type: ObjectId, ref: 'Task' }],
+  subtasks: [{ type: ObjectId, ref: 'Task', default: [] }],
 });
 
 /**
@@ -34,10 +34,10 @@ export type ProjectDoc = TaskDoc;
 export function isProjectDocArr(
   array: Array<typeof ObjectId> | Array<ProjectDoc>
 ): array is Array<ProjectDoc> {
-  if (array.length === 0) {
-    return false;
-  } else {
+  if (array && array.length !== 0) {
     return (array as ProjectDoc[])[0].title !== undefined;
+  } else {
+    return false;
   }
 }
 
