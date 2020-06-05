@@ -115,24 +115,28 @@ describe('DELETE /id', () => {
 });
 describe('POST /id/subtasks', () => {
   it('should add a subtask if valid content is sent', async () => {
-    const testProject = await generateTestProject();
-    const res = await chai
-      .request(Globals.app)
-      .post(`/api/projects/${testProject._id}/subtasks`)
-      .send({
-        title: 'Some new task',
-        note: 'Some task note',
-      });
-    assert.equal(res.status, 201);
-    assert.typeOf(res.body, 'object');
-    assert.equal(res.body.title, 'Some new task');
-    assert.equal(res.body.note, 'Some task note');
-    const newTask: TaskDoc = res.body;
-    const projectRes = await chai
-      .request(Globals.app)
-      .get(`/api/projects/${testProject._id}`);
-    const returnedProject: ProjectDoc = projectRes.body;
-    assert.equal(returnedProject.subtasks.includes(newTask._id), true);
+    try {
+      const testProject = await generateTestProject();
+      const res = await chai
+        .request(Globals.app)
+        .post(`/api/projects/${testProject._id}/subtasks`)
+        .send({
+          title: 'Some new task',
+          note: 'Some task note',
+        });
+      assert.equal(res.status, 201);
+      assert.typeOf(res.body, 'object');
+      assert.equal(res.body.title, 'Some new task');
+      assert.equal(res.body.note, 'Some task note');
+      const newTask: TaskDoc = res.body;
+      const projectRes = await chai
+        .request(Globals.app)
+        .get(`/api/projects/${testProject._id}`);
+      const returnedProject: ProjectDoc = projectRes.body;
+      assert.equal(returnedProject.subtasks.includes(newTask._id), true);
+    } catch (err) {
+      assert.isNull(err);
+    }
   });
   it('should not add a subtask if invalid content is sent', async () => {
     const testProject = await generateTestProject();
