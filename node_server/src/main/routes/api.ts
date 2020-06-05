@@ -14,10 +14,6 @@ import tasksRouter from './tasks';
  * @returns {Router} the Router for the `/api` endpoint
  */
 function createApiRouter(db: typeof mongoose): Router {
-  router.get('/', (req, res) => {
-    res.send('Please use an endpoint');
-  });
-
   router.use('/projects', projectsRouter(db));
   router.use('/users', usersRouter(db));
   router.use('/tasks', tasksRouter(db));
