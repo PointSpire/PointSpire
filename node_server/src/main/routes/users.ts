@@ -7,7 +7,12 @@ import {
   isProjectDocArr,
 } from '../models/project';
 import { UserModel, createUserModel, UserDoc } from '../models/user';
-import { TaskModel, createTaskModel, isTaskDocArr } from '../models/task';
+import {
+  TaskModel,
+  createTaskModel,
+  isTaskDocArr,
+  TaskDoc,
+} from '../models/task';
 
 const router = express.Router();
 
@@ -94,6 +99,26 @@ function createUsersRouter(db: typeof mongoose): Router {
   }
 
   /**
+   * Recursively populates every task with it's subtasks and returns the
+   * completed tree.
+   *
+   * @param {TaskDoc} rootTask the root task to generate the subtasks for
+   * @returns {Promise<TaskDoc>} the completed taskdoc with the tree attached
+   */
+  async function populateTaskTree(rootTask: TaskDoc): Promise<TaskDoc> {
+    const populatedTask = await rootTask.populate('subtasks').execPopulate();
+    if (isTaskDocArr(populatedTask.subtasks)) {
+      // Populate each subtask of the task
+      await Promise.all(
+        populatedTask.subtasks.map(async task => {
+          await populateTaskTree(task);
+        })
+      );
+    }
+    return populatedTask;
+  }
+
+  /**
    * Generates the populated UserDoc with all of the projects, subtasks, and
    * any levels deep subtasks of that UserDoc.
    *
@@ -109,36 +134,20 @@ function createUsersRouter(db: typeof mongoose): Router {
         },
       })
       .exec();
+
     if (userDoc && userDoc.projects && isProjectDocArr(userDoc.projects)) {
-      for (const project of userDoc.projects) {
-        if (isTaskDocArr(project.subtasks)) {
-          console.log(
-            'It got to the inner function of the getPopulatedUserTree' +
-              'method.'
-          );
-          const taskIds = project.subtasks.map(task => {
-            return task._id;
-          });
-          console.log('The taskIds are:', JSON.stringify(taskIds, null, 2));
-          const data = await Task.aggregate()
-            .match({
-              _id: {
-                $in: taskIds,
-              },
-            })
-            .graphLookup({
-              from: 'Task',
-              startWith: taskIds,
-              connectFromField: 'subtasks',
-              connectToField: '_id',
-              as: 'children',
-              depthField: 'level',
-              maxDepth: 5,
-            });
-          console.log(`Data for project with id: ${project._id}:
-          ${JSON.stringify(data, null, 2)}`);
-        }
-      }
+      await Promise.all(
+        userDoc.projects.map(async project => {
+          if (isTaskDocArr(project.subtasks)) {
+            await Promise.all(
+              project.subtasks.map(async task => {
+                return await populateTaskTree(task);
+              })
+            );
+            return project;
+          }
+        })
+      );
     }
     if (userDoc) {
       return userDoc;
@@ -153,51 +162,11 @@ function createUsersRouter(db: typeof mongoose): Router {
    */
   router.get('/:userId', async (req, res) => {
     try {
-      const userDoc = await User.findOne({ _id: req.params.userId })
-        .populate({
-          path: 'projects',
-          populate: {
-            path: 'subtasks',
-          },
-        })
-        .exec();
+      const userDoc = await getPopulatedUserTreeDoc(req.params.userId);
       res.json(userDoc);
     } catch (err) {
       res.status(400);
       res.send(err);
-    }
-  });
-
-  router.get('/tree/test', async (req, res) => {
-    try {
-      console.log('It got here 1');
-      const testUser = new User({ userName: 'Some tree test user' });
-      for (let i = 0; i < 1; i++) {
-        console.log('It got here 2');
-        const newProject = new Project({ title: 'A test project' });
-        for (let j = 0; j < 1; j++) {
-          const newTask = new Task({ title: 'Some tree test task' });
-          for (let k = 0; k < 1; k++) {
-            const newSubTask = new Task({
-              title: 'Some subtask of a task for the tree',
-            });
-            await newSubTask.save();
-            newTask.subtasks.push(newSubTask._id);
-          }
-          await newTask.save();
-          newProject.subtasks.push(newTask._id);
-        }
-        await newProject.save();
-        testUser.projects.push(newProject._id);
-      }
-      await testUser.save();
-      console.log('It got here');
-      const userDoc = await getPopulatedUserTreeDoc(testUser._id);
-      // console.log(JSON.stringify(userDoc, null, 2));
-      res.status(200).json(userDoc);
-    } catch (err) {
-      console.error(err);
-      res.status(400).send(err);
     }
   });
 

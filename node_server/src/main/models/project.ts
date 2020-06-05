@@ -29,7 +29,8 @@ export type ProjectDoc = TaskDoc;
  *
  * @param {Array<typeof ObjectId> | Array<ProjectDoc>} array the array to test
  * if it is an ObjectId array or ProjectDoc array.
- * @returns {boolean} true if the array is a ProjectDoc array
+ * @returns {boolean} true if the array is a ProjectDoc array, and false if it
+ * is not or the array is empty
  */
 export function isProjectDocArr(
   array: Array<typeof ObjectId> | Array<ProjectDoc>

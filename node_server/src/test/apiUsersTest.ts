@@ -77,13 +77,6 @@ describe('GET /id', () => {
         done();
       });
   });
-  it('should return a tree of all the projects and subtasks if the user has them', async () => {
-    const res = await chai.request(Globals.app).get(`/api/users/tree/test`);
-    console.log(
-      `The body of the response is: ${JSON.stringify(res.body, null, 2)}`
-    );
-    assert.isTrue(true);
-  });
 });
 
 describe('PATCH /id', () => {
