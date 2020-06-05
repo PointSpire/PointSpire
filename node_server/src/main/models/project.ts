@@ -21,7 +21,7 @@ const projectSchema = new Schema({
  * `TaskDoc` type.
  */
 export interface ProjectDoc extends TaskDoc {
-  subtasks: Array<typeof ObjectId>;
+  subtasks: Array<typeof ObjectId> | Array<TaskDoc>;
 }
 
 /**
