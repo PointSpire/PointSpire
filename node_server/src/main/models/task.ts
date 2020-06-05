@@ -1,5 +1,4 @@
 import mongoose, { Model, Schema, Document } from 'mongoose';
-// const ObjectId = Schema.Types.ObjectId;
 
 /**
  * The mongoose schema for a Task in the database.
