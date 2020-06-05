@@ -267,8 +267,22 @@ function createUsersRouter(db: typeof mongoose): Router {
   });
 
   /**
-   * Deletes the user with the given userId. If successful, it returns
-   * the deleted document.
+   * @swagger
+   * /users/{userId}:
+   *  delete:
+   *    summary: Deletes a given user
+   *    description: Deletes the user with the given userId. If successful, it returns the deleted document. This deletes all projects, tasks, and recursively every subtask of each task of the user as well.
+   *    responses:
+   *      200:
+   *        description: Successfully deleted the user and returned the deleted user document
+   *        content:
+   *          'application/json':
+   *            schema:
+   *              $ref: '#/components/schemas/userObjectWithIds'
+   *      400:
+   *        description: The user was not found or there was an error while finding the user
+   *  parameters:
+   *  - $ref: '#/components/parameters/userIdParam'
    */
   router.delete('/:userId', async (req, res) => {
     try {
