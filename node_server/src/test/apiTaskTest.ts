@@ -118,7 +118,6 @@ async function generateTestTask(): Promise<TaskContainer> {
 
   // Makes sure the response is good and the new task is valid.
   assert.typeOf(res.body, 'object');
-  // assert.typeOf(res.body._id, 'string');
   assert.equal(res.body.title, selectedTask.title);
   assert.equal(res.body.note, selectedTask.note);
 
