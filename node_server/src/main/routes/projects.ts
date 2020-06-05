@@ -99,8 +99,27 @@ function createProjectsRouter(db: typeof mongoose): Router {
   });
 
   /**
-   * Creates a new subtask for the given project ID. If successful, it returns
-   * the newly created task.
+   * @swagger
+   * /projects/{projectId}/subtasks:
+   *  post:
+   *    summary: Creates a new subtask of a project
+   *    description: Creates a new subtask for the given project ID. If successful, it returns the newly created task.
+   *    requestBody:
+   *      content:
+   *        'application/json':
+   *          schema:
+   *            $ref: '#/components/schemas/taskObjectRequestBody'
+   *    responses:
+   *      201:
+   *        description: The task was succesfully created and the new task is returned
+   *        content:
+   *          'application/json':
+   *            schema:
+   *              $ref: '#/components/schemas/taskObjectWithIds'
+   *      400:
+   *        description: There was an error while saving the task or getting the project
+   *  parameters:
+   *  - $ref: '#/components/parameters/projectIdParam'
    */
   router.post('/:projectId/subtasks', async (req, res) => {
     try {

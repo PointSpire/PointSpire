@@ -138,7 +138,7 @@ const definition = {
           subtasks: {
             type: 'array',
             items: {
-              $ref: '#/components/schemas/taskObject',
+              $ref: '#/components/schemas/taskObjectWithTasks',
             },
           },
         },
@@ -163,7 +163,19 @@ const definition = {
           },
         ],
       },
-      taskObject: {
+      taskObjectRequestBody: {
+        type: 'object',
+        required: ['title'],
+        properties: {
+          title: {
+            type: 'string',
+          },
+          note: {
+            type: 'string',
+          },
+        },
+      },
+      taskObjectBasis: {
         type: 'object',
         properties: {
           title: {
@@ -178,6 +190,48 @@ const definition = {
               'A Date object representing the date this task was created.',
           },
         },
+      },
+      taskObjectTaskIds: {
+        type: 'object',
+        properties: {
+          subtasks: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+          },
+        },
+      },
+      taskObjectTasks: {
+        type: 'object',
+        properties: {
+          subtasks: {
+            type: 'array',
+            items: {
+              $ref: '#/components/schemas/taskObjectWithTasks',
+            },
+          },
+        },
+      },
+      taskObjectWithIds: {
+        allOf: [
+          {
+            $ref: '#/components/schemas/taskObjectBasis',
+          },
+          {
+            $ref: '#/components/schemas/taskObjectTaskIds',
+          },
+        ],
+      },
+      taskObjectWithTasks: {
+        allOf: [
+          {
+            $ref: '#/components/schemas/taskObjectBasis',
+          },
+          {
+            $ref: '#/components/schemas/taskObjectTasks',
+          },
+        ],
       },
     },
   },
