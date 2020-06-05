@@ -158,8 +158,6 @@ function createProjectsRouter(db: typeof mongoose): Router {
       res.status(200);
       res.json(projectDoc);
     } catch (err) {
-      // DELETE ME
-      console.log('Error thrown');
       res.json(err);
     }
   });

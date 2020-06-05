@@ -104,9 +104,6 @@ async function generateTestTask(): Promise<TaskContainer> {
   // Generates a new TaskTester class for the new TaskDoc.
   const selectedTask = TaskTester.selectTaskValues();
 
-  // DELETE ME
-  console.log(JSON.stringify(selectedTask, null, 2));
-
   // Posts the task to the DB.
   const res = await chai
     .request(Globals.app)
