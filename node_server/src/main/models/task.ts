@@ -8,7 +8,6 @@ const taskSchema = new Schema({
   title: String,
   note: String,
   date: { type: Date, default: Date.now },
-  // subtasks: [{ type: ObjectId, ref: 'Task', default: [] }],
 });
 
 /**
@@ -19,26 +18,7 @@ export interface TaskDoc extends Document {
   title: string;
   note: string;
   date: Date;
-  // subtasks: Array<typeof ObjectId>;
 }
-
-/**
- * Test a task for the presence of a subtask array.
- *
- * @param {TaskDoc} task Task to examine.
- * @returns {boolean} true if array is occupied.
- */
-// export function isSubTasksEmpty(task: TaskDoc): boolean {
-//   if (!task.subtasks) {
-//     return false;
-//   }
-
-//   if (task.subtasks.length === 0) {
-//     return false;
-//   }
-
-//   return true;
-// }
 
 /**
  * A `Task` class that represents a task in the MongoDB. This extends
