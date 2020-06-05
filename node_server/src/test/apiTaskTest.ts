@@ -10,6 +10,17 @@ chai.use(chaiHttp);
 const assert = chai.assert;
 
 /**
+ * Generates a random number between 0 and the given max (non-inclusive).
+ *
+ * @param {number} max the maximum value, non-inclusive, to be selected in the random
+ * integers
+ * @returns {number} an integer from 0 to max (non-inclusive)
+ */
+function getRandomInt(max: number): number {
+  return Math.floor(Math.random() * Math.floor(max));
+}
+
+/**
  * Generates random properties for use by the test suite.
  */
 class TaskTester {
@@ -56,30 +67,13 @@ class TaskTester {
    * @returns {TaskTester} Object to use for the test.
    */
   static selectTaskValues(): TaskTester {
-    // Generates 2 random numbers bound by the length of the arrays.
-    const titleRoll: number = Math.round(
-      Math.random() * this.selection.titles.length
-    );
-    const noteRoll: number = Math.round(
-      Math.random() * this.selection.notes.length
-    );
-
-    // Sets the values to the base index in case the random
-    //  numbers are outside the bounds of the array.
-    let selTitle = this.selection.titles[0];
-    let selNote = this.selection.notes[0];
-
-    // Checks the random numbers for a usable index.
-    if (titleRoll <= this.selection.titles.length && titleRoll >= 0) {
-      selTitle = this.selection.titles[titleRoll];
-    }
-
-    // Same as first one.
-    if (noteRoll <= this.selection.notes.length && noteRoll >= 0) {
-      selNote = this.selection.notes[noteRoll];
-    }
-
-    return new TaskTester(selTitle, selNote);
+    const title = this.selection.titles[
+      getRandomInt(this.selection.titles.length)
+    ];
+    const note = this.selection.notes[
+      getRandomInt(this.selection.notes.length)
+    ];
+    return new TaskTester(title, note);
   }
 }
 
@@ -109,6 +103,9 @@ class TaskContainer {
 async function generateTestTask(): Promise<TaskContainer> {
   // Generates a new TaskTester class for the new TaskDoc.
   const selectedTask = TaskTester.selectTaskValues();
+
+  // DELETE ME
+  console.log(JSON.stringify(selectedTask, null, 2));
 
   // Posts the task to the DB.
   const res = await chai
