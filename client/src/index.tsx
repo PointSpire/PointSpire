@@ -1,7 +1,13 @@
+/**
+ * It seems that this file needs to stay in the `src` directory.
+ *
+ * - Tony
+ */
+
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
+import './main/index.css';
+import App from './main/App';
 import * as serviceWorker from './serviceWorker';
 
 ReactDOM.render(
