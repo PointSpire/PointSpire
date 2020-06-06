@@ -6,6 +6,7 @@
     "doc": "docs"
   },
   "scripts": {
+    "deploy-master": "git subtree push --prefix node_server heroku master",
     "deploy": "git push heroku `git subtree split --prefix node_server heroku US60-SwaggerAPIFrontEnd`:master"
   },
   "repository": {
