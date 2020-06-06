@@ -105,6 +105,22 @@ const definition = {
           },
         ],
       },
+      projectObjectRequestBody: {
+        type: 'object',
+        required: ['title'],
+        properties: {
+          title: {
+            type: 'string',
+          },
+          note: {
+            type: 'string',
+          },
+        },
+        example: {
+          title: 'Fix the fence',
+          note: 'Need to visit the store to see what kind of wood they have',
+        },
+      },
       projectObjectBasis: {
         type: 'object',
         properties: {
@@ -173,6 +189,10 @@ const definition = {
           note: {
             type: 'string',
           },
+        },
+        example: {
+          title: 'Get geared up for next battle',
+          note: 'Should get:\n- Helment\n- New Sword\n- New Shield',
         },
       },
       taskObjectBasis: {

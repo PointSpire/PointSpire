@@ -144,11 +144,29 @@ function createProjectsRouter(db: typeof mongoose): Router {
   });
 
   /**
-   * Updates the project with the given projectId and overwrites any of its
-   * values specified in the request body. If successful, it returns the
-   * updated document.
+   * @swagger
+   * /projects/{projectId}:
+   *  patch:
+   *    summary: Updates a project
+   *    description: Updates the project with the given projectId and overwrites any of its values specified in the request body. If successful, it returns the updated document.
+   *    requestBody:
+   *      content:
+   *        'application/json':
+   *          schema:
+   *            $ref: '#/components/schemas/projectObjectRequestBody'
+   *    responses:
+   *      200:
+   *        description: The update was successful and the updated project was returned
+   *        content:
+   *          'application/json':
+   *            schema:
+   *              $ref: '#/components/schemas/projectObjectWithIds'
+   *      400:
+   *        description: There was an error while finding the project or the project ID did not return a project.
+   *  parameters:
+   *  - $ref: '#/components/parameters/projectIdParam'
    */
-  router.patch('/:projectId', (req, res, next) => {
+  router.patch('/:projectId', (req, res) => {
     checkProjectId(req.params.projectId)
       .then(projectDoc => {
         if (req.body) {
@@ -169,7 +187,7 @@ function createProjectsRouter(db: typeof mongoose): Router {
         res.json(projectDoc);
       })
       .catch(err => {
-        next(err);
+        res.status(400).send(err);
       });
   });
 

@@ -170,16 +170,7 @@ function createUsersRouter(db: typeof mongoose): Router {
    *       content:
    *         'application/json':
    *           schema:
-   *             type: 'object'
-   *             required: ['title']
-   *             properties:
-   *               title:
-   *                 type: 'string'
-   *               note:
-   *                 type: 'string'
-   *             example:
-   *               title: 'Fix the fence'
-   *               note: 'Need to visit the store to see what kind of wood they have.'
+   *             $ref: '#/components/schemas/projectObjectRequestBody'
    *     responses:
    *       '400':
    *         description: 'The userId was not found or there was an error while searching it'
