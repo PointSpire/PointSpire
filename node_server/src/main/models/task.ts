@@ -9,6 +9,13 @@ const taskSchema = new Schema({
   title: String,
   note: String,
   date: { type: Date, default: Date.now },
+  subtasks: [
+    {
+      type: ObjectId,
+      ref: 'Task',
+      default: new Array<typeof ObjectId>(),
+    },
+  ],
 });
 
 /**
@@ -19,6 +26,7 @@ export interface TaskDoc extends Document {
   title: string;
   note: string;
   date: Date;
+  subtasks: Array<typeof ObjectId> | Array<TaskDoc>;
 }
 
 /**
@@ -28,7 +36,8 @@ export interface TaskDoc extends Document {
  *
  * @param {Array<typeof ObjectId> | Array<TaskDoc>} array the array to test
  * if it is an ObjectId array or TaskDoc array.
- * @returns {boolean} true if the array is a TaskDoc array
+ * @returns {boolean} true if the array is a TaskDoc array and false if it is
+ * not or the array is empty
  */
 export function isTaskDocArr(
   array: Array<typeof ObjectId> | Array<TaskDoc>
