@@ -1,0 +1,1 @@
+web: cd node_server && npm run start
