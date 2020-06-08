@@ -67,6 +67,8 @@ function createTasksRouter(db: typeof mongoose): Router {
    * /tasks/{taskId}:
    *  get:
    *    summary: Gets the task with the specified ID
+   *    tags:
+   *      - Task
    *    responses:
    *      200:
    *        description: The task was successfully found and returned

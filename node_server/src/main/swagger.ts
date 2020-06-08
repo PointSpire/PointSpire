@@ -13,6 +13,20 @@ const definition = {
     title: 'PointSpire API',
     description: 'API for querying the MongoDB for PointSpire',
   },
+  tags: [
+    {
+      name: 'User',
+      description: 'User operations',
+    },
+    {
+      name: 'Project',
+      description: 'Project operations',
+    },
+    {
+      name: 'Task',
+      description: 'Task operations',
+    },
+  ],
   components: {
     parameters: {
       userIdParam: {

@@ -74,6 +74,8 @@ function createProjectsRouter(db: typeof mongoose): Router {
    * /projects/{projectId}:
    *  get:
    *    summary: Gets the project with the specified ID
+   *    tags:
+   *      - Project
    *    responses:
    *      200:
    *        description: The project was successfully found and returned
@@ -104,6 +106,9 @@ function createProjectsRouter(db: typeof mongoose): Router {
    *  post:
    *    summary: Creates a new subtask of a project
    *    description: Creates a new subtask for the given project ID. If successful, it returns the newly created task.
+   *    tags:
+   *      - Project
+   *      - Task
    *    requestBody:
    *      content:
    *        'application/json':
@@ -149,6 +154,8 @@ function createProjectsRouter(db: typeof mongoose): Router {
    *  patch:
    *    summary: Updates a project
    *    description: Updates the project with the given projectId and overwrites any of its values specified in the request body. If successful, it returns the updated document.
+   *    tags:
+   *      - Project
    *    requestBody:
    *      content:
    *        'application/json':
@@ -199,6 +206,8 @@ function createProjectsRouter(db: typeof mongoose): Router {
    *    description: 'Deletes the project with the given projectId and deletes that projectId
    * from any user which has it in their `projects` array. If successful,
    * it returns the deleted document.'
+   *    tags:
+   *      - Project
    *    responses:
    *      200:
    *        description: The project was successfully deleted and the deleted project was returned

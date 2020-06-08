@@ -50,6 +50,8 @@ function createUsersRouter(db: typeof mongoose): Router {
    * /users:
    *  post:
    *    summary: Creates a new user with the details specified in the body
+   *    tags:
+   *      - User
    *    requestBody:
    *      description: The properties of the new user to be created
    *      required: true
@@ -131,6 +133,8 @@ function createUsersRouter(db: typeof mongoose): Router {
    * /users/{userId}:
    *   get:
    *     summary: Gets the user at the specified ID
+   *     tags:
+   *       - User
    *     responses:
    *       '200':
    *         description: Successfully returned the user document with the specified userId
@@ -164,6 +168,9 @@ function createUsersRouter(db: typeof mongoose): Router {
    * /users/{userId}/projects:
    *   post:
    *     summary: 'Creates a new project for the user indicated by the userId'
+   *     tags:
+   *       - User
+   *       - Project
    *     requestBody:
    *       description: 'The properties of the new project to be created'
    *       required: true
@@ -203,6 +210,8 @@ function createUsersRouter(db: typeof mongoose): Router {
    *   patch:
    *     summary: Modifies the user at the specified ID
    *     description: Modifies the user at the specified ID with the details provided in the body of the request
+   *     tags:
+   *       - User
    *     requestBody:
    *       description: The new properties of the user. These will overwrite the existing properties.
    *       required: true
@@ -263,6 +272,8 @@ function createUsersRouter(db: typeof mongoose): Router {
    *  delete:
    *    summary: Deletes a given user
    *    description: Deletes the user with the given userId. If successful, it returns the deleted document. This deletes all projects, tasks, and recursively every subtask of each task of the user as well.
+   *    tags:
+   *      - User
    *    responses:
    *      200:
    *        description: Successfully deleted the user and returned the deleted user document
