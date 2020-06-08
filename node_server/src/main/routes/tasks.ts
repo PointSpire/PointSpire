@@ -1,6 +1,7 @@
 import express, { Router } from 'express';
 import mongoose from 'mongoose';
 import { TaskModel, createTaskModel, TaskDoc } from '../models/task';
+import { ProjectModel, createProjectModel } from '../models/project';
 
 const router = express.Router();
 
@@ -36,6 +37,7 @@ const messenger = {
  */
 function createTasksRouter(db: typeof mongoose): Router {
   const Task: TaskModel = createTaskModel(db);
+  const Project: ProjectModel = createProjectModel(db);
 
   router.get('/', (req, res) => {
     res.status(405).send(messenger.queryNotAllowed);
@@ -140,16 +142,42 @@ function createTasksRouter(db: typeof mongoose): Router {
   });
 
   /**
-   * DETETE request, removes a TaskDoc from the database.
+   * @swagger
+   * /tasks/{taskId}:
+   *  delete:
+   *    summary: Deletes a task
+   *    description: 'Deletes the task with the given taskId and deletes that taskId
+   * from any project which has it in their `subtasks` array. If successful,
+   * it returns the deleted document.'
+   *    tags:
+   *      - Task
+   *    responses:
+   *      200:
+   *        description: The task was successfully deleted and the deleted task was returned
+   *        content:
+   *          'application/json':
+   *            schema:
+   *              $ref: '#/components/schemas/taskObjectWithIds'
+   *      400:
+   *        description: The task id was not found or there was an error while deleting the task.
+   *  parameters:
+   *  - $ref: '#/components/parameters/taskIdParam'
    */
-  router.delete('/:taskId', (req, res) => {
-    Task.deleteOne({ _id: req.params.taskId })
-      .then(delTask => {
-        res.status(200).json(delTask);
-      })
-      .catch(err => {
-        res.status(400).json(err);
-      });
+  router.delete('/:taskId', async (req, res) => {
+    try {
+      const taskDoc = await checkTaskid(req.params.taskId);
+      await Promise.all([
+        Task.deleteOne({ _id: taskDoc._id }).exec(),
+        Project.updateOne(
+          { subtasks: taskDoc._id },
+          { $pull: { subtasks: taskDoc._id } }
+        ).exec(),
+      ]);
+      res.status(200);
+      res.json(taskDoc);
+    } catch (err) {
+      res.status(400).json(err);
+    }
   });
 
   return router;
