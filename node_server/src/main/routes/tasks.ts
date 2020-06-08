@@ -92,7 +92,29 @@ function createTasksRouter(db: typeof mongoose): Router {
   });
 
   /**
-   * PATCH request, finds the task by ID and replaces the data.
+   * @swagger
+   * /tasks/{taskId}:
+   *  patch:
+   *    summary: Updates a task
+   *    description: Updates the task with the given taskId and overwrites any of its values specified in the request body. If successful, it returns the updated document.
+   *    tags:
+   *      - Task
+   *    requestBody:
+   *      content:
+   *        'application/json':
+   *          schema:
+   *            $ref: '#/components/schemas/taskObjectRequestBody'
+   *    responses:
+   *      200:
+   *        description: The update was successful and the updated task was returned
+   *        content:
+   *          'application/json':
+   *            schema:
+   *              $ref: '#/components/schemas/taskObjectWithIds'
+   *      400:
+   *        description: There was an error while finding the task or the task ID did not return a project.
+   *  parameters:
+   *  - $ref: '#/components/parameters/taskIdParam'
    */
   router.patch('/:taskId', (req, res, next) => {
     checkTaskid(req.params.taskId)
