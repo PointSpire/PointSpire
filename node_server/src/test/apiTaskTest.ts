@@ -222,51 +222,35 @@ describe('DELETE /id', () => {
       .delete(`/api/tasks/${testTask._id}`);
     assert.equal(deleteRes.status, 200);
     assert.typeOf(deleteRes.body, 'object');
-    assert.equal(deleteRes.body.ok, 1);
 
     await removeTask(testTask._id);
   });
 });
 
-describe('POST /id', () => {
-  it('should add a task if ID is valid', async () => {
-    // Creates the POST request for the main task.
-    const container = await generateTestTask();
-    const testTask = container.doc;
-    const testSelection = container.values;
-
-    // Cretaes a post request and sends it to the DB.
-    const res = await chai
-      .request(Globals.app)
-      .post(`/api/tasks/${testTask._id}`)
-      .send(testSelection);
-
-    // Matches the new TaskDoc to the initial TaskDoc.
-    assert.equal(res.status, 201);
-    assert.typeOf(res.body, 'object');
-    assert.equal(res.body._id, testTask._id);
-    assert.equal(res.body.title, testTask.title);
-    assert.equal(res.body.note, testTask.note);
-
-    await removeTask(testTask._id);
-  });
-  it('should not add a task if id is invalid', async () => {
-    const container = await generateTestTask();
-    const testTask = container.doc;
-
-    const res = await chai
-      .request(Globals.app)
-      .post(`/api/tasks/${testTask._id}dfkjns`)
-      .send({
-        title: 'bad task title',
-        note: 'bad task note',
-      });
-    assert.equal(res.status, 400);
-    const checkForTask = await chai
-      .request(Globals.app)
-      .get(`/api/tasks/${res.body._id}`);
-    assert.typeOf(checkForTask.body, 'object');
-    assert.equal(checkForTask.status, 400);
-    await removeTask(testTask._id);
+describe('POST /id/subtasks', () => {
+  it('should create a new subtask if correct data is sent', async () => {
+    try {
+      const testContainer = await generateTestTask();
+      const testTask = testContainer.doc;
+      const res = await chai
+        .request(Globals.app)
+        .post(`/api/tasks/${testTask._id}/subtasks`)
+        .send({
+          title: 'Some new task',
+          note: 'Some task note',
+        });
+      assert.equal(res.status, 201);
+      assert.typeOf(res.body, 'object');
+      assert.equal(res.body.title, 'Some new task');
+      assert.equal(res.body.note, 'Some task note');
+      const newTask: TaskDoc = res.body;
+      const taskRes = await chai
+        .request(Globals.app)
+        .get(`/api/tasks/${testTask._id}`);
+      const returnTask: TaskDoc = taskRes.body;
+      assert.equal(returnTask.subtasks.includes(newTask._id), true);
+    } catch (err) {
+      assert.isNull(err);
+    }
   });
 });

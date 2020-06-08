@@ -51,8 +51,43 @@ function createUsersRouter(db: typeof mongoose): Router {
   });
 
   /**
-   * Adds a new user to the database with the provided userName. If successful,
-   * it returns the new user document.
+   * @swagger
+   * /users:
+   *  post:
+   *    summary: Creates a new user with the details specified in the body
+   *    tags:
+   *      - User
+   *    requestBody:
+   *      description: The properties of the new user to be created
+   *      required: true
+   *      content:
+   *        'application/json':
+   *          schema:
+   *            type: 'object'
+   *            required: ['userName']
+   *            properties:
+   *              'userName':
+   *                type: 'string'
+   *              'firstName':
+   *                type: 'string'
+   *              'lastName':
+   *                type: 'string'
+   *              'githubId':
+   *                type: 'string'
+   *    responses:
+   *      201:
+   *        description: The user was successfully created
+   *        content:
+   *          'application/json':
+   *            schema:
+   *              $ref: '#/components/schemas/userObjectWithIds'
+   *            example:
+   *              _id: '5ed5b0b3c38d2174aafc363b'
+   *              userName: testUser
+   *              dateCreated: '2020-06-02T01:51:47.787Z'
+   *              __v: 0
+   *      400:
+   *        description: The user was not found or there was an error while finding the user
    */
   router.post('/', async (req, res) => {
     if (req.body && req.body.userName) {
@@ -157,8 +192,21 @@ function createUsersRouter(db: typeof mongoose): Router {
   }
 
   /**
-   * Gets a user with the spcified userId. If successful, it returns the user
-   * document and the populated tree of objects.
+   * @swagger
+   * /users/{userId}:
+   *   get:
+   *     summary: Gets the user at the specified ID
+   *     tags:
+   *       - User
+   *     responses:
+   *       '200':
+   *         description: Successfully returned the user document with the specified userId
+   *         content:
+   *           'application/json':
+   *             schema:
+   *               $ref: '#/components/schemas/userObjectWithProjects'
+   *   parameters:
+   *   - $ref: '#/components/parameters/userIdParam'
    */
   router.get('/:userId', async (req, res) => {
     try {
@@ -171,8 +219,25 @@ function createUsersRouter(db: typeof mongoose): Router {
   });
 
   /**
-   * Creates a new project for the given user ID. If successful, it returns
-   * the newly created project.
+   * @swagger
+   * /users/{userId}/projects:
+   *   post:
+   *     summary: 'Creates a new project for the user indicated by the userId'
+   *     tags:
+   *       - User
+   *       - Project
+   *     requestBody:
+   *       description: 'The properties of the new project to be created'
+   *       required: true
+   *       content:
+   *         'application/json':
+   *           schema:
+   *             $ref: '#/components/schemas/projectObjectRequestBody'
+   *     responses:
+   *       '400':
+   *         description: 'The userId was not found or there was an error while searching it'
+   *   parameters:
+   *   - $ref: '#/components/parameters/userIdParam'
    */
   router.post('/:userId/projects', (req, res) => {
     checkUserId(req.params.userId)
@@ -195,11 +260,42 @@ function createUsersRouter(db: typeof mongoose): Router {
   });
 
   /**
-   * Updates the user with the given userId and overwrites any of its
-   * values specified in the request body. If successful, it returns the
-   * updated document.
+   * @swagger
+   * /users/{userId}:
+   *   patch:
+   *     summary: Modifies the user at the specified ID
+   *     description: Modifies the user at the specified ID with the details provided in the body of the request
+   *     tags:
+   *       - User
+   *     requestBody:
+   *       description: The new properties of the user. These will overwrite the existing properties.
+   *       required: true
+   *       content:
+   *         'application/json':
+   *           schema:
+   *             type: 'object'
+   *             properties:
+   *               'userName':
+   *                 type: 'string'
+   *               'firstName':
+   *                 type: 'string'
+   *               'lastName':
+   *                 type: 'string'
+   *               'githubId':
+   *                 type: 'string'
+   *     responses:
+   *       200:
+   *         description: The user was successfully overwritten with the provided data.
+   *         content:
+   *           'application/json':
+   *             schema:
+   *               $ref: '#/components/schemas/userObjectWithIds'
+   *       400:
+   *         description: The userId was not found or there was an error while accessing the database.
+   *   parameters:
+   *   - $ref: '#/components/parameters/userIdParam'
    */
-  router.patch('/:userId', (req, res, next) => {
+  router.patch('/:userId', (req, res) => {
     checkUserId(req.params.userId)
       .then(userDoc => {
         if (req.body) {
@@ -220,13 +316,30 @@ function createUsersRouter(db: typeof mongoose): Router {
         res.json(userDoc);
       })
       .catch(err => {
-        next(err);
+        res.status(400);
+        res.send(err);
       });
   });
 
   /**
-   * Deletes the user with the given userId. If successful, it returns
-   * the deleted document.
+   * @swagger
+   * /users/{userId}:
+   *  delete:
+   *    summary: Deletes a given user
+   *    description: Deletes the user with the given userId. If successful, it returns the deleted document. This deletes all projects, tasks, and recursively every subtask of each task of the user as well.
+   *    tags:
+   *      - User
+   *    responses:
+   *      200:
+   *        description: Successfully deleted the user and returned the deleted user document
+   *        content:
+   *          'application/json':
+   *            schema:
+   *              $ref: '#/components/schemas/userObjectWithIds'
+   *      400:
+   *        description: The user was not found or there was an error while finding the user
+   *  parameters:
+   *  - $ref: '#/components/parameters/userIdParam'
    */
   router.delete('/:userId', async (req, res) => {
     try {

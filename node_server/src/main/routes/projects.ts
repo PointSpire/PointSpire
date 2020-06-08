@@ -17,7 +17,7 @@ const errorDescriptions = {
   },
   taskNotDefined:
     `The task was not defined either with a proper body or with` +
-    ` the "taskTitle" defined.`,
+    ` the "title".`,
   projectUpdateNotDefined:
     `No content was provided in the body to update ` + `the project with.`,
 };
@@ -70,7 +70,23 @@ function createProjectsRouter(db: typeof mongoose): Router {
   }
 
   /**
-   * Returns the project document with the specified ID.
+   * @swagger
+   * /projects/{projectId}:
+   *  get:
+   *    summary: Gets the project with the specified ID
+   *    tags:
+   *      - Project
+   *    responses:
+   *      200:
+   *        description: The project was successfully found and returned
+   *        content:
+   *          'application/json':
+   *            schema:
+   *              $ref: '#/components/schemas/projectObjectWithIds'
+   *      400:
+   *        description: The project ID didn't correspond to one in the database or there was an error while accessing the database.
+   *  parameters:
+   *  - $ref: '#/components/parameters/projectIdParam'
    */
   router.get('/:projectId', (req, res) => {
     checkProjectId(req.params.projectId)
@@ -85,8 +101,30 @@ function createProjectsRouter(db: typeof mongoose): Router {
   });
 
   /**
-   * Creates a new subtask for the given project ID. If successful, it returns
-   * the newly created task.
+   * @swagger
+   * /projects/{projectId}/subtasks:
+   *  post:
+   *    summary: Creates a new subtask of a project
+   *    description: Creates a new subtask for the given project ID. If successful, it returns the newly created task.
+   *    tags:
+   *      - Project
+   *      - Task
+   *    requestBody:
+   *      content:
+   *        'application/json':
+   *          schema:
+   *            $ref: '#/components/schemas/taskObjectRequestBody'
+   *    responses:
+   *      201:
+   *        description: The task was succesfully created and the new task is returned
+   *        content:
+   *          'application/json':
+   *            schema:
+   *              $ref: '#/components/schemas/taskObjectWithIds'
+   *      400:
+   *        description: There was an error while saving the task or getting the project
+   *  parameters:
+   *  - $ref: '#/components/parameters/projectIdParam'
    */
   router.post('/:projectId/subtasks', async (req, res) => {
     try {
@@ -111,11 +149,31 @@ function createProjectsRouter(db: typeof mongoose): Router {
   });
 
   /**
-   * Updates the project with the given projectId and overwrites any of its
-   * values specified in the request body. If successful, it returns the
-   * updated document.
+   * @swagger
+   * /projects/{projectId}:
+   *  patch:
+   *    summary: Updates a project
+   *    description: Updates the project with the given projectId and overwrites any of its values specified in the request body. If successful, it returns the updated document.
+   *    tags:
+   *      - Project
+   *    requestBody:
+   *      content:
+   *        'application/json':
+   *          schema:
+   *            $ref: '#/components/schemas/projectObjectRequestBody'
+   *    responses:
+   *      200:
+   *        description: The update was successful and the updated project was returned
+   *        content:
+   *          'application/json':
+   *            schema:
+   *              $ref: '#/components/schemas/projectObjectWithIds'
+   *      400:
+   *        description: There was an error while finding the project or the project ID did not return a project.
+   *  parameters:
+   *  - $ref: '#/components/parameters/projectIdParam'
    */
-  router.patch('/:projectId', (req, res, next) => {
+  router.patch('/:projectId', (req, res) => {
     checkProjectId(req.params.projectId)
       .then(projectDoc => {
         if (req.body) {
@@ -136,14 +194,31 @@ function createProjectsRouter(db: typeof mongoose): Router {
         res.json(projectDoc);
       })
       .catch(err => {
-        next(err);
+        res.status(400).send(err);
       });
   });
 
   /**
-   * Deletes the project with the given projectId and deletes that projectId
+   * @swagger
+   * /projects/{projectId}:
+   *  delete:
+   *    summary: Deletes a project
+   *    description: 'Deletes the project with the given projectId and deletes that projectId
    * from any user which has it in their `projects` array. If successful,
-   * it returns the deleted document.
+   * it returns the deleted document.'
+   *    tags:
+   *      - Project
+   *    responses:
+   *      200:
+   *        description: The project was successfully deleted and the deleted project was returned
+   *        content:
+   *          'application/json':
+   *            schema:
+   *              $ref: '#/components/schemas/projectObjectWithIds'
+   *      400:
+   *        description: The project id was not found or there was an error while deleting the project.
+   *  parameters:
+   *  - $ref: '#/components/parameters/projectIdParam'
    */
   router.delete('/:projectId', async (req, res) => {
     try {
@@ -158,7 +233,7 @@ function createProjectsRouter(db: typeof mongoose): Router {
       res.status(200);
       res.json(projectDoc);
     } catch (err) {
-      res.json(err);
+      res.status(400).json(err);
     }
   });
 
