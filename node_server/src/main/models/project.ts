@@ -20,9 +20,7 @@ const projectSchema = new Schema({
  * The type representing a Project document in the database. This extends the
  * `TaskDoc` type.
  */
-export interface ProjectDoc extends TaskDoc {
-  subtasks: Array<typeof ObjectId> | Array<TaskDoc>;
-}
+export type ProjectDoc = TaskDoc;
 
 /**
  * Tests if an array is a ProjectDoc array or an ObjectId array. This is used

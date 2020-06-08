@@ -17,7 +17,7 @@ const errorDescriptions = {
   },
   taskNotDefined:
     `The task was not defined either with a proper body or with` +
-    ` the "taskTitle" defined.`,
+    ` the "title".`,
   projectUpdateNotDefined:
     `No content was provided in the body to update ` + `the project with.`,
 };

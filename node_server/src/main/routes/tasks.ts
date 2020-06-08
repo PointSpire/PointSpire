@@ -15,6 +15,9 @@ const messenger = {
   queryNotAllowed:
     'Please specify a task ID by using /api/tasks/2 where "2" is the ID of the task.',
   noEmptyStrings: 'Tasks cannot contain empty strings.',
+  taskNotDefined:
+    `The task was not defined either with a proper body or with` +
+    ` the "title".`,
   taskDeleted: (title: string): string => {
     return `Task Deleted: ${title}`;
   },
@@ -139,6 +142,53 @@ function createTasksRouter(db: typeof mongoose): Router {
       .catch(err => {
         next(err);
       });
+  });
+
+  /**
+   * @swagger
+   * /tasks/{taskId}/subtasks:
+   *  post:
+   *    summary: Creates a new subtask of a task
+   *    description: Creates a new subtask for the given task ID. If successful, it returns the newly created task.
+   *    tags:
+   *      - Task
+   *    requestBody:
+   *      content:
+   *        'application/json':
+   *          schema:
+   *            $ref: '#/components/schemas/taskObjectRequestBody'
+   *    responses:
+   *      201:
+   *        description: The task was succesfully created and the new task is returned
+   *        content:
+   *          'application/json':
+   *            schema:
+   *              $ref: '#/components/schemas/taskObjectWithIds'
+   *      400:
+   *        description: There was an error while getting the task or saving the new task.
+   *  parameters:
+   *  - $ref: '#/components/parameters/taskIdParam'
+   */
+  router.post('/:taskId/subtasks', async (req, res) => {
+    try {
+      const taskDoc = await checkTaskid(req.params.taskId);
+      if (req.body && req.body.title) {
+        const newTask = new Task(req.body);
+
+        // Save new task before adding it to subtasks so it has an ID
+        await newTask.save();
+
+        taskDoc.subtasks.push(newTask._id);
+        await taskDoc.save();
+        res.status(201);
+        res.json(newTask);
+      } else {
+        throw new Error(messenger.taskNotDefined);
+      }
+    } catch (err) {
+      res.status(400);
+      res.json(err);
+    }
   });
 
   /**
