@@ -92,23 +92,6 @@ function createTasksRouter(db: typeof mongoose): Router {
   });
 
   /**
-   * POST request, creates a new TaskDoc.
-   * This needs work. I dont think this is the functionality
-   * we want.
-   */
-  router.post('/:taskId', async (req, res) => {
-    try {
-      const foundTask = await checkTaskid(req.params.taskId);
-      if (req.body) {
-        await foundTask.save();
-        res.status(201).json(foundTask);
-      }
-    } catch (err) {
-      res.status(400).json(err);
-    }
-  });
-
-  /**
    * PATCH request, finds the task by ID and replaces the data.
    */
   router.patch('/:taskId', (req, res, next) => {
