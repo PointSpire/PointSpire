@@ -7,7 +7,12 @@ import {
   isProjectDocArr,
 } from '../models/project';
 import { UserModel, createUserModel, UserDoc } from '../models/user';
-import { TaskModel, createTaskModel } from '../models/task';
+import {
+  TaskModel,
+  createTaskModel,
+  isTaskDocArr,
+  TaskDoc,
+} from '../models/task';
 
 const router = express.Router();
 
@@ -129,6 +134,64 @@ function createUsersRouter(db: typeof mongoose): Router {
   }
 
   /**
+   * Recursively populates every task with it's subtasks and returns the
+   * completed tree.
+   *
+   * @param {TaskDoc} rootTask the root task to generate the subtasks for
+   * @returns {Promise<TaskDoc>} the completed taskdoc with the tree attached
+   */
+  async function populateTaskTree(rootTask: TaskDoc): Promise<TaskDoc> {
+    const populatedTask = await rootTask.populate('subtasks').execPopulate();
+    if (isTaskDocArr(populatedTask.subtasks)) {
+      // Populate each subtask of the task
+      await Promise.all(
+        populatedTask.subtasks.map(async task => {
+          await populateTaskTree(task);
+        })
+      );
+    }
+    return populatedTask;
+  }
+
+  /**
+   * Generates the populated UserDoc with all of the projects, subtasks, and
+   * any levels deep subtasks of that UserDoc.
+   *
+   * @param {string} userId the userId to use for getting the userDoc
+   * @returns {Promise<UserDoc>} the populated UserDoc in Promise form
+   */
+  async function getPopulatedUserTreeDoc(userId: string): Promise<UserDoc> {
+    const userDoc = await User.findOne({ _id: userId })
+      .populate({
+        path: 'projects',
+        populate: {
+          path: 'subtasks',
+        },
+      })
+      .exec();
+
+    if (userDoc && userDoc.projects && isProjectDocArr(userDoc.projects)) {
+      await Promise.all(
+        userDoc.projects.map(async project => {
+          if (isTaskDocArr(project.subtasks)) {
+            await Promise.all(
+              project.subtasks.map(async task => {
+                return await populateTaskTree(task);
+              })
+            );
+            return project;
+          }
+        })
+      );
+    }
+    if (userDoc) {
+      return userDoc;
+    } else {
+      throw new Error('userDoc was null');
+    }
+  }
+
+  /**
    * @swagger
    * /users/{userId}:
    *   get:
@@ -147,15 +210,7 @@ function createUsersRouter(db: typeof mongoose): Router {
    */
   router.get('/:userId', async (req, res) => {
     try {
-      const userDoc = await User.findOne({ _id: req.params.userId })
-        .populate({
-          path: 'projects',
-          populate: {
-            path: 'subtasks',
-          },
-        })
-        .exec();
-      res.status(200);
+      const userDoc = await getPopulatedUserTreeDoc(req.params.userId);
       res.json(userDoc);
     } catch (err) {
       res.status(400);

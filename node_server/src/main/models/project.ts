@@ -13,7 +13,7 @@ const projectSchema = new Schema({
   },
   note: String,
   date: { type: Date, default: Date.now },
-  subtasks: [{ type: ObjectId, ref: 'Task' }],
+  subtasks: [{ type: ObjectId, ref: 'Task', default: [] }],
 });
 
 /**
@@ -29,15 +29,16 @@ export type ProjectDoc = TaskDoc;
  *
  * @param {Array<typeof ObjectId> | Array<ProjectDoc>} array the array to test
  * if it is an ObjectId array or ProjectDoc array.
- * @returns {boolean} true if the array is a ProjectDoc array
+ * @returns {boolean} true if the array is a ProjectDoc array, and false if it
+ * is not or the array is empty
  */
 export function isProjectDocArr(
   array: Array<typeof ObjectId> | Array<ProjectDoc>
 ): array is Array<ProjectDoc> {
-  if (array.length === 0) {
-    return false;
-  } else {
+  if (array && array.length !== 0) {
     return (array as ProjectDoc[])[0].title !== undefined;
+  } else {
+    return false;
   }
 }
 
