@@ -31,6 +31,14 @@ const definition = {
           type: 'string',
         },
       },
+      taskIdParam: {
+        name: 'taskId',
+        in: 'path',
+        required: true,
+        schema: {
+          type: 'string',
+        },
+      },
     },
     schemas: {
       userObjectBasis: {

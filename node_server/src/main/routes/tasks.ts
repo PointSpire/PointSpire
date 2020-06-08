@@ -63,7 +63,21 @@ function createTasksRouter(db: typeof mongoose): Router {
   }
 
   /**
-   * GET request, finds one TaskDoc that matches the ID.
+   * @swagger
+   * /tasks/{taskId}:
+   *  get:
+   *    summary: Gets the task with the specified ID
+   *    responses:
+   *      200:
+   *        description: The task was successfully found and returned
+   *        content:
+   *          'application/json':
+   *            schema:
+   *              $ref: '#/components/schemas/taskObjectWithIds'
+   *      400:
+   *        description: The task ID didn't correspond to one in the database or there was an error while accessing the database.
+   *  parameters:
+   *  - $ref: '#/components/parameters/taskIdParam'
    */
   router.get('/:taskId', (req, res) => {
     checkTaskid(req.params.taskId)
