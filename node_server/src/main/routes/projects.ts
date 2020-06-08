@@ -192,9 +192,24 @@ function createProjectsRouter(db: typeof mongoose): Router {
   });
 
   /**
-   * Deletes the project with the given projectId and deletes that projectId
+   * @swagger
+   * /projects/{projectId}:
+   *  delete:
+   *    summary: Deletes a project
+   *    description: 'Deletes the project with the given projectId and deletes that projectId
    * from any user which has it in their `projects` array. If successful,
-   * it returns the deleted document.
+   * it returns the deleted document.'
+   *    responses:
+   *      200:
+   *        description: The project was successfully deleted and the deleted project was returned
+   *        content:
+   *          'application/json':
+   *            schema:
+   *              $ref: '#/components/schemas/projectObjectWithIds'
+   *      400:
+   *        description: The project id was not found or there was an error while deleting the project.
+   *  parameters:
+   *  - $ref: '#/components/parameters/projectIdParam'
    */
   router.delete('/:projectId', async (req, res) => {
     try {
@@ -209,7 +224,7 @@ function createProjectsRouter(db: typeof mongoose): Router {
       res.status(200);
       res.json(projectDoc);
     } catch (err) {
-      res.json(err);
+      res.status(400).json(err);
     }
   });
 
