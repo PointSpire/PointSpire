@@ -17,30 +17,9 @@ dotenv.config();
 
 import indexRouter from './src/main/routes/index';
 import apiRouter from './src/main/routes/api';
+import authRouter from './src/main/routes/auth';
+import loginRouter from './src/main/routes/login';
 import { userInfo } from 'os';
-
-/**
- * Configure the Github strategy for use by Passport
- * 
- * OAuth 2.0-based strategies require a `verify` function wich receives the
- * credential (`accessToken`) for accessing the Github API on the user's
- * behalf, along with the user's profile. The function must invoke `cb`
- * with a user object, wich will be set at `req.usr` in route handlers after
- * authentication.
- */
-passport.use(new Strategy({
-    clientID: process.env.GITHUB_CLIENT_ID || '',
-    clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
-    callbackURL: '/auth/github'
-  },
-  function(accessToken, refreshToken, profile, cb) {
-    cb(null, profile);
-  }
-));
-
-/**
- * Configure Passport authenticated session persistence.
- */
 
 /**
  * @fires started when the server is finished setting up and connected to
@@ -89,19 +68,8 @@ const mongooseConnectionOptions = {
 function setupRoutes(db: typeof mongoose): void {
   app.use('/', indexRouter);
   app.use('/api', apiRouter(db));
-
-  app.get('/login',
-  function(req, res) {
-    res.render('login');
-  });
-  app.get('/login/github',
-    passport.authenticate('github'));
-  app.get('/auth/github',
-    passport.authenticate('github', { failureRedirect: '/login' }),
-    function(req, res) {
-      res.redirect('/');
-    });
-  
+  app.use('/auth', authRouter(db));
+  app.use('/login', loginRouter);
 }
 
 /**
@@ -169,6 +137,34 @@ new Promise<string>((resolve, reject) => {
   .then(db => {
     console.log('Connection successfully made to the database');
     setupRoutes(db);
+
+    /**
+     * Configure the Github strategy for use by Passport
+     * 
+     * OAuth 2.0-based strategies require a `verify` function wich receives the
+     * credential (`accessToken`) for accessing the Github API on the user's
+     * behalf, along with the user's profile. The function must invoke `cb`
+     * with a user object, wich will be set at `req.usr` in route handlers after
+     * authentication.
+     */
+    passport.use(new Strategy({
+      clientID: process.env.GITHUB_CLIENT_ID || '',
+      clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
+      callbackURL: '/auth/github/cb'
+      },
+      async function(accessToken, refreshToken, profile, cb) {
+        const User: UserModel = createUserModel(db);
+        let newUser = new User({ userName: profile.username });
+        newUser = Object.assign(newUser, { 
+                                          userName: profile.username, 
+                                          firstName: profile.name, 
+                                          lastName: profile.name, 
+                                          githubId: profile.id
+                                        });
+        await newUser.save();
+        cb(null, profile);
+      }));
+
     startServer();
   })
   .catch(err => {
