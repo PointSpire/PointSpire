@@ -5,6 +5,9 @@ import cookieParser = require('cookie-parser');
 import logger from 'morgan';
 import mongoose from 'mongoose';
 import http from 'http';
+import passport from 'passport';
+import Strategy from 'passport-github';
+import { UserModel, createUserModel, UserDoc } from './src/main/models/user';
 
 /**
  * Allows usage of the .env file in the root directory of `node_server`. Should
@@ -14,6 +17,30 @@ dotenv.config();
 
 import indexRouter from './src/main/routes/index';
 import apiRouter from './src/main/routes/api';
+import { userInfo } from 'os';
+
+/**
+ * Configure the Github strategy for use by Passport
+ * 
+ * OAuth 2.0-based strategies require a `verify` function wich receives the
+ * credential (`accessToken`) for accessing the Github API on the user's
+ * behalf, along with the user's profile. The function must invoke `cb`
+ * with a user object, wich will be set at `req.usr` in route handlers after
+ * authentication.
+ */
+passport.use(new Strategy({
+    clientID: process.env.GITHUB_CLIENT_ID || '',
+    clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
+    callbackURL: '/auth/github'
+  },
+  function(accessToken, refreshToken, profile, cb) {
+    cb(null, profile);
+  }
+));
+
+/**
+ * Configure Passport authenticated session persistence.
+ */
 
 /**
  * @fires started when the server is finished setting up and connected to
@@ -62,6 +89,19 @@ const mongooseConnectionOptions = {
 function setupRoutes(db: typeof mongoose): void {
   app.use('/', indexRouter);
   app.use('/api', apiRouter(db));
+
+  app.get('/login',
+  function(req, res) {
+    res.render('login');
+  });
+  app.get('/login/github',
+    passport.authenticate('github'));
+  app.get('/auth/github',
+    passport.authenticate('github', { failureRedirect: '/login' }),
+    function(req, res) {
+      res.redirect('/');
+    });
+  
 }
 
 /**
