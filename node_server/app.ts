@@ -188,6 +188,7 @@ new Promise<string>((resolve, reject) => {
           newUser
             .save()
             .then(() => {
+              console.log(profile);
               cb(null, profile);
             })
             .catch(error => {
