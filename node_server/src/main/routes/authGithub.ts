@@ -21,7 +21,6 @@ const router = express.Router();
 /**
  * Creates the express Router for the `/auth/github` endpoint.
  *
- * @param {mongoose} db the connected MongoDB database
  * @returns {Router} the Router for the `/auth/github` endpoint
  */
 function authGithubRouter(): Router {
@@ -32,7 +31,9 @@ function authGithubRouter(): Router {
     passport.authenticate('github', { failureRedirect: '/login' }),
     function (req, res) {
       // Successful authentication, redirect home.
-      res.redirect(`/api/users/${req.user._id}`);
+      if (req.user !== undefined) {
+        res.redirect(`/api/users/${(req as any).user._id}`);
+      }
     }
   );
 
