@@ -163,9 +163,15 @@ new Promise<string>((resolve, reject) => {
             lastName: '',
             githubId: profile.id,
           });
-          newUser.save().then(() => {
-            cb(null, profile);
-          });
+
+          newUser
+            .save()
+            .then(() => {
+              cb(null, profile);
+            })
+            .catch(error => {
+              console.log(error);
+            });
         }
       )
     );
