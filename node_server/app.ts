@@ -49,8 +49,24 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Initialize Passport and restore authentication state, if any, from the
-// session.
+/**
+ * Configure Passport authenticated session persistence
+ *
+ * In order to restore authentication state across HTTP requests, Passport needs
+ * to serialize users into and deserialize users out of the session.
+ */
+passport.serializeUser(function (user, cb) {
+  cb(null, user);
+});
+
+passport.deserializeUser(function (obj, cb) {
+  cb(null, obj);
+});
+
+/**
+ * Initialize Passport and restore authentication state, if any, from the
+ * session.
+ */
 app.use(passport.initialize());
 app.use(passport.session());
 
