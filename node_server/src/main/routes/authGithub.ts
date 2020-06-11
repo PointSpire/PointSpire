@@ -32,7 +32,7 @@ function authGithubRouter(): Router {
     passport.authenticate('github', { failureRedirect: '/login' }),
     function (req, res) {
       // Successful authentication, redirect home.
-      console.log(req);
+      console.log(req.user);
       res.redirect('/');
     }
   );
