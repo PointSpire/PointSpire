@@ -6,7 +6,7 @@ import logger from 'morgan';
 import mongoose from 'mongoose';
 import http from 'http';
 import passport from 'passport';
-import Strategy from 'passport-github';
+import { Strategy as GithubStrategy } from 'passport-github';
 import { UserModel, createUserModel, UserDoc } from './src/main/models/user';
 
 /**
@@ -148,11 +148,11 @@ new Promise<string>((resolve, reject) => {
      * authentication.
      */
     passport.use(
-      new Strategy(
+      new GithubStrategy(
         {
           clientID: process.env.GITHUB_CLIENT_ID || '',
           clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
-          callbackURL: '/auth/github/cb',
+          callbackURL: 'https://point-spire.herokuapp.com/auth/github/cb',
         },
         function (accessToken, refreshToken, profile, cb) {
           const User: UserModel = createUserModel(db);
