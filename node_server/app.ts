@@ -49,6 +49,11 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Initialize Passport and restore authentication state, if any, from the
+// session.
+app.use(passport.initialize());
+app.use(passport.session());
+
 /**
  * Represents the connection options for the mongoose MongoDB connection.
  */
@@ -175,11 +180,6 @@ new Promise<string>((resolve, reject) => {
         }
       )
     );
-
-    // Initialize Passport and restore authentication state, if any, from the
-    // session.
-    app.use(passport.initialize());
-    app.use(passport.session());
 
     startServer();
   })
