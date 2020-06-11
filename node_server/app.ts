@@ -68,7 +68,7 @@ const mongooseConnectionOptions = {
 function setupRoutes(db: typeof mongoose): void {
   app.use('/', indexRouter);
   app.use('/api', apiRouter(db));
-  app.use('/auth', authRouter(db));
+  app.use('/auth', authRouter());
   app.use('/login', loginRouter);
 }
 
@@ -152,7 +152,7 @@ new Promise<string>((resolve, reject) => {
         {
           clientID: process.env.GITHUB_CLIENT_ID || '',
           clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
-          callbackURL: 'https://point-spire.herokuapp.com/auth/github/cb',
+          callbackURL: 'https://point-spire.herokuapp.com/auth/github/callback',
         },
         function (accessToken, refreshToken, profile, cb) {
           const User: UserModel = createUserModel(db);

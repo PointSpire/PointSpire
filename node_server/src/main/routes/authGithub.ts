@@ -1,19 +1,5 @@
 import express, { Router } from 'express';
-import mongoose from 'mongoose';
-// import {
-//   ProjectModel,
-//   createProjectModel,
-//   ProjectDoc,
-//   isProjectDocArr,
-// } from '../models/project';
-import { UserModel, createUserModel, UserDoc } from '../models/user';
 import passport from 'passport';
-// import {
-//   TaskModel,
-//   createTaskModel,
-//   isTaskDocArr,
-//   TaskDoc,
-// } from '../models/task';
 
 const router = express.Router();
 
@@ -38,13 +24,11 @@ const router = express.Router();
  * @param {mongoose} db the connected MongoDB database
  * @returns {Router} the Router for the `/auth/github` endpoint
  */
-function authGithubRouter(db: typeof mongoose): Router {
-  router.get('/', (req, res) => {
-    passport.authenticate('github');
-  });
+function authGithubRouter(): Router {
+  router.get('/', passport.authenticate('github'));
 
   router.get(
-    '/cb',
+    '/callback',
     passport.authenticate('github', { failureRedirect: '/login' }),
     function (req, res) {
       // Successful authentication, redirect home.
