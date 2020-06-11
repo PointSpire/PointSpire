@@ -140,30 +140,40 @@ new Promise<string>((resolve, reject) => {
 
     /**
      * Configure the Github strategy for use by Passport
-     * 
+     *
      * OAuth 2.0-based strategies require a `verify` function wich receives the
      * credential (`accessToken`) for accessing the Github API on the user's
      * behalf, along with the user's profile. The function must invoke `cb`
      * with a user object, wich will be set at `req.usr` in route handlers after
      * authentication.
      */
-    passport.use(new Strategy({
-      clientID: process.env.GITHUB_CLIENT_ID || '',
-      clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
-      callbackURL: '/auth/github/cb'
-      },
-      async function(accessToken, refreshToken, profile, cb) {
-        const User: UserModel = createUserModel(db);
-        let newUser = new User({ userName: profile.username });
-        newUser = Object.assign(newUser, { 
-                                          userName: profile.username, 
-                                          firstName: profile.name, 
-                                          lastName: profile.name, 
-                                          githubId: profile.id
-                                        });
-        await newUser.save();
-        cb(null, profile);
-      }));
+    passport.use(
+      new Strategy(
+        {
+          clientID: process.env.GITHUB_CLIENT_ID || '',
+          clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
+          callbackURL: '/auth/github/cb',
+        },
+        function (accessToken, refreshToken, profile, cb) {
+          const User: UserModel = createUserModel(db);
+          let newUser = new User({ userName: profile.username });
+          newUser = Object.assign(newUser, {
+            userName: profile.username,
+            firstName: '',
+            lastName: '',
+            githubId: profile.id,
+          });
+          newUser.save().then(() => {
+            cb(null, profile);
+          });
+        }
+      )
+    );
+
+    // Initialize Passport and restore authentication state, if any, from the
+    // session.
+    app.use(passport.initialize());
+    app.use(passport.session());
 
     startServer();
   })

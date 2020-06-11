@@ -39,20 +39,20 @@ const router = express.Router();
  * @returns {Router} the Router for the `/auth/github` endpoint
  */
 function authGithubRouter(db: typeof mongoose): Router {
-    
-    router.get('/', (req, res) => {
-      passport.authenticate('github');
-    });
-  
-    router.get('/cb', 
-        passport.authenticate('github', { failureRedirect: '/login' }), 
-        async function(req, res) {
-            // Successful authentication, redirect home.
-            res.redirect('/');
-        });
-  
-    return router;
-  }
-  
-  export default authGithubRouter;
-  
+  router.get('/', (req, res) => {
+    passport.authenticate('github');
+  });
+
+  router.get(
+    '/cb',
+    passport.authenticate('github', { failureRedirect: '/login' }),
+    function (req, res) {
+      // Successful authentication, redirect home.
+      res.redirect('/');
+    }
+  );
+
+  return router;
+}
+
+export default authGithubRouter;
