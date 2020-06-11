@@ -7,7 +7,10 @@ import mongoose from 'mongoose';
 import http from 'http';
 import passport from 'passport';
 import { Strategy as GithubStrategy } from 'passport-github';
-import { UserModel, createUserModel, UserDoc } from './src/main/models/user';
+import {
+  createUserObjectGithub,
+  saveOrFindNewGithubUser,
+} from './src/lib/userLib';
 
 /**
  * Allows usage of the .env file in the root directory of `node_server`. Should
@@ -175,25 +178,9 @@ new Promise<string>((resolve, reject) => {
           clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
           callbackURL: 'https://point-spire.herokuapp.com/auth/github/callback',
         },
-        function (accessToken, refreshToken, profile, cb) {
-          const User: UserModel = createUserModel(db);
-          let newUser = new User({ userName: profile.username });
-          newUser = Object.assign(newUser, {
-            userName: profile.username,
-            firstName: '',
-            lastName: '',
-            githubId: profile.id,
-          });
-
-          newUser
-            .save()
-            .then(() => {
-              console.log(newUser);
-              cb(null, newUser);
-            })
-            .catch(error => {
-              console.log(error);
-            });
+        function (accessToken, refreshToken, profile, callback) {
+          const newUser = createUserObjectGithub(db, profile);
+          saveOrFindNewGithubUser(db, newUser, callback);
         }
       )
     );
