@@ -188,8 +188,8 @@ new Promise<string>((resolve, reject) => {
           newUser
             .save()
             .then(() => {
-              console.log(profile);
-              cb(null, profile);
+              console.log(newUser);
+              cb(null, newUser);
             })
             .catch(error => {
               console.log(error);
