@@ -91,7 +91,7 @@ function TopMenuBar(): JSX.Element {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" className={classes.title}>
-            News
+            PointSpire
           </Typography>
           <Button color="inherit">Login</Button>
         </Toolbar>
