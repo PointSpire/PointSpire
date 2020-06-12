@@ -16,14 +16,14 @@ export default function SettingsDialog(
 ): JSX.Element {
   const { setOpen, open } = props;
 
-  const handleClose = () => {
+  function handleClose(): void {
     setOpen(false);
-  };
+  }
 
-  const handleSave = () => {
+  function handleSave(): void {
     setOpen(false);
     // Save their settings
-  };
+  }
 
   const descriptionElementRef = React.useRef<HTMLElement>(null);
   React.useEffect(() => {
@@ -55,7 +55,7 @@ export default function SettingsDialog(
       </DialogContent>
       <DialogActions>
         <Button onClick={handleSave} color="primary">
-          Save Settings
+          Save
         </Button>
         <Button onClick={handleClose} color="primary">
           Cancel
