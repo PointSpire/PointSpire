@@ -129,6 +129,7 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
         <List>
           {Object.values(optionsItems).map(optionItem => (
             <ListItem
+              key={optionItem.text}
               button
               onClick={
                 optionItem.text === optionsItems.settings.text
