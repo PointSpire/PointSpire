@@ -18,7 +18,6 @@ dotenv.config();
 import indexRouter from './src/main/routes/index';
 import apiRouter from './src/main/routes/api';
 import authRouter from './src/main/routes/auth';
-import loginRouter from './src/main/routes/login';
 import { userInfo } from 'os';
 
 /**
@@ -90,7 +89,6 @@ function setupRoutes(db: typeof mongoose): void {
   app.use('/', indexRouter);
   app.use('/api', apiRouter(db));
   app.use('/auth', authRouter());
-  app.use('/login', loginRouter);
 }
 
 /**
