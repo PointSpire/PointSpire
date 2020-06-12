@@ -7,7 +7,7 @@ import mongoose from 'mongoose';
 import http from 'http';
 import passport from 'passport';
 import { Strategy as GithubStrategy } from 'passport-github';
-import { UserModel, createUserModel, UserDoc } from './src/main/models/user';
+import { UserModel, createUserModel } from './src/main/models/user';
 
 /**
  * Allows usage of the .env file in the root directory of `node_server`. Should
