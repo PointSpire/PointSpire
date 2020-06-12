@@ -7,7 +7,10 @@ import mongoose from 'mongoose';
 import http from 'http';
 import passport from 'passport';
 import { Strategy as GithubStrategy } from 'passport-github';
-import { UserModel, createUserModel } from './src/main/models/user';
+import {
+  createUserObjectGithub,
+  saveOrFindNewGithubUser,
+} from './src/lib/userLib';
 
 /**
  * Allows usage of the .env file in the root directory of `node_server`. Should
@@ -18,7 +21,6 @@ dotenv.config();
 import indexRouter from './src/main/routes/index';
 import apiRouter from './src/main/routes/api';
 import authRouter from './src/main/routes/auth';
-import { userInfo } from 'os';
 
 /**
  * @fires started when the server is finished setting up and connected to
@@ -166,6 +168,7 @@ new Promise<string>((resolve, reject) => {
      * with a user object, wich will be set at `req.usr` in route handlers after
      * authentication.
      */
+    // TODO impliment fake auth on dev server (see https://medium.com/@pomodoro_cc/how-to-fake-any-authentication-strategy-with-passport-js-610e3ea00dd5)
     passport.use(
       new GithubStrategy(
         {
@@ -173,25 +176,9 @@ new Promise<string>((resolve, reject) => {
           clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
           callbackURL: 'https://point-spire.herokuapp.com/auth/github/callback',
         },
-        function (accessToken, refreshToken, profile, cb) {
-          const User: UserModel = createUserModel(db);
-          let newUser = new User({ userName: profile.username });
-          newUser = Object.assign(newUser, {
-            userName: profile.username,
-            firstName: '',
-            lastName: '',
-            githubId: profile.id,
-          });
-
-          newUser
-            .save()
-            .then(() => {
-              console.log(newUser);
-              cb(null, newUser);
-            })
-            .catch(error => {
-              console.log(error);
-            });
+        function (accessToken, refreshToken, profile, callback) {
+          const newUser = createUserObjectGithub(db, profile);
+          saveOrFindNewGithubUser(db, newUser, callback);
         }
       )
     );
