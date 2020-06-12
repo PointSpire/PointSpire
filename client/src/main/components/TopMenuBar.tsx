@@ -161,7 +161,17 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
             <Typography variant="h6" className={classes.title}>
               PointSpire
             </Typography>
-            <Button color="inherit">Login</Button>
+            <Button
+              color="inherit"
+              onClick={() => {
+                window.open(
+                  'https://point-spire.herokuapp.com/auth/github',
+                  '_self'
+                );
+              }}
+            >
+              Login
+            </Button>
           </Toolbar>
         </AppBar>
         <Drawer
