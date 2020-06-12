@@ -43,6 +43,17 @@ function TopMenuBar(): JSX.Element {
     drawerOpen: false,
   });
 
+  const optionsItems = {
+    settings: {
+      text: 'Settings',
+      icon: <SettingsIcon />,
+    },
+    help: {
+      text: 'Help',
+      icon: <HelpIcon />,
+    },
+  };
+
   const toggleDrawer = (open: boolean) => (
     event: React.KeyboardEvent | React.MouseEvent
   ): void => {
@@ -65,12 +76,10 @@ function TopMenuBar(): JSX.Element {
       onKeyDown={toggleDrawer(false)}
     >
       <List>
-        {['Settings', 'Help'].map((text, index) => (
-          <ListItem button key={text}>
-            <ListItemIcon>
-              {index === 0 ? <SettingsIcon /> : <HelpIcon />}
-            </ListItemIcon>
-            <ListItemText primary={text} />
+        {Object.values(optionsItems).map(optionItem => (
+          <ListItem button>
+            <ListItemIcon>{optionItem.icon}</ListItemIcon>
+            <ListItemText primary={optionItem.text} />
           </ListItem>
         ))}
       </List>
