@@ -22,7 +22,6 @@ import indexRouter from './src/main/routes/index';
 import apiRouter from './src/main/routes/api';
 import authRouter from './src/main/routes/auth';
 import loginRouter from './src/main/routes/login';
-import { userInfo } from 'os';
 
 /**
  * @fires started when the server is finished setting up and connected to
@@ -171,6 +170,7 @@ new Promise<string>((resolve, reject) => {
      * with a user object, wich will be set at `req.usr` in route handlers after
      * authentication.
      */
+    // TODO impliment fake auth on dev server (see https://medium.com/@pomodoro_cc/how-to-fake-any-authentication-strategy-with-passport-js-610e3ea00dd5)
     passport.use(
       new GithubStrategy(
         {
