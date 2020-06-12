@@ -21,6 +21,7 @@ import MenuIcon from '@material-ui/icons/Menu';
 import SettingsIcon from '@material-ui/icons/Settings';
 import HelpIcon from '@material-ui/icons/Help';
 import SettingsDialog from './SettingsDialog';
+import LoginDialog from './LoginDialog';
 
 /* This is not a good solution, but the alternative seems to be ejecting
 from create-react-app */
@@ -50,6 +51,7 @@ export type TopMenuBarProps = WithStyles<typeof styles>;
 export interface TopMenuBarState {
   drawerOpen: boolean;
   settingsOpen: boolean;
+  loginOpen: boolean;
 }
 
 class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
@@ -69,17 +71,24 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
     this.state = {
       drawerOpen: false,
       settingsOpen: false,
+      loginOpen: false,
     };
 
     this.createSetSettingsOpenHandler = this.createSetSettingsOpenHandler.bind(
       this
     );
     this.setSettingsOpen = this.setSettingsOpen.bind(this);
+    this.createSetLoginOpenHandler = this.createSetLoginOpenHandler.bind(this);
+    this.setLoginOpen = this.setLoginOpen.bind(this);
     this.toggleDrawer = this.toggleDrawer.bind(this);
   }
 
   setSettingsOpen(open: boolean) {
     this.setState({ settingsOpen: open });
+  }
+
+  setLoginOpen(open: boolean) {
+    this.setState({ loginOpen: open });
   }
 
   createSetSettingsOpenHandler(open: boolean) {
@@ -93,6 +102,20 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
       }
 
       this.setSettingsOpen(open);
+    };
+  }
+
+  createSetLoginOpenHandler(open: boolean) {
+    return (event: React.KeyboardEvent | React.MouseEvent) => {
+      if (
+        event.type === 'keydown' &&
+        ((event as React.KeyboardEvent).key === 'Tab' ||
+          (event as React.KeyboardEvent).key === 'Shift')
+      ) {
+        return;
+      }
+
+      this.setLoginOpen(open);
     };
   }
 
@@ -115,6 +138,7 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
     const {
       state,
       setSettingsOpen,
+      setLoginOpen,
       toggleDrawer,
       createSetSettingsOpenHandler,
     } = this;
@@ -163,12 +187,7 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
             </Typography>
             <Button
               color="inherit"
-              onClick={() => {
-                window.open(
-                  'https://point-spire.herokuapp.com/auth/github',
-                  '_self'
-                );
-              }}
+              onClick={this.createSetLoginOpenHandler(true)}
             >
               Login
             </Button>
@@ -182,6 +201,7 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
           {list}
         </Drawer>
         <SettingsDialog open={state.settingsOpen} setOpen={setSettingsOpen} />
+        <LoginDialog open={state.loginOpen} setOpen={setLoginOpen} />
       </div>
     );
   }
