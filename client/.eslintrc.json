@@ -50,6 +50,10 @@
         based on some object somewhere else in the code like createStyles
         return types. */
         "@typescript-eslint/explicit-function-return-type": "off",
+        "react/jsx-wrap-multilines": [
+          "error",
+          { "declaration": false, "assignment": false }
+        ],
         "import/extensions": "off",
         /* Disabled because it conflicts with TypeScript */
         "new-cap": "off",
