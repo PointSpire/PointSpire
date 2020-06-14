@@ -21,6 +21,7 @@ import MenuIcon from '@material-ui/icons/Menu';
 import SettingsIcon from '@material-ui/icons/Settings';
 import HelpIcon from '@material-ui/icons/Help';
 import SettingsDialog from './SettingsDialog';
+import { AlertFunction } from '../App';
 
 /* This is not a good solution, but the alternative seems to be ejecting
 from create-react-app */
@@ -45,7 +46,9 @@ function styles(theme: Theme) {
   });
 }
 
-export type TopMenuBarProps = WithStyles<typeof styles>;
+export interface TopMenuBarProps extends WithStyles<typeof styles> {
+  alert: AlertFunction;
+}
 
 export interface TopMenuBarState {
   drawerOpen: boolean;
@@ -118,7 +121,7 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
       toggleDrawer,
       createSetSettingsOpenHandler,
     } = this;
-    const { classes } = this.props;
+    const { classes, alert } = this.props;
     const list = (
       <div
         className={classes.list}
@@ -171,7 +174,11 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
         >
           {list}
         </Drawer>
-        <SettingsDialog open={state.settingsOpen} setOpen={setSettingsOpen} />
+        <SettingsDialog
+          open={state.settingsOpen}
+          setOpen={setSettingsOpen}
+          alert={alert}
+        />
       </div>
     );
   }

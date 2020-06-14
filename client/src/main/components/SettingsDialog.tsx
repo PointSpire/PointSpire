@@ -11,14 +11,17 @@ import {
   Checkbox,
   FormControlLabel,
 } from '@material-ui/core';
+import { AlertFunction } from '../App';
 
 type SettingsDialogProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
+  alert: AlertFunction;
 };
 
 type SettingsDialogState = {
   settingYellowGreen: boolean;
+  snackbarOpen: boolean;
 };
 
 export default class SettingsDialog extends React.Component<
@@ -31,6 +34,7 @@ export default class SettingsDialog extends React.Component<
     super(props);
     this.state = {
       settingYellowGreen: true,
+      snackbarOpen: false,
     };
     this.handleClose = this.handleClose.bind(this);
     this.handleSave = this.handleSave.bind(this);
@@ -53,9 +57,12 @@ export default class SettingsDialog extends React.Component<
   }
 
   handleSave(): void {
-    const { setOpen } = this.props;
+    const { setOpen, alert } = this.props;
     setOpen(false);
     // Save their settings
+
+    // Show the success snackbar 😀
+    alert('success', 'Successfully saved settings!');
   }
 
   handleCheckboxChange(event: React.ChangeEvent<HTMLInputElement>): void {
@@ -98,7 +105,7 @@ export default class SettingsDialog extends React.Component<
             </Typography>
             <FormGroup row={false}>
               <FormControlLabel
-                label="Make tasks yellow and green"
+                label="Yellow and Green Tasks"
                 control={
                   <Checkbox
                     checked={settingYellowGreen}
@@ -108,6 +115,13 @@ export default class SettingsDialog extends React.Component<
                   />
                 }
               />
+              <Typography variant="caption" display="block">
+                Enabling this option makes it so tasks that have a pre-requisite
+                are yellow and tasks that can be worked on are green. If this
+                option is disabled, then tasks that have a pre-requisite are
+                grayed out, and tasks that can be worked on have a normal white
+                background.
+              </Typography>
             </FormGroup>
           </DialogContentText>
         </DialogContent>
