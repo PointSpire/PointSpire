@@ -1,5 +1,5 @@
 import mongoose, { Model, Schema, Document } from 'mongoose';
-import { ProjectDoc, ProjectObjects } from './project';
+import { ProjectObjects } from './project';
 import { TaskObjects } from './task';
 
 const ObjectId = mongoose.Types.ObjectId;
@@ -46,7 +46,7 @@ export interface UserDoc extends Document {
   lastName: string;
   githubId: string;
   dateCreated: Date;
-  projects: Array<typeof ObjectId> | Array<ProjectDoc>;
+  projects: Array<typeof ObjectId>;
   settings: {
     yellowGreenTasks: boolean;
   };

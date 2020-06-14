@@ -150,17 +150,6 @@ const definition = {
           },
         },
       },
-      userObjectProjects: {
-        type: 'object',
-        properties: {
-          projects: {
-            type: 'array',
-            items: {
-              $ref: '#/components/schemas/projectObjectWithTasks',
-            },
-          },
-        },
-      },
       userObjectWithIds: {
         allOf: [
           {
@@ -168,16 +157,6 @@ const definition = {
           },
           {
             $ref: '#/components/schemas/userObjectProjectIds',
-          },
-        ],
-      },
-      userObjectWithProjects: {
-        allOf: [
-          {
-            $ref: '#/components/schemas/userObjectBasis',
-          },
-          {
-            $ref: '#/components/schemas/userObjectProjects',
           },
         ],
       },
@@ -224,17 +203,6 @@ const definition = {
           },
         },
       },
-      projectObjectTasks: {
-        type: 'object',
-        properties: {
-          subtasks: {
-            type: 'array',
-            items: {
-              $ref: '#/components/schemas/taskObjectWithTasks',
-            },
-          },
-        },
-      },
       projectObjectWithIds: {
         allOf: [
           {
@@ -242,16 +210,6 @@ const definition = {
           },
           {
             $ref: '#/components/schemas/projectObjectTaskIds',
-          },
-        ],
-      },
-      projectObjectWithTasks: {
-        allOf: [
-          {
-            $ref: '#/components/schemas/projectObjectBasis',
-          },
-          {
-            $ref: '#/components/schemas/projectObjectTasks',
           },
         ],
       },
@@ -298,17 +256,6 @@ const definition = {
           },
         },
       },
-      taskObjectTasks: {
-        type: 'object',
-        properties: {
-          subtasks: {
-            type: 'array',
-            items: {
-              $ref: '#/components/schemas/taskObjectWithTasks',
-            },
-          },
-        },
-      },
       taskObjectWithIds: {
         allOf: [
           {
@@ -316,16 +263,6 @@ const definition = {
           },
           {
             $ref: '#/components/schemas/taskObjectTaskIds',
-          },
-        ],
-      },
-      taskObjectWithTasks: {
-        allOf: [
-          {
-            $ref: '#/components/schemas/taskObjectBasis',
-          },
-          {
-            $ref: '#/components/schemas/taskObjectTasks',
           },
         ],
       },

@@ -26,7 +26,7 @@ export interface TaskDoc extends Document {
   title: string;
   note: string;
   dateCreated: Date;
-  subtasks: Array<typeof ObjectId> | Array<TaskDoc>;
+  subtasks: Array<typeof ObjectId>;
 }
 
 /**
@@ -36,26 +36,6 @@ export interface TaskDoc extends Document {
 export type TaskObjects = {
   [id: string]: TaskDoc;
 };
-
-/**
- * Tests if an array is a TaskDoc array or an ObjectId array. This is used
- * for the situation where `populate` is used in a mongoose query, likely for
- * the `Project` class.
- *
- * @param {Array<typeof ObjectId> | Array<TaskDoc>} array the array to test
- * if it is an ObjectId array or TaskDoc array.
- * @returns {boolean} true if the array is a TaskDoc array and false if it is
- * not or the array is empty
- */
-export function isTaskDocArr(
-  array: Array<typeof ObjectId> | Array<TaskDoc>
-): array is Array<TaskDoc> {
-  if (array.length === 0) {
-    return false;
-  } else {
-    return (array as TaskDoc[])[0].title !== undefined;
-  }
-}
 
 /**
  * A `Task` class that represents a task in the MongoDB. This extends

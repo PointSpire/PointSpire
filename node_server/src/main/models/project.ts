@@ -36,26 +36,6 @@ export interface ProjectDoc extends TaskDoc {
 }
 
 /**
- * Tests if an array is a ProjectDoc array or an ObjectId array. This is used
- * for the situation where `populate` is used in a mongoose query, likely for
- * the `User` class.
- *
- * @param {Array<typeof ObjectId> | Array<ProjectDoc>} array the array to test
- * if it is an ObjectId array or ProjectDoc array.
- * @returns {boolean} true if the array is a ProjectDoc array, and false if it
- * is not or the array is empty
- */
-export function isProjectDocArr(
-  array: Array<typeof ObjectId> | Array<ProjectDoc>
-): array is Array<ProjectDoc> {
-  if (array && array.length !== 0) {
-    return (array as ProjectDoc[])[0].title !== undefined;
-  } else {
-    return false;
-  }
-}
-
-/**
  * A `Project` class that represents a project in the MongoDB. This extends
  * the mongoose `Model` type. This is essentially a top-level `Task`.
  *
