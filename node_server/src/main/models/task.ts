@@ -8,7 +8,7 @@ const ObjectId = mongoose.Types.ObjectId;
 const taskSchema = new Schema({
   title: String,
   note: String,
-  date: { type: Date, default: Date.now },
+  dateCreated: { type: Date, default: Date.now },
   subtasks: [
     {
       type: ObjectId,
@@ -25,7 +25,7 @@ const taskSchema = new Schema({
 export interface TaskDoc extends Document {
   title: string;
   note: string;
-  date: Date;
+  dateCreated: Date;
   subtasks: Array<typeof ObjectId> | Array<TaskDoc>;
 }
 

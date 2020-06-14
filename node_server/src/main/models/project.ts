@@ -12,7 +12,7 @@ const projectSchema = new Schema({
     required: true,
   },
   note: String,
-  date: { type: Date, default: Date.now },
+  dateCreated: { type: Date, default: Date.now },
   subtasks: [{ type: ObjectId, ref: 'Task', default: [] }],
 });
 
