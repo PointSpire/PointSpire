@@ -1,5 +1,6 @@
 import mongoose, { Model, Schema, Document } from 'mongoose';
-import { ProjectDoc } from './project';
+import { ProjectDoc, ProjectObjects } from './project';
+import { TaskObjects } from './task';
 
 const ObjectId = mongoose.Types.ObjectId;
 
@@ -29,6 +30,12 @@ const userSchema = new Schema({
     },
   },
 });
+
+export type AllUserData = {
+  user: UserDoc;
+  projects: ProjectObjects;
+  tasks: TaskObjects;
+};
 
 /**
  * The type representing a User document in the database.
