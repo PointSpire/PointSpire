@@ -5,13 +5,20 @@ import {
   createProjectModel,
   ProjectDoc,
   isProjectDocArr,
+  ProjectObjects,
 } from '../models/project';
-import { UserModel, createUserModel, UserDoc } from '../models/user';
+import {
+  UserModel,
+  createUserModel,
+  UserDoc,
+  AllUserData,
+} from '../models/user';
 import {
   TaskModel,
   createTaskModel,
   isTaskDocArr,
   TaskDoc,
+  TaskObjects,
 } from '../models/task';
 
 const router = express.Router();
@@ -154,6 +161,72 @@ function createUsersRouter(db: typeof mongoose): Router {
   }
 
   /**
+   * Reterns all of the user data for a user.
+   *
+   * @param {string} userId the id of the user to query
+   * @returns {Promise<AllUserData>} the completed AllUserData object
+   */
+  async function graphQueryUser(userId: string): Promise<AllUserData> {
+    try {
+      const userDoc = await User.findOne({ _id: userId }).exec();
+      if (!userDoc) {
+        throw new Error('User not found');
+      }
+
+      // Declare the empty projects and tasks arrays
+      const projects: ProjectObjects = {};
+      const tasks: TaskObjects = {};
+
+      // Get all of the projects for the user
+      if (userDoc.projects) {
+        /*
+        projects = await Project.find({
+          _id: {
+            $in: userDoc.projects,
+          },
+        });
+        */
+
+        const projectsArr: Array<ProjectDoc> = await Project.aggregate()
+          .match({
+            _id: {
+              $in: userDoc.projects,
+            },
+          })
+          .graphLookup({
+            from: 'tasks',
+            startWith: '$subtasks',
+            connectFromField: 'subtasks',
+            connectToField: '_id',
+            as: 'subtask_hierarchy',
+          })
+          .exec();
+
+        // Pull all of the subtasks out of each project into tasks object
+        projectsArr.forEach(project => {
+          const subtaskHierarchy = project.subtask_hierarchy;
+          if (subtaskHierarchy) {
+            subtaskHierarchy.forEach(task => {
+              tasks[task._id] = task;
+            });
+            delete project.subtask_hierarchy;
+          }
+          projects[project._id] = project;
+        });
+      }
+
+      // Return the completed AllUserData object
+      return {
+        user: userDoc,
+        projects: projects,
+        tasks: tasks,
+      };
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  /**
    * Generates the populated UserDoc with all of the projects, subtasks, and
    * any levels deep subtasks of that UserDoc.
    *
@@ -194,22 +267,26 @@ function createUsersRouter(db: typeof mongoose): Router {
   /**
    * @swagger
    * /users/{userId}:
-   *   get:
-   *     summary: Gets the user at the specified ID
-   *     tags:
-   *       - User
-   *     responses:
-   *       '200':
-   *         description: Successfully returned the user document with the specified userId
-   *         content:
-   *           'application/json':
-   *             schema:
-   *               $ref: '#/components/schemas/userObjectWithProjects'
-   *   parameters:
-   *   - $ref: '#/components/parameters/userIdParam'
+   *  get:
+   *    summary: Gets the user at the specified ID
+   *    tags:
+   *    - User
+   *    responses:
+   *      '200':
+   *        description: Successfully returned the user data
+   *        content:
+   *          'application/json':
+   *            schema:
+   *              $ref: '#/components/schemas/allUserDataObject'
+   *  parameters:
+   *  - $ref: '#/components/parameters/userIdParam'
    */
   router.get('/:userId', async (req, res) => {
     try {
+      // DELETE ME
+      const userData = await graphQueryUser(req.params.userId);
+      console.log(JSON.stringify(userData, null, 2));
+
       const userDoc = await getPopulatedUserTreeDoc(req.params.userId);
       res.json(userDoc);
     } catch (err) {
