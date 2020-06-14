@@ -17,10 +17,23 @@ const projectSchema = new Schema({
 });
 
 /**
+ * Used to hold a map of project IDs paired with their ProjectDoc. This
+ * is used when building an AllUserData object.
+ */
+export type ProjectObjects = {
+  [id: string]: ProjectDoc;
+};
+
+/**
  * The type representing a Project document in the database. This extends the
  * `TaskDoc` type.
  */
-export type ProjectDoc = TaskDoc;
+export interface ProjectDoc extends TaskDoc {
+  /**
+   * To be used when doing a graphLookup on a ProjectDoc.
+   */
+  subtask_hierarchy?: Array<TaskDoc>;
+}
 
 /**
  * Tests if an array is a ProjectDoc array or an ObjectId array. This is used
