@@ -30,6 +30,14 @@ export interface TaskDoc extends Document {
 }
 
 /**
+ * Used to hold a map of task IDs paired with their TaskDoc. This
+ * is used when building an AllUserData object.
+ */
+export type TaskObjects = {
+  [id: string]: TaskDoc;
+};
+
+/**
  * Tests if an array is a TaskDoc array or an ObjectId array. This is used
  * for the situation where `populate` is used in a mongoose query, likely for
  * the `Project` class.
