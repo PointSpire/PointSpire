@@ -264,7 +264,7 @@ function createUsersRouter(db: typeof mongoose): Router {
    * /users/{userId}:
    *   patch:
    *     summary: Modifies the user at the specified ID
-   *     description: Modifies the user at the specified ID with the details provided in the body of the request
+   *     description: Modifies the user at the specified ID with the details provided in the body of the request. When modifying settings make sure to use the entire settings object with past settings, otherwise settings that are left out will be removed from the user.
    *     tags:
    *       - User
    *     requestBody:
@@ -273,16 +273,7 @@ function createUsersRouter(db: typeof mongoose): Router {
    *       content:
    *         'application/json':
    *           schema:
-   *             type: 'object'
-   *             properties:
-   *               'userName':
-   *                 type: 'string'
-   *               'firstName':
-   *                 type: 'string'
-   *               'lastName':
-   *                 type: 'string'
-   *               'githubId':
-   *                 type: 'string'
+   *             $ref: '#/components/schemas/userObjectPatchBody'
    *     responses:
    *       200:
    *         description: The user was successfully overwritten with the provided data.

@@ -22,6 +22,12 @@ const userSchema = new Schema({
       ref: 'Project',
     },
   ],
+  settings: {
+    yellowGreenTasks: {
+      type: Boolean,
+      default: false,
+    },
+  },
 });
 
 /**
@@ -34,6 +40,9 @@ export interface UserDoc extends Document {
   githubId: string;
   dateCreated: Date;
   projects: Array<typeof ObjectId> | Array<ProjectDoc>;
+  settings: {
+    yellowGreenTasks: boolean;
+  };
 }
 
 /**

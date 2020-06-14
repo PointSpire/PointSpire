@@ -55,6 +55,34 @@ const definition = {
       },
     },
     schemas: {
+      userObjectPatchBody: {
+        type: 'object',
+        properties: {
+          userName: {
+            type: 'string',
+          },
+          firstName: {
+            type: 'string',
+          },
+          lastName: {
+            type: 'string',
+          },
+          githubId: {
+            type: 'string',
+          },
+          settings: {
+            $ref: '#/components/schemas/userObjectSettings',
+          },
+        },
+      },
+      userObjectSettings: {
+        type: 'object',
+        properties: {
+          yellowGreenTasks: {
+            type: 'boolean',
+          },
+        },
+      },
       userObjectBasis: {
         type: 'object',
         properties: {
@@ -69,6 +97,9 @@ const definition = {
           },
           githubId: {
             type: 'string',
+          },
+          settings: {
+            $ref: '#/components/schemas/userObjectSettings',
           },
           dateCreated: {
             description:
@@ -152,7 +183,7 @@ const definition = {
           note: {
             type: 'string',
           },
-          date: {
+          dateCreated: {
             type: 'object',
             description:
               'A Date object representing the date this project was created.',
@@ -226,7 +257,7 @@ const definition = {
           note: {
             type: 'string',
           },
-          date: {
+          dateCreated: {
             type: 'object',
             description:
               'A Date object representing the date this task was created.',
