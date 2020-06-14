@@ -83,6 +83,29 @@ const definition = {
           },
         },
       },
+      allUserDataObject: {
+        type: 'object',
+        properties: {
+          user: {
+            $ref: '#/components/schemas/userObjectWithIds',
+          },
+          projects: {
+            type: 'object',
+            description:
+              'The key is the ID for the project to make access faster',
+            additionalProperties: {
+              $ref: '#/components/schemas/projectObjectWithIds',
+            },
+          },
+          tasks: {
+            type: 'object',
+            description: 'The key is the ID for the task to make access faster',
+            additionalProperties: {
+              $ref: '#/components/schemas/taskObjectWithIds',
+            },
+          },
+        },
+      },
       userObjectBasis: {
         type: 'object',
         properties: {
