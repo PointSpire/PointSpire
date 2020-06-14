@@ -3,6 +3,7 @@ import './App.css';
 import MuiAlert from '@material-ui/lab/Alert';
 import { Snackbar } from '@material-ui/core';
 import TopMenuBar from './components/TopMenuBar';
+import { User } from './dbTypes';
 
 /**
  * Used to determine the severity of an alert for the snackbar of the app.
@@ -16,6 +17,14 @@ type AppState = {
 };
 
 type AppProps = unknown;
+
+async function getTestUser(): Promise<User> {
+  let url = 'http://localhost:8055';
+  url += '/api/users/5eda8ef7846e21ba6013cb19';
+  const res = await fetch(url);
+  const data = (await res.json()) as User;
+  return data;
+}
 
 /**
  * Represents the main application window.
@@ -31,6 +40,12 @@ class App extends React.Component<AppProps, AppState> {
 
     this.handleSnackBarClose = this.handleSnackBarClose.bind(this);
     this.alert = this.alert.bind(this);
+  }
+
+  async componentDidMount(): Promise<void> {
+    const testUser = await getTestUser();
+    // eslint-disable-next-line
+    console.log(testUser);
   }
 
   handleSnackBarClose(): void {
