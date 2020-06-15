@@ -11,18 +11,23 @@ import {
   Checkbox,
   FormControlLabel,
 } from '@material-ui/core';
-import { AlertFunction } from '../App';
+import {
+  AlertFunction,
+  UpdateSettingsFunction,
+  UpdateUserOnServerFunction,
+} from '../App';
+import { UserSettings } from '../dbTypes';
 
 type SettingsDialogProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
   alert: AlertFunction;
+  settings: UserSettings;
+  updateSettings: UpdateSettingsFunction;
+  sendUpdatedUserToServer: UpdateUserOnServerFunction;
 };
 
-type SettingsDialogState = {
-  settingYellowGreen: boolean;
-  snackbarOpen: boolean;
-};
+type SettingsDialogState = unknown;
 
 export default class SettingsDialog extends React.Component<
   SettingsDialogProps,
@@ -32,10 +37,6 @@ export default class SettingsDialog extends React.Component<
 
   constructor(props: SettingsDialogProps) {
     super(props);
-    this.state = {
-      settingYellowGreen: true,
-      snackbarOpen: false,
-    };
     this.handleClose = this.handleClose.bind(this);
     this.handleSave = this.handleSave.bind(this);
     this.handleCheckboxChange = this.handleCheckboxChange.bind(this);
@@ -57,33 +58,40 @@ export default class SettingsDialog extends React.Component<
   }
 
   handleSave(): void {
-    const { setOpen, alert } = this.props;
+    const { setOpen, alert, sendUpdatedUserToServer } = this.props;
     setOpen(false);
     // Save their settings
-
-    // Show the success snackbar 😀
-    alert('success', 'Successfully saved settings!');
+    sendUpdatedUserToServer()
+      .then(success => {
+        if (success) {
+          // Show the success snackbar 😀
+          alert('success', 'Successfully saved settings!');
+        } else {
+          alert('error', 'Failed to save settings on the server');
+        }
+      })
+      .catch(() => {
+        alert('error', 'There was an error while saving the settings');
+      });
   }
 
   handleCheckboxChange(event: React.ChangeEvent<HTMLInputElement>): void {
     const { name, checked } = event.target;
-    this.setState(state => {
-      return {
-        ...state,
-        [name]: checked,
-      };
-    });
+    const { settings, updateSettings } = this.props;
+    if (settings && updateSettings) {
+      settings[name] = checked;
+      updateSettings(settings);
+    }
   }
 
   render(): JSX.Element {
-    const { open } = this.props;
+    const { open, settings } = this.props;
     const {
       handleClose,
       handleSave,
       handleCheckboxChange,
       descriptionElementRef,
     } = this;
-    const { settingYellowGreen } = this.state;
 
     return (
       <Dialog
@@ -100,7 +108,7 @@ export default class SettingsDialog extends React.Component<
             ref={descriptionElementRef}
             tabIndex={-1}
           >
-            <Typography variant="h5" component="h2">
+            <Typography variant="h5" component="h3">
               Display
             </Typography>
             <FormGroup row={false}>
@@ -108,9 +116,9 @@ export default class SettingsDialog extends React.Component<
                 label="Yellow and Green Tasks"
                 control={
                   <Checkbox
-                    checked={settingYellowGreen}
+                    checked={settings.yellowGreenTasks}
                     color="primary"
-                    name="settingYellowGreen"
+                    name="yellowGreenTasks"
                     onChange={handleCheckboxChange}
                   />
                 }
