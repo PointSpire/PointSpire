@@ -78,7 +78,7 @@ async function getTestUserData(): Promise<AllUserData> {
  * CURRENTLY A PLACEHOLDER
  */
 async function getUserData(): Promise<AllUserData> {
-  const githubCodeRegEx = /?code=(.*)/;
+  const githubCodeRegEx = /\?code=(.*)/;
   const githubCodeMatch = githubCodeRegEx.exec(window.location.href);
   let githubCode: string;
   if (githubCodeMatch) {
