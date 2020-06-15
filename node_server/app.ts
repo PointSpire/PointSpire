@@ -5,12 +5,6 @@ import dotenv from 'dotenv';
 import logger from 'morgan';
 import mongoose from 'mongoose';
 import http from 'http';
-import passport from 'passport';
-import { Strategy as GithubStrategy } from 'passport-github';
-import {
-  createUserObjectGithub,
-  saveOrFindNewGithubUser,
-} from './src/lib/userLib';
 import cors from 'cors';
 
 /**
@@ -46,7 +40,14 @@ function setupLogger(): void {
 }
 
 setupLogger();
-app.use(cors());
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      callback(null, true);
+    },
+    preflightContinue: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -57,7 +58,7 @@ let sess = {
   cookie: {
     secure: false,
   },
-  resave: false,
+  resave: true,
   saveUninitialized: true,
 };
 
@@ -68,27 +69,6 @@ if (app.get('env') === 'production') {
 }
 
 app.use(session(sess));
-
-/**
- * Configure Passport authenticated session persistence
- *
- * In order to restore authentication state across HTTP requests, Passport needs
- * to serialize users into and deserialize users out of the session.
- */
-passport.serializeUser(function (user, cb) {
-  cb(null, user);
-});
-
-passport.deserializeUser(function (obj, cb) {
-  cb(null, obj);
-});
-
-/**
- * Initialize Passport and restore authentication state, if any, from the
- * session.
- */
-app.use(passport.initialize());
-app.use(passport.session());
 
 /**
  * Represents the connection options for the mongoose MongoDB connection.
@@ -109,7 +89,7 @@ const mongooseConnectionOptions = {
 function setupRoutes(db: typeof mongoose): void {
   app.use('/', indexRouter);
   app.use('/api', apiRouter(db));
-  app.use('/auth', authRouter());
+  app.use('/auth', authRouter(db));
 }
 
 /**
@@ -177,29 +157,6 @@ new Promise<string>((resolve, reject) => {
   .then(db => {
     console.log('Connection successfully made to the database');
     setupRoutes(db);
-
-    /**
-     * Configure the Github strategy for use by Passport
-     *
-     * OAuth 2.0-based strategies require a `verify` function wich receives the
-     * credential (`accessToken`) for accessing the Github API on the user's
-     * behalf, along with the user's profile. The function must invoke `cb`
-     * with a user object, wich will be set at `req.usr` in route handlers after
-     * authentication.
-     */
-    // TODO impliment fake auth on dev server (see https://medium.com/@pomodoro_cc/how-to-fake-any-authentication-strategy-with-passport-js-610e3ea00dd5)
-    passport.use(
-      new GithubStrategy(
-        {
-          clientID: process.env.GITHUB_CLIENT_ID || '',
-          clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
-        },
-        function (accessToken, refreshToken, profile, callback) {
-          const newUser = createUserObjectGithub(db, profile);
-          saveOrFindNewGithubUser(db, newUser, callback);
-        }
-      )
-    );
 
     startServer();
   })
