@@ -1,7 +1,6 @@
-import React, { createRef } from 'react';
+import React from 'react';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import {
   Typography,
@@ -36,23 +35,11 @@ export default class SettingsDialog extends React.Component<
   SettingsDialogProps,
   SettingsDialogState
 > {
-  descriptionElementRef = createRef<HTMLElement>();
-
   constructor(props: SettingsDialogProps) {
     super(props);
     this.handleClose = this.handleClose.bind(this);
     this.handleSave = this.handleSave.bind(this);
     this.handleCheckboxChange = this.handleCheckboxChange.bind(this);
-  }
-
-  componentDidMount(): void {
-    const { open } = this.props;
-    if (open) {
-      const { current: descriptionElement } = this.descriptionElementRef;
-      if (descriptionElement !== null) {
-        descriptionElement.focus();
-      }
-    }
   }
 
   /**
@@ -102,12 +89,7 @@ export default class SettingsDialog extends React.Component<
 
   render(): JSX.Element {
     const { open, settings } = this.props;
-    const {
-      handleClose,
-      handleSave,
-      handleCheckboxChange,
-      descriptionElementRef,
-    } = this;
+    const { handleClose, handleSave, handleCheckboxChange } = this;
 
     return (
       <Dialog
@@ -115,39 +97,32 @@ export default class SettingsDialog extends React.Component<
         onClose={handleClose}
         scroll="paper"
         aria-labelledby="settings-dialog-title"
-        aria-describedby="settings-dialog-description"
       >
         <DialogTitle id="settings-dialog-title">Settings</DialogTitle>
         <DialogContent dividers>
-          <DialogContentText
-            id="settings-dialog-description"
-            ref={descriptionElementRef}
-            tabIndex={-1}
-          >
-            <Typography variant="h5" component="h3">
-              Display
+          <Typography variant="h5" component="span">
+            Display
+          </Typography>
+          <FormGroup row={false}>
+            <FormControlLabel
+              label="Yellow and Green Tasks"
+              control={
+                <Checkbox
+                  checked={settings.yellowGreenTasks}
+                  color="primary"
+                  name="yellowGreenTasks"
+                  onChange={handleCheckboxChange}
+                />
+              }
+            />
+            <Typography variant="caption" display="block" component="span">
+              Enabling this option makes it so tasks that have a pre-requisite
+              are yellow and tasks that can be worked on are green. If this
+              option is disabled, then tasks that have a pre-requisite are
+              grayed out, and tasks that can be worked on have a normal white
+              background.
             </Typography>
-            <FormGroup row={false}>
-              <FormControlLabel
-                label="Yellow and Green Tasks"
-                control={
-                  <Checkbox
-                    checked={settings.yellowGreenTasks}
-                    color="primary"
-                    name="yellowGreenTasks"
-                    onChange={handleCheckboxChange}
-                  />
-                }
-              />
-              <Typography variant="caption" display="block">
-                Enabling this option makes it so tasks that have a pre-requisite
-                are yellow and tasks that can be worked on are green. If this
-                option is disabled, then tasks that have a pre-requisite are
-                grayed out, and tasks that can be worked on have a normal white
-                background.
-              </Typography>
-            </FormGroup>
-          </DialogContentText>
+          </FormGroup>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleSave} color="primary">
