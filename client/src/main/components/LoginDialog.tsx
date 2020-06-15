@@ -5,24 +5,18 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import GitHubIcon from '@material-ui/icons/GitHub';
 
-type SettingsDialogProps = {
+type LoginDialogProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
+  githubClientId: string;
 };
 
-export default function SettingsDialog(
-  props: SettingsDialogProps
-): JSX.Element {
-  const { setOpen, open } = props;
+export default function LoginDialog(props: LoginDialogProps): JSX.Element {
+  const { setOpen, open, githubClientId } = props;
 
   function handleClose(): void {
     setOpen(false);
   }
-
-  // function handleSave(): void {
-  //   setOpen(false);
-  //   // Save their settings
-  // }
 
   const descriptionElementRef = React.useRef<HTMLElement>(null);
   React.useEffect(() => {
@@ -49,7 +43,7 @@ export default function SettingsDialog(
           startIcon={<GitHubIcon />}
           onClick={() => {
             window.open(
-              'https://point-spire.herokuapp.com/auth/github',
+              `https://github.com/login/oauth/authorize?client_id=${githubClientId}&scope=user&redirect_uri=http://${window.location.host}`,
               '_self'
             );
           }}

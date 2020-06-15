@@ -2,7 +2,6 @@ import React from 'react';
 import './App.css';
 import MuiAlert from '@material-ui/lab/Alert';
 import { Snackbar } from '@material-ui/core';
-import dotenv from 'dotenv';
 import TopMenuBar from './components/TopMenuBar';
 import {
   User,
@@ -11,8 +10,6 @@ import {
   TaskObjects,
   UserSettings,
 } from './dbTypes';
-
-dotenv.config();
 
 /**
  * Used to determine the severity of an alert for the snackbar of the app.
@@ -57,9 +54,11 @@ type AppProps = unknown;
  * The base url for the server.
  */
 const baseServerUrl =
-  process.env.ENV === 'LOCAL_DEV'
+  process.env.REACT_APP_ENV === 'LOCAL_DEV'
     ? 'http://localhost:8055'
     : 'https://point-spire.herokuapp.com';
+
+const githubClientId = 'f6a5702090e186626681';
 
 /**
  * Gets data for a test user. This is setup just for development purposes
@@ -80,14 +79,34 @@ async function getTestUserData(): Promise<AllUserData> {
 async function getUserData(): Promise<AllUserData> {
   const githubCodeRegEx = /\?code=(.*)/;
   const githubCodeMatch = githubCodeRegEx.exec(window.location.href);
-  let githubCode: string;
+  let githubCode = '';
   if (githubCodeMatch) {
     githubCode = githubCodeMatch && githubCodeMatch[1];
-    // eslint-disable-next-line
-    console.log(githubCode);
   }
-  const url = `${baseServerUrl}/api/users/5eda8ef7846e21ba6013cb19`;
-  const res = await fetch(url);
+  if (githubCode !== '') {
+    const url = `${baseServerUrl}/auth/github`;
+    const userDocRes = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        code: githubCode,
+      }),
+      credentials: 'include',
+    });
+    const user: User = (await userDocRes.json()) as User;
+    // eslint-disable-next-line no-underscore-dangle
+    const getUserUrl = `${baseServerUrl}/api/users/${user._id}`;
+    const res = await fetch(getUserUrl);
+    const data = (await res.json()) as AllUserData;
+    return data;
+  }
+  const url = `${baseServerUrl}/api/users`;
+  const res = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+  });
   const data = (await res.json()) as AllUserData;
   return data;
 }
@@ -124,7 +143,7 @@ class App extends React.Component<AppProps, AppState> {
   async componentDidMount(): Promise<void> {
     // Get the data for the user
     let userData: AllUserData;
-    if (process.env.ENV === 'LOCAL_DEV') {
+    if (process.env.REACT_APP_ENV === 'LOCAL_DE') {
       userData = await getTestUserData();
     } else {
       userData = await getUserData();
@@ -231,6 +250,8 @@ class App extends React.Component<AppProps, AppState> {
     return (
       <div className="App">
         <TopMenuBar
+          githubClientId={githubClientId}
+          baseServerUrl={baseServerUrl}
           sendUpdatedUserToServer={sendUpdatedUserToServer}
           alert={alert}
           userSettings={user ? user.settings : undefined}

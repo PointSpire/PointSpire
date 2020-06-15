@@ -57,6 +57,8 @@ export interface TopMenuBarProps extends WithStyles<typeof styles> {
   userSettings?: UserSettings;
   updateSettings?: UpdateSettingsFunction;
   sendUpdatedUserToServer: UpdateUserOnServerFunction;
+  baseServerUrl: string;
+  githubClientId: string;
 }
 
 export interface TopMenuBarState {
@@ -195,6 +197,7 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
       userSettings,
       updateSettings,
       sendUpdatedUserToServer,
+      githubClientId,
     } = this.props;
 
     // Set up the settingsDialog based on existence of user info
@@ -274,7 +277,11 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
         >
           {menuList}
         </Drawer>
-        <LoginDialog open={state.loginOpen} setOpen={setLoginOpen} />
+        <LoginDialog
+          githubClientId={githubClientId}
+          open={state.loginOpen}
+          setOpen={setLoginOpen}
+        />
         {settingsDialog}
       </div>
     );
