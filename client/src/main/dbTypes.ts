@@ -1,3 +1,11 @@
+/**
+ * This file is meant to hold the different types associated with the database
+ * for PointSpire.
+ */
+
+/**
+ * The basic type for a document from MongoDB.
+ */
 type Document = {
   _id: string;
   __v: number;
@@ -10,7 +18,7 @@ export type UserSettings = {
 
   /**
    * This is defined so that extra settings can be added onto the settings
-   * object
+   * object.
    */
   [settingName: string]: boolean;
 };
