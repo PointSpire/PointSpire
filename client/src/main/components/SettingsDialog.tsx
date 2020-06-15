@@ -29,6 +29,9 @@ type SettingsDialogProps = {
 
 type SettingsDialogState = unknown;
 
+/**
+ * Represents the settings dialog for a user.
+ */
 export default class SettingsDialog extends React.Component<
   SettingsDialogProps,
   SettingsDialogState
@@ -52,11 +55,17 @@ export default class SettingsDialog extends React.Component<
     }
   }
 
+  /**
+   * Handles closing of the SettingsDialog.
+   */
   handleClose(): void {
     const { setOpen } = this.props;
     setOpen(false);
   }
 
+  /**
+   * Handles saving of the user settings.
+   */
   handleSave(): void {
     const { setOpen, alert, sendUpdatedUserToServer } = this.props;
     setOpen(false);
@@ -75,6 +84,13 @@ export default class SettingsDialog extends React.Component<
       });
   }
 
+  /**
+   * Handles changing of a checkbox by making the toggling the associated
+   * setting for the user.
+   *
+   * @param {React.ChangeEvent<HTMLInputElement>} event the event passed in by
+   * the element this handler is attached to
+   */
   handleCheckboxChange(event: React.ChangeEvent<HTMLInputElement>): void {
     const { name, checked } = event.target;
     const { settings, updateSettings } = this.props;
