@@ -17,18 +17,49 @@ import {
 type SnackBarSeverity = 'error' | 'warning' | 'info' | 'success';
 
 type AppState = {
+  /**
+   * Determines if the toast window at the bottom is open.
+   */
   snackBarOpen: boolean;
+
+  /**
+   * The current severity that was set for the toast window at the bottom.
+   */
   snackBarSeverity: SnackBarSeverity;
+
+  /**
+   * The text for the toast window at the bottom.
+   */
   snackBarText: string;
+
+  /**
+   * The primary user object in memory for the client.
+   */
   user?: User;
+
+  /**
+   * All of the projects associated with the user.
+   */
   projects?: ProjectObjects;
+
+  /**
+   * All of the tasks associated with the user.
+   */
   tasks?: TaskObjects;
 };
 
 type AppProps = unknown;
 
+/**
+ * The base url for the server. This can be changed later to be the production
+ * url or be conditionally changed.
+ */
 const baseServerUrl = 'http://localhost:8055';
 
+/**
+ * Gets data for a test user. This is setup just for development purposes
+ * so the client always gets a user. Authentication can be used later.
+ */
 async function getTestUserData(): Promise<AllUserData> {
   const url = `${baseServerUrl}/api/users/5eda8ef7846e21ba6013cb19`;
   const res = await fetch(url);
@@ -62,7 +93,11 @@ class App extends React.Component<AppProps, AppState> {
     );
   }
 
+  /**
+   * Runs after the component is mounted. This is the best place for API calls.
+   */
   async componentDidMount(): Promise<void> {
+    // Get the data for the user
     const userData = await getTestUserData();
     this.setState({
       user: userData.user,
@@ -89,7 +124,8 @@ class App extends React.Component<AppProps, AppState> {
 
   /**
    * Sends the current `user` stored in the app's state to the server as a
-   * patch request.
+   * patch request. This can be passed down to any component that modifies
+   * some part of the `user` object in the app's state.
    *
    * @returns {boolean} true if successful and false if not
    */
@@ -109,6 +145,9 @@ class App extends React.Component<AppProps, AppState> {
     return false;
   }
 
+  /**
+   * Closes the dialog / toast at the bottom of the screen.
+   */
   handleSnackBarClose(): void {
     this.setState({
       snackBarOpen: false,
@@ -118,7 +157,8 @@ class App extends React.Component<AppProps, AppState> {
   /**
    * Updates the settings for the user on the client side. This does not send
    * the updated settings to the server. For that, use
-   * `sendUpdatedUserToServer`.
+   * `sendUpdatedUserToServer`. This can be passed down to components that
+   * modify settings for the user.
    *
    * @param {UserSettings} updatedSettings the updated settings object to save
    * to the user state

@@ -28,8 +28,8 @@ import {
 } from '../App';
 import { UserSettings } from '../dbTypes';
 
-/* This is not a good solution, but the alternative seems to be ejecting
-from create-react-app */
+/* This eslint comment is not a good solution, but the alternative seems to be 
+ejecting from create-react-app */
 // eslint-disable-next-line
 function styles(theme: Theme) {
   return createStyles({
@@ -59,12 +59,26 @@ export interface TopMenuBarProps extends WithStyles<typeof styles> {
 }
 
 export interface TopMenuBarState {
+  /**
+   * Determines if the left drawer is open for the menu.
+   */
   drawerOpen: boolean;
+
+  /**
+   * Determines if the SettingsDialog is open.
+   */
   settingsOpen: boolean;
 }
 
+/**
+ * Represents the component for the top menu and title bar, ass well as the
+ * drawer that can pop out from the left hand side.
+ */
 class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
-  static optionsItems = {
+  /**
+   * The items for the drawer that pops out of the left hand side.
+   */
+  static menuItems = {
     settings: {
       text: 'Settings',
       icon: <SettingsIcon />,
@@ -89,6 +103,12 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
     this.toggleDrawer = this.toggleDrawer.bind(this);
   }
 
+  /**
+   * Sets the `settingsOpen` state indicating if the SettingsDialog is open
+   * or not.
+   *
+   * @param {boolean} open true if it should be open and false if not
+   */
   setSettingsOpen(open: boolean) {
     const { userSettings, alert } = this.props;
     if (!userSettings) {
@@ -127,7 +147,7 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
   }
 
   render(): JSX.Element {
-    const { optionsItems } = TopMenuBar;
+    const { menuItems: optionsItems } = TopMenuBar;
     const {
       state,
       setSettingsOpen,
