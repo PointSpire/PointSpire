@@ -85,7 +85,7 @@ async function getUserData(): Promise<AllUserData> {
   const userName = Cookies.get();
   if (userName) {
     // eslint-disable-next-line
-    console.log(userName);
+    console.log(JSON.stringify(userName));
   }
   const url = `${baseServerUrl}/api/users/5eda8ef7846e21ba6013cb19`;
   const res = await fetch(url);
