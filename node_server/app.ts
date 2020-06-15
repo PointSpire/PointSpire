@@ -1,7 +1,8 @@
 import express from 'express';
+import session from 'express-session';
 import path from 'path';
 import dotenv from 'dotenv';
-import cookieParser = require('cookie-parser');
+import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 import mongoose from 'mongoose';
 import http from 'http';
@@ -49,6 +50,22 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// eslint-disable-next-line prefer-const
+let sess = {
+  secret: 'keyboard cat',
+  cookie: {
+    secure: false,
+  },
+};
+
+// serve secure cookie in production environment
+if (app.get('env') === 'production') {
+  app.set('trust proxy', 1);
+  sess.cookie.secure = true;
+}
+
+app.use(session({ secret: 'keyboard cat' }));
 
 /**
  * Configure Passport authenticated session persistence
