@@ -57,6 +57,8 @@ let sess = {
   cookie: {
     secure: false,
   },
+  resave: false,
+  saveUninitialized: true,
 };
 
 // serve secure cookie in production environment
@@ -65,7 +67,7 @@ if (app.get('env') === 'production') {
   sess.cookie.secure = true;
 }
 
-app.use(session({ secret: 'keyboard cat' }));
+app.use(session(sess));
 
 /**
  * Configure Passport authenticated session persistence
