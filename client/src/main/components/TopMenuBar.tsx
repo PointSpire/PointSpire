@@ -21,7 +21,12 @@ import MenuIcon from '@material-ui/icons/Menu';
 import SettingsIcon from '@material-ui/icons/Settings';
 import HelpIcon from '@material-ui/icons/Help';
 import SettingsDialog from './SettingsDialog';
-import { AlertFunction } from '../App';
+import {
+  AlertFunction,
+  UpdateSettingsFunction,
+  UpdateUserOnServerFunction,
+} from '../App';
+import { UserSettings } from '../dbTypes';
 
 /* This is not a good solution, but the alternative seems to be ejecting
 from create-react-app */
@@ -48,6 +53,9 @@ function styles(theme: Theme) {
 
 export interface TopMenuBarProps extends WithStyles<typeof styles> {
   alert: AlertFunction;
+  userSettings?: UserSettings;
+  updateSettings?: UpdateSettingsFunction;
+  sendUpdatedUserToServer: UpdateUserOnServerFunction;
 }
 
 export interface TopMenuBarState {
@@ -82,7 +90,12 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
   }
 
   setSettingsOpen(open: boolean) {
-    this.setState({ settingsOpen: open });
+    const { userSettings, alert } = this.props;
+    if (!userSettings) {
+      alert('error', 'You must login first to access settings');
+    } else {
+      this.setState({ settingsOpen: open });
+    }
   }
 
   createSetSettingsOpenHandler(open: boolean) {
@@ -121,8 +134,31 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
       toggleDrawer,
       createSetSettingsOpenHandler,
     } = this;
-    const { classes, alert } = this.props;
-    const list = (
+    const {
+      classes,
+      alert,
+      userSettings,
+      updateSettings,
+      sendUpdatedUserToServer,
+    } = this.props;
+
+    let settingsDialog: JSX.Element;
+    if (userSettings !== undefined && updateSettings !== undefined) {
+      settingsDialog = (
+        <SettingsDialog
+          sendUpdatedUserToServer={sendUpdatedUserToServer}
+          updateSettings={updateSettings}
+          open={state.settingsOpen}
+          setOpen={setSettingsOpen}
+          alert={alert}
+          settings={userSettings}
+        />
+      );
+    } else {
+      settingsDialog = <div />;
+    }
+
+    const menuList = (
       <div
         className={classes.list}
         role="presentation"
@@ -172,13 +208,9 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
           open={state.drawerOpen}
           onClose={toggleDrawer(false)}
         >
-          {list}
+          {menuList}
         </Drawer>
-        <SettingsDialog
-          open={state.settingsOpen}
-          setOpen={setSettingsOpen}
-          alert={alert}
-        />
+        {settingsDialog}
       </div>
     );
   }
