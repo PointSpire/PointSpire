@@ -118,6 +118,12 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
     }
   }
 
+  /**
+   * Creates a handler that can be used to change the `settingsOpen` state.
+   *
+   * @param {boolean} open true if this should set the SettingsDialog to open,
+   * and false if not
+   */
   createSetSettingsOpenHandler(open: boolean) {
     return (event: React.KeyboardEvent | React.MouseEvent) => {
       if (
@@ -132,6 +138,11 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
     };
   }
 
+  /**
+   * Handles opening of the menu drawer.
+   *
+   * @param {boolean} open true if it should be open and false if not
+   */
   toggleDrawer(open: boolean) {
     return (event: React.KeyboardEvent | React.MouseEvent) => {
       if (
@@ -162,6 +173,7 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
       sendUpdatedUserToServer,
     } = this.props;
 
+    // Set up the settingsDialog based on existence of user info
     let settingsDialog: JSX.Element;
     if (userSettings !== undefined && updateSettings !== undefined) {
       settingsDialog = (
@@ -178,6 +190,9 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
       settingsDialog = <div />;
     }
 
+    /**
+     * The list of items in the menu rendered in JSX.
+     */
     const menuList = (
       <div
         className={classes.list}
