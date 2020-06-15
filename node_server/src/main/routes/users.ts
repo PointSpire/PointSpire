@@ -204,6 +204,7 @@ function createUsersRouter(db: typeof mongoose): Router {
    * /users/{userId}:
    *  get:
    *    summary: Gets the user at the specified ID
+   *    description: Gets the user data at the specified ID. This also sets a cookie on the requester's browser that indicates the `userId`.
    *    tags:
    *    - User
    *    responses:
@@ -219,6 +220,7 @@ function createUsersRouter(db: typeof mongoose): Router {
   router.get('/:userId', async (req, res) => {
     try {
       const userData = await graphQueryUser(req.params.userId);
+      res.cookie('userId', req.params.userId);
       res.json(userData);
     } catch (err) {
       res.status(400);

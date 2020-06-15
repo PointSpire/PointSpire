@@ -28,13 +28,7 @@ function authGithubRouter(): Router {
 
   router.get(
     '/callback',
-    passport.authenticate('github', { failureRedirect: '/login' }),
-    function (req, res) {
-      // Successful authentication, redirect home.
-      if (req.user !== undefined) {
-        res.redirect(`/api/users/${(req as any).user._id}`);
-      }
-    }
+    passport.authenticate('github', { failureRedirect: '/login' })
   );
 
   return router;

@@ -3,6 +3,7 @@ import './App.css';
 import MuiAlert from '@material-ui/lab/Alert';
 import { Snackbar } from '@material-ui/core';
 import dotenv from 'dotenv';
+import Cookies from 'js-cookie';
 import TopMenuBar from './components/TopMenuBar';
 import {
   User,
@@ -78,6 +79,14 @@ async function getTestUserData(): Promise<AllUserData> {
  * CURRENTLY A PLACEHOLDER
  */
 async function getUserData(): Promise<AllUserData> {
+  /* See if they have a github username in a cookie. THIS IS INSECURE. It
+  allows anyone to change their cookie to some other user which would allow
+  them to use their account */
+  const userName = Cookies.get();
+  if (userName) {
+    // eslint-disable-next-line
+    console.log(userName);
+  }
   const url = `${baseServerUrl}/api/users/5eda8ef7846e21ba6013cb19`;
   const res = await fetch(url);
   const data = (await res.json()) as AllUserData;
