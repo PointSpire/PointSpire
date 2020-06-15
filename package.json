@@ -6,7 +6,7 @@
     "doc": "docs"
   },
   "scripts": {
-    "deploy": "git subtree push --prefix node_server heroku master"
+    "deploy": "git subtree push --force --prefix node_server heroku master"
   },
   "repository": {
     "type": "git",
