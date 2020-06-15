@@ -2,6 +2,7 @@ import React from 'react';
 import './App.css';
 import MuiAlert from '@material-ui/lab/Alert';
 import { Snackbar } from '@material-ui/core';
+import dotenv from 'dotenv';
 import TopMenuBar from './components/TopMenuBar';
 import {
   User,
@@ -10,6 +11,8 @@ import {
   TaskObjects,
   UserSettings,
 } from './dbTypes';
+
+dotenv.config();
 
 /**
  * Used to determine the severity of an alert for the snackbar of the app.
@@ -51,16 +54,30 @@ type AppState = {
 type AppProps = unknown;
 
 /**
- * The base url for the server. This can be changed later to be the production
- * url or be conditionally changed.
+ * The base url for the server.
  */
-const baseServerUrl = 'http://localhost:8055';
+const baseServerUrl =
+  process.env.ENV === 'LOCAL_DEV'
+    ? 'http://localhost:8055'
+    : 'https://point-spire.herokuapp.com';
 
 /**
  * Gets data for a test user. This is setup just for development purposes
  * so the client always gets a user. Authentication can be used later.
  */
 async function getTestUserData(): Promise<AllUserData> {
+  const url = `${baseServerUrl}/api/users/5eda8ef7846e21ba6013cb19`;
+  const res = await fetch(url);
+  const data = (await res.json()) as AllUserData;
+  return data;
+}
+
+/**
+ * Gets the user data from the server.
+ *
+ * CURRENTLY A PLACEHOLDER
+ */
+async function getUserData(): Promise<AllUserData> {
   const url = `${baseServerUrl}/api/users/5eda8ef7846e21ba6013cb19`;
   const res = await fetch(url);
   const data = (await res.json()) as AllUserData;
@@ -98,7 +115,12 @@ class App extends React.Component<AppProps, AppState> {
    */
   async componentDidMount(): Promise<void> {
     // Get the data for the user
-    const userData = await getTestUserData();
+    let userData: AllUserData;
+    if (process.env.ENV === 'LOCAL_DEV') {
+      userData = await getTestUserData();
+    } else {
+      userData = await getUserData();
+    }
     this.setState({
       user: userData.user,
       projects: userData.projects,
