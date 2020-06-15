@@ -184,6 +184,7 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
             </IconButton>
             <Typography variant="h6" className={classes.title}>
               PointSpire
+              <p>{document.cookie}</p>
             </Typography>
             <Button
               color="inherit"
