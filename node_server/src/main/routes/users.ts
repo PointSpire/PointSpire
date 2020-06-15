@@ -42,12 +42,22 @@ function createUsersRouter(db: typeof mongoose): Router {
   const Project: ProjectModel = createProjectModel(db);
   const Task: TaskModel = createTaskModel(db);
 
+  router.options('/', (req, res, next) => {
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    next();
+  });
+
   router.get('/', (req, res) => {
-    res.status(405);
-    res.send(
-      'Please specify a user ID by using /api/users/24 where ' +
-        '"24" is the ID of the user.'
-    );
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    if (req.session && req.session.userId) {
+      res.redirect(`/api/users/${req.session.userId}`);
+    } else {
+      res.status(405);
+      res.send(
+        'Please specify a user ID by using /api/users/24 where ' +
+          '"24" is the ID of the user.'
+      );
+    }
   });
 
   /**
@@ -199,6 +209,11 @@ function createUsersRouter(db: typeof mongoose): Router {
     }
   }
 
+  router.options('/:userId', (req, res, next) => {
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    next();
+  });
+
   /**
    * @swagger
    * /users/{userId}:
@@ -219,6 +234,7 @@ function createUsersRouter(db: typeof mongoose): Router {
    */
   router.get('/:userId', async (req, res) => {
     try {
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
       const userData = await graphQueryUser(req.params.userId);
       res.cookie('userId', req.params.userId);
       res.json(userData);
