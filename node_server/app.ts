@@ -12,6 +12,7 @@ import {
   createUserObjectGithub,
   saveOrFindNewGithubUser,
 } from './src/lib/userLib';
+import cors from 'cors';
 
 /**
  * Allows usage of the .env file in the root directory of `node_server`. Should
@@ -46,6 +47,7 @@ function setupLogger(): void {
 }
 
 setupLogger();
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 // app.use(cookieParser());

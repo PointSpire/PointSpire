@@ -170,7 +170,7 @@ describe('GET /id', () => {
     assert.equal(foundTask._id, testTask._id);
     assert.equal(foundTask.title, testTask.title);
     assert.equal(foundTask.note, testTask.note);
-    assert.equal(foundTask.date, testTask.date);
+    assert.equal(foundTask.dateCreated, testTask.dateCreated);
   });
   it('Should return 400 if the id is not found', done => {
     chai

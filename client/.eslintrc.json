@@ -50,6 +50,15 @@
         based on some object somewhere else in the code like createStyles
         return types. */
         "@typescript-eslint/explicit-function-return-type": "off",
+        "react/jsx-wrap-multilines": [
+          "error",
+          { "declaration": false, "assignment": false }
+        ],
+        /* Disabled so that we can use things like _id off of objects, although
+        disabling this rule doesn't seem to do anything at the moment because
+        it is built into create-react-app.
+        */
+        /*"no-underscore-dangle": "off",*/
         "import/extensions": "off",
         /* Disabled because it conflicts with TypeScript */
         "new-cap": "off",

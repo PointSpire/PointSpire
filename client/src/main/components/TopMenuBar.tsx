@@ -22,9 +22,15 @@ import SettingsIcon from '@material-ui/icons/Settings';
 import HelpIcon from '@material-ui/icons/Help';
 import SettingsDialog from './SettingsDialog';
 import LoginDialog from './LoginDialog';
+import {
+  AlertFunction,
+  UpdateSettingsFunction,
+  UpdateUserOnServerFunction,
+} from '../App';
+import { UserSettings } from '../dbTypes';
 
-/* This is not a good solution, but the alternative seems to be ejecting
-from create-react-app */
+/* This eslint comment is not a good solution, but the alternative seems to be 
+ejecting from create-react-app */
 // eslint-disable-next-line
 function styles(theme: Theme) {
   return createStyles({
@@ -46,16 +52,35 @@ function styles(theme: Theme) {
   });
 }
 
-export type TopMenuBarProps = WithStyles<typeof styles>;
+export interface TopMenuBarProps extends WithStyles<typeof styles> {
+  alert: AlertFunction;
+  userSettings?: UserSettings;
+  updateSettings?: UpdateSettingsFunction;
+  sendUpdatedUserToServer: UpdateUserOnServerFunction;
+}
 
 export interface TopMenuBarState {
+  /**
+   * Determines if the left drawer is open for the menu.
+   */
   drawerOpen: boolean;
+
+  /**
+   * Determines if the SettingsDialog is open.
+   */
   settingsOpen: boolean;
   loginOpen: boolean;
 }
 
+/**
+ * Represents the component for the top menu and title bar, ass well as the
+ * drawer that can pop out from the left hand side.
+ */
 class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
-  static optionsItems = {
+  /**
+   * The items for the drawer that pops out of the left hand side.
+   */
+  static menuItems = {
     settings: {
       text: 'Settings',
       icon: <SettingsIcon />,
@@ -83,14 +108,31 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
     this.toggleDrawer = this.toggleDrawer.bind(this);
   }
 
+  /**
+   * Sets the `settingsOpen` state indicating if the SettingsDialog is open
+   * or not.
+   *
+   * @param {boolean} open true if it should be open and false if not
+   */
   setSettingsOpen(open: boolean) {
-    this.setState({ settingsOpen: open });
+    const { userSettings, alert } = this.props;
+    if (!userSettings) {
+      alert('error', 'You must login first to access settings');
+    } else {
+      this.setState({ settingsOpen: open });
+    }
   }
 
   setLoginOpen(open: boolean) {
     this.setState({ loginOpen: open });
   }
 
+  /**
+   * Creates a handler that can be used to change the `settingsOpen` state.
+   *
+   * @param {boolean} open true if this should set the SettingsDialog to open,
+   * and false if not
+   */
   createSetSettingsOpenHandler(open: boolean) {
     return (event: React.KeyboardEvent | React.MouseEvent) => {
       if (
@@ -119,6 +161,11 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
     };
   }
 
+  /**
+   * Handles opening of the menu drawer.
+   *
+   * @param {boolean} open true if it should be open and false if not
+   */
   toggleDrawer(open: boolean) {
     return (event: React.KeyboardEvent | React.MouseEvent) => {
       if (
@@ -134,7 +181,7 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
   }
 
   render(): JSX.Element {
-    const { optionsItems } = TopMenuBar;
+    const { menuItems: optionsItems } = TopMenuBar;
     const {
       state,
       setSettingsOpen,
@@ -142,8 +189,35 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
       toggleDrawer,
       createSetSettingsOpenHandler,
     } = this;
-    const { classes } = this.props;
-    const list = (
+    const {
+      classes,
+      alert,
+      userSettings,
+      updateSettings,
+      sendUpdatedUserToServer,
+    } = this.props;
+
+    // Set up the settingsDialog based on existence of user info
+    let settingsDialog: JSX.Element;
+    if (userSettings !== undefined && updateSettings !== undefined) {
+      settingsDialog = (
+        <SettingsDialog
+          sendUpdatedUserToServer={sendUpdatedUserToServer}
+          updateSettings={updateSettings}
+          open={state.settingsOpen}
+          setOpen={setSettingsOpen}
+          alert={alert}
+          settings={userSettings}
+        />
+      );
+    } else {
+      settingsDialog = <div />;
+    }
+
+    /**
+     * The list of items in the menu rendered in JSX.
+     */
+    const menuList = (
       <div
         className={classes.list}
         role="presentation"
@@ -184,7 +258,6 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
             </IconButton>
             <Typography variant="h6" className={classes.title}>
               PointSpire
-              <p>{document.cookie}</p>
             </Typography>
             <Button
               color="inherit"
@@ -199,10 +272,10 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
           open={state.drawerOpen}
           onClose={toggleDrawer(false)}
         >
-          {list}
+          {menuList}
         </Drawer>
-        <SettingsDialog open={state.settingsOpen} setOpen={setSettingsOpen} />
         <LoginDialog open={state.loginOpen} setOpen={setLoginOpen} />
+        {settingsDialog}
       </div>
     );
   }
