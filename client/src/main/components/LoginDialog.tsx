@@ -43,7 +43,7 @@ export default function LoginDialog(props: LoginDialogProps): JSX.Element {
           startIcon={<GitHubIcon />}
           onClick={() => {
             window.open(
-              `https://github.com/login/oauth/authorize?client_id=${githubClientId}&scope=user&redirect_uri=http://${window.location.host}`,
+              `https://github.com/login/oauth/authorize?client_id=${githubClientId}&scope=user`,
               '_self'
             );
           }}
