@@ -51,10 +51,12 @@ type AppState = {
 type AppProps = unknown;
 
 /**
- * The base url for the server. This can be changed later to be the production
- * url or be conditionally changed.
+ * The base url for the server.
  */
-const baseServerUrl = 'http://localhost:8055';
+const baseServerUrl =
+  process.env.REACT_APP_ENV === 'LOCAL_DEV'
+    ? 'http://localhost:8055'
+    : 'https://point-spire.herokuapp.com';
 
 /**
  * Gets data for a test user. This is setup just for development purposes
