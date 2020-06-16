@@ -55,6 +55,57 @@ const definition = {
       },
     },
     schemas: {
+      userObjectPatchBody: {
+        type: 'object',
+        properties: {
+          userName: {
+            type: 'string',
+          },
+          firstName: {
+            type: 'string',
+          },
+          lastName: {
+            type: 'string',
+          },
+          githubId: {
+            type: 'string',
+          },
+          settings: {
+            $ref: '#/components/schemas/userObjectSettings',
+          },
+        },
+      },
+      userObjectSettings: {
+        type: 'object',
+        properties: {
+          yellowGreenTasks: {
+            type: 'boolean',
+          },
+        },
+      },
+      allUserDataObject: {
+        type: 'object',
+        properties: {
+          user: {
+            $ref: '#/components/schemas/userObjectWithIds',
+          },
+          projects: {
+            type: 'object',
+            description:
+              'The key is the ID for the project to make access faster',
+            additionalProperties: {
+              $ref: '#/components/schemas/projectObjectWithIds',
+            },
+          },
+          tasks: {
+            type: 'object',
+            description: 'The key is the ID for the task to make access faster',
+            additionalProperties: {
+              $ref: '#/components/schemas/taskObjectWithIds',
+            },
+          },
+        },
+      },
       userObjectBasis: {
         type: 'object',
         properties: {
@@ -69,6 +120,9 @@ const definition = {
           },
           githubId: {
             type: 'string',
+          },
+          settings: {
+            $ref: '#/components/schemas/userObjectSettings',
           },
           dateCreated: {
             description:
@@ -96,17 +150,6 @@ const definition = {
           },
         },
       },
-      userObjectProjects: {
-        type: 'object',
-        properties: {
-          projects: {
-            type: 'array',
-            items: {
-              $ref: '#/components/schemas/projectObjectWithTasks',
-            },
-          },
-        },
-      },
       userObjectWithIds: {
         allOf: [
           {
@@ -114,16 +157,6 @@ const definition = {
           },
           {
             $ref: '#/components/schemas/userObjectProjectIds',
-          },
-        ],
-      },
-      userObjectWithProjects: {
-        allOf: [
-          {
-            $ref: '#/components/schemas/userObjectBasis',
-          },
-          {
-            $ref: '#/components/schemas/userObjectProjects',
           },
         ],
       },
@@ -152,7 +185,7 @@ const definition = {
           note: {
             type: 'string',
           },
-          date: {
+          dateCreated: {
             type: 'object',
             description:
               'A Date object representing the date this project was created.',
@@ -170,17 +203,6 @@ const definition = {
           },
         },
       },
-      projectObjectTasks: {
-        type: 'object',
-        properties: {
-          subtasks: {
-            type: 'array',
-            items: {
-              $ref: '#/components/schemas/taskObjectWithTasks',
-            },
-          },
-        },
-      },
       projectObjectWithIds: {
         allOf: [
           {
@@ -188,16 +210,6 @@ const definition = {
           },
           {
             $ref: '#/components/schemas/projectObjectTaskIds',
-          },
-        ],
-      },
-      projectObjectWithTasks: {
-        allOf: [
-          {
-            $ref: '#/components/schemas/projectObjectBasis',
-          },
-          {
-            $ref: '#/components/schemas/projectObjectTasks',
           },
         ],
       },
@@ -226,7 +238,7 @@ const definition = {
           note: {
             type: 'string',
           },
-          date: {
+          dateCreated: {
             type: 'object',
             description:
               'A Date object representing the date this task was created.',
@@ -244,17 +256,6 @@ const definition = {
           },
         },
       },
-      taskObjectTasks: {
-        type: 'object',
-        properties: {
-          subtasks: {
-            type: 'array',
-            items: {
-              $ref: '#/components/schemas/taskObjectWithTasks',
-            },
-          },
-        },
-      },
       taskObjectWithIds: {
         allOf: [
           {
@@ -262,16 +263,6 @@ const definition = {
           },
           {
             $ref: '#/components/schemas/taskObjectTaskIds',
-          },
-        ],
-      },
-      taskObjectWithTasks: {
-        allOf: [
-          {
-            $ref: '#/components/schemas/taskObjectBasis',
-          },
-          {
-            $ref: '#/components/schemas/taskObjectTasks',
           },
         ],
       },
