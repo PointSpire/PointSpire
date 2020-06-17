@@ -16,7 +16,7 @@ import {
   WithStyles,
 } from '@material-ui/core/styles';
 import { ProjectObjects, TaskObjects } from '../dbTypes';
-// import { Table, Paper, TableRow } from 'material-ui';
+import ProjectRow from './ProjectRow';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */
@@ -35,6 +35,7 @@ function styles(theme: Theme) {
 
 export interface ProjectTableProps extends WithStyles<typeof styles> {
   projects: ProjectObjects;
+  projectIds: string[];
   tasks: TaskObjects;
 }
 
@@ -51,59 +52,31 @@ class ProjectTable extends React.Component<
     this.state = {
       projectTableOpen: true,
     };
-    // this.addTask = this.addTask.bind(this);
-    // this.mapTasks = this.mapTasks.bind(this);
   }
 
-  // mapTasks(): JSX.Element | JSX.Element[] {
-  //   const { tasks } = this.props;
-  //   if (tasks !== (undefined || null) && tasks.length > 0) {
-  //     return tasks.map(task => {
-  //       return (
-  //         <ListItem button key={task.id}>
-  //           <ListItemText primary={task.title} />
-  //           <ListItemText primary={task.note} />
-  //         </ListItem>
-  //       );
-  //     });
-  //   }
-  //   return (
-  //     <ListItem button={false} key="none">
-  //       <ListItemText primary="No Tasks Found" />
-  //     </ListItem>
-  //   );
-  // };
-
-  // addTask(): void {
-  //   // let tempTasks = tasks;
-  //   // if (tempTasks === null) {
-  //   //   tempTasks = [
-  //   //     TaskModel.buildTask('', 'new', 'task', new Date(Date.now()), []),
-  //   //   ];
-  //   // } else {
-  //   //   tempTasks.push(new TaskModel());
-  //   // }
-  //   // setTasks(tempTasks);
-
-  // };
-
   render() {
-    const { projects } = this.props;
+    const { projects, projectIds, tasks } = this.props;
     const { projectTableOpen } = this.state;
     return (
       <TableContainer component={Paper}>
         <Table aria-label="collapsible table">
           <TableHead>
             <TableRow>
-              <TableCell />
-              <TableCell>{projectTableOpen}</TableCell>
-              <TableCell align="right">Calories</TableCell>
-              <TableCell align="right">Fat&nbsp;(g)</TableCell>
-              <TableCell align="right">Carbs&nbsp;(g)</TableCell>
-              <TableCell align="right">Protein&nbsp;(g)</TableCell>
+              {/* This will be removed when the state has something to do. */}
+              {/* eslint-disable-next-line */}
+              <TableCell>{`Remove Later! ${projectTableOpen}`}</TableCell>
+              <TableCell>Title</TableCell>
+              <TableCell align="right">Note</TableCell>
+              <TableCell align="right">Date</TableCell>
+              <TableCell align="right">{projects.id}</TableCell>
             </TableRow>
           </TableHead>
-          <TableBody>{projects}</TableBody>
+          <TableBody>
+            {projectIds.map(project => (
+              <ProjectRow project={projects[project]} tasks={tasks} />
+            ))}
+          </TableBody>
+          <TableBody />
         </Table>
       </TableContainer>
     );

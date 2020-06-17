@@ -217,13 +217,15 @@ class App extends React.Component<AppProps, AppState> {
           updateSettings={updateSettings}
         />
         {/* If projects and tasks exist, show project table */}
-        {projects && tasks ? (
-          <ProjectTable projects={projects} tasks={tasks} />
+        {projects && tasks && user ? (
+          <ProjectTable
+            projects={projects}
+            tasks={tasks}
+            projectIds={user.projects}
+          />
         ) : (
           ''
         )}
-        {/* <header className="App-header">PointSpire</header> */}
-        {/* <ProjectTable projects={projects} tasks={tasks} /> */}
         <Snackbar
           open={snackBarOpen}
           autoHideDuration={3000}
