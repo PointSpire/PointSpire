@@ -4,15 +4,15 @@ import {
   ProjectModel,
   createProjectModel,
   ProjectDoc,
-  isProjectDocArr,
+  ProjectObjects,
 } from '../models/project';
-import { UserModel, createUserModel, UserDoc } from '../models/user';
 import {
-  TaskModel,
-  createTaskModel,
-  isTaskDocArr,
-  TaskDoc,
-} from '../models/task';
+  UserModel,
+  createUserModel,
+  UserDoc,
+  AllUserData,
+} from '../models/user';
+import { TaskModel, createTaskModel, TaskObjects } from '../models/task';
 
 const router = express.Router();
 
@@ -51,8 +51,43 @@ function createUsersRouter(db: typeof mongoose): Router {
   });
 
   /**
-   * Adds a new user to the database with the provided userName. If successful,
-   * it returns the new user document.
+   * @swagger
+   * /users:
+   *  post:
+   *    summary: Creates a new user with the details specified in the body
+   *    tags:
+   *      - User
+   *    requestBody:
+   *      description: The properties of the new user to be created
+   *      required: true
+   *      content:
+   *        'application/json':
+   *          schema:
+   *            type: 'object'
+   *            required: ['userName']
+   *            properties:
+   *              'userName':
+   *                type: 'string'
+   *              'firstName':
+   *                type: 'string'
+   *              'lastName':
+   *                type: 'string'
+   *              'githubId':
+   *                type: 'string'
+   *    responses:
+   *      201:
+   *        description: The user was successfully created
+   *        content:
+   *          'application/json':
+   *            schema:
+   *              $ref: '#/components/schemas/userObjectWithIds'
+   *            example:
+   *              _id: '5ed5b0b3c38d2174aafc363b'
+   *              userName: testUser
+   *              dateCreated: '2020-06-02T01:51:47.787Z'
+   *              __v: 0
+   *      400:
+   *        description: The user was not found or there was an error while finding the user
    */
   router.post('/', async (req, res) => {
     if (req.body && req.body.userName) {
@@ -99,71 +134,92 @@ function createUsersRouter(db: typeof mongoose): Router {
   }
 
   /**
-   * Recursively populates every task with it's subtasks and returns the
-   * completed tree.
+   * Reterns all of the user data for a user.
    *
-   * @param {TaskDoc} rootTask the root task to generate the subtasks for
-   * @returns {Promise<TaskDoc>} the completed taskdoc with the tree attached
+   * @param {string} userId the id of the user to query
+   * @returns {Promise<AllUserData>} the completed AllUserData object
    */
-  async function populateTaskTree(rootTask: TaskDoc): Promise<TaskDoc> {
-    const populatedTask = await rootTask.populate('subtasks').execPopulate();
-    if (isTaskDocArr(populatedTask.subtasks)) {
-      // Populate each subtask of the task
-      await Promise.all(
-        populatedTask.subtasks.map(async task => {
-          await populateTaskTree(task);
-        })
-      );
-    }
-    return populatedTask;
-  }
+  async function graphQueryUser(userId: string): Promise<AllUserData> {
+    try {
+      const userDoc = await User.findOne({ _id: userId }).exec();
+      if (!userDoc) {
+        throw new Error('User not found');
+      }
 
-  /**
-   * Generates the populated UserDoc with all of the projects, subtasks, and
-   * any levels deep subtasks of that UserDoc.
-   *
-   * @param {string} userId the userId to use for getting the userDoc
-   * @returns {Promise<UserDoc>} the populated UserDoc in Promise form
-   */
-  async function getPopulatedUserTreeDoc(userId: string): Promise<UserDoc> {
-    const userDoc = await User.findOne({ _id: userId })
-      .populate({
-        path: 'projects',
-        populate: {
-          path: 'subtasks',
-        },
-      })
-      .exec();
+      // Declare the empty projects and tasks arrays
+      const projects: ProjectObjects = {};
+      const tasks: TaskObjects = {};
 
-    if (userDoc && userDoc.projects && isProjectDocArr(userDoc.projects)) {
-      await Promise.all(
-        userDoc.projects.map(async project => {
-          if (isTaskDocArr(project.subtasks)) {
-            await Promise.all(
-              project.subtasks.map(async task => {
-                return await populateTaskTree(task);
-              })
-            );
-            return project;
+      // Get all of the projects for the user
+      if (userDoc.projects) {
+        /*
+        projects = await Project.find({
+          _id: {
+            $in: userDoc.projects,
+          },
+        });
+        */
+
+        const projectsArr: Array<ProjectDoc> = await Project.aggregate()
+          .match({
+            _id: {
+              $in: userDoc.projects,
+            },
+          })
+          .graphLookup({
+            from: 'tasks',
+            startWith: '$subtasks',
+            connectFromField: 'subtasks',
+            connectToField: '_id',
+            as: 'subtask_hierarchy',
+          })
+          .exec();
+
+        // Pull all of the subtasks out of each project into tasks object
+        projectsArr.forEach(project => {
+          const subtaskHierarchy = project.subtask_hierarchy;
+          if (subtaskHierarchy) {
+            subtaskHierarchy.forEach(task => {
+              tasks[task._id] = task;
+            });
+            delete project.subtask_hierarchy;
           }
-        })
-      );
-    }
-    if (userDoc) {
-      return userDoc;
-    } else {
-      throw new Error('userDoc was null');
+          projects[project._id] = project;
+        });
+      }
+
+      // Return the completed AllUserData object
+      return {
+        user: userDoc,
+        projects: projects,
+        tasks: tasks,
+      };
+    } catch (err) {
+      throw err;
     }
   }
 
   /**
-   * Gets a user with the spcified userId. If successful, it returns the user
-   * document and the populated tree of objects.
+   * @swagger
+   * /users/{userId}:
+   *  get:
+   *    summary: Gets the user at the specified ID
+   *    tags:
+   *    - User
+   *    responses:
+   *      '200':
+   *        description: Successfully returned the user data
+   *        content:
+   *          'application/json':
+   *            schema:
+   *              $ref: '#/components/schemas/allUserDataObject'
+   *  parameters:
+   *  - $ref: '#/components/parameters/userIdParam'
    */
   router.get('/:userId', async (req, res) => {
     try {
-      const userDoc = await getPopulatedUserTreeDoc(req.params.userId);
-      res.json(userDoc);
+      const userData = await graphQueryUser(req.params.userId);
+      res.json(userData);
     } catch (err) {
       res.status(400);
       res.send(err);
@@ -171,8 +227,25 @@ function createUsersRouter(db: typeof mongoose): Router {
   });
 
   /**
-   * Creates a new project for the given user ID. If successful, it returns
-   * the newly created project.
+   * @swagger
+   * /users/{userId}/projects:
+   *   post:
+   *     summary: 'Creates a new project for the user indicated by the userId'
+   *     tags:
+   *       - User
+   *       - Project
+   *     requestBody:
+   *       description: 'The properties of the new project to be created'
+   *       required: true
+   *       content:
+   *         'application/json':
+   *           schema:
+   *             $ref: '#/components/schemas/projectObjectRequestBody'
+   *     responses:
+   *       '400':
+   *         description: 'The userId was not found or there was an error while searching it'
+   *   parameters:
+   *   - $ref: '#/components/parameters/userIdParam'
    */
   router.post('/:userId/projects', (req, res) => {
     checkUserId(req.params.userId)
@@ -195,11 +268,33 @@ function createUsersRouter(db: typeof mongoose): Router {
   });
 
   /**
-   * Updates the user with the given userId and overwrites any of its
-   * values specified in the request body. If successful, it returns the
-   * updated document.
+   * @swagger
+   * /users/{userId}:
+   *   patch:
+   *     summary: Modifies the user at the specified ID
+   *     description: Modifies the user at the specified ID with the details provided in the body of the request. When modifying settings make sure to use the entire settings object with past settings, otherwise settings that are left out will be removed from the user.
+   *     tags:
+   *       - User
+   *     requestBody:
+   *       description: The new properties of the user. These will overwrite the existing properties.
+   *       required: true
+   *       content:
+   *         'application/json':
+   *           schema:
+   *             $ref: '#/components/schemas/userObjectPatchBody'
+   *     responses:
+   *       200:
+   *         description: The user was successfully overwritten with the provided data.
+   *         content:
+   *           'application/json':
+   *             schema:
+   *               $ref: '#/components/schemas/userObjectWithIds'
+   *       400:
+   *         description: The userId was not found or there was an error while accessing the database.
+   *   parameters:
+   *   - $ref: '#/components/parameters/userIdParam'
    */
-  router.patch('/:userId', (req, res, next) => {
+  router.patch('/:userId', (req, res) => {
     checkUserId(req.params.userId)
       .then(userDoc => {
         if (req.body) {
@@ -220,47 +315,56 @@ function createUsersRouter(db: typeof mongoose): Router {
         res.json(userDoc);
       })
       .catch(err => {
-        next(err);
+        res.status(400);
+        res.send(err);
       });
   });
 
   /**
-   * Deletes the user with the given userId. If successful, it returns
-   * the deleted document.
+   * @swagger
+   * /users/{userId}:
+   *  delete:
+   *    summary: Deletes a given user
+   *    description: Deletes the user with the given userId. If successful, it returns the deleted user data. This deletes all projects, tasks, and recursively every subtask of each task of the user as well.
+   *    tags:
+   *      - User
+   *    responses:
+   *      200:
+   *        description: Successfully deleted the user and returned the deleted user data
+   *        content:
+   *          'application/json':
+   *            schema:
+   *              $ref: '#/components/schemas/allUserDataObject'
+   *      400:
+   *        description: The user was not found or there was an error while finding the user
+   *  parameters:
+   *  - $ref: '#/components/parameters/userIdParam'
    */
   router.delete('/:userId', async (req, res) => {
     try {
-      // Populate the returned userDoc with the project docs
-      const userDoc = await User.findOne({ _id: req.params.userId })
-        .populate('projects')
-        .exec();
+      const userData = await graphQueryUser(req.params.userId);
+      const projectIds = Object.keys(userData.projects);
+      const taskIds = Object.keys(userData.tasks);
+      await Promise.all([
+        // Delete the user
+        User.deleteOne({ _id: userData.user._id }).exec(),
 
-      // Delete each subtask of each project.
-      if (userDoc && userDoc.projects && isProjectDocArr(userDoc.projects)) {
-        const projects: Array<ProjectDoc> = userDoc.projects;
-        await Promise.all(
-          projects.map(async project => {
-            await Task.deleteMany({
-              _id: {
-                $in: project.subtasks,
-              },
-            });
-          })
-        );
         // Delete the projects
-        const projectIds: typeof mongoose.Types.ObjectId[] = projects.map(
-          project => {
-            return project._id;
-          }
-        );
-        await Project.deleteMany({
+        Project.deleteMany({
           _id: {
             $in: projectIds,
           },
-        });
-      }
-      await User.deleteOne({ _id: req.params.userId }).exec(), res.status(200);
-      res.json(userDoc);
+        }).exec(),
+
+        // Delete the tasks
+        Task.deleteMany({
+          _id: {
+            $in: taskIds,
+          },
+        }).exec(),
+      ]);
+
+      res.status(200).json(userData);
     } catch (err) {
       res.status(400);
       res.send(err);

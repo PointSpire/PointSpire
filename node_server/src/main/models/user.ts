@@ -1,5 +1,6 @@
 import mongoose, { Model, Schema, Document } from 'mongoose';
-import { ProjectDoc } from './project';
+import { ProjectObjects } from './project';
+import { TaskObjects } from './task';
 
 const ObjectId = mongoose.Types.ObjectId;
 
@@ -22,7 +23,19 @@ const userSchema = new Schema({
       ref: 'Project',
     },
   ],
+  settings: {
+    yellowGreenTasks: {
+      type: Boolean,
+      default: false,
+    },
+  },
 });
+
+export type AllUserData = {
+  user: UserDoc;
+  projects: ProjectObjects;
+  tasks: TaskObjects;
+};
 
 /**
  * The type representing a User document in the database.
@@ -33,7 +46,10 @@ export interface UserDoc extends Document {
   lastName: string;
   githubId: string;
   dateCreated: Date;
-  projects: Array<typeof ObjectId> | Array<ProjectDoc>;
+  projects: Array<typeof ObjectId>;
+  settings: {
+    yellowGreenTasks: boolean;
+  };
 }
 
 /**

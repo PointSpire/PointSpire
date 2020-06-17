@@ -108,7 +108,7 @@ describe('DELETE /id', () => {
       const userRes = await chai
         .request(Globals.app)
         .get(`/api/users/${Globals.testUser._id}`);
-      const returnedUserDoc: UserDoc = userRes.body;
+      const returnedUserDoc: UserDoc = userRes.body.user;
       assert.equal(returnedUserDoc.projects.includes(testProject._id), false);
     }
   );
