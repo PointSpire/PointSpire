@@ -29,6 +29,9 @@ const errorDescriptions = {
   newUserDetailsNotDefined:
     `Details for the new user were not specified in ` +
     `the body of the message. Please define at least the userName in the body.`,
+  userIdNotSpecified:
+    `Please specify a user ID by using /api/users/24 where ` +
+    `"24" is the ID of the user.`,
 };
 
 /**
@@ -47,16 +50,32 @@ function createUsersRouter(db: typeof mongoose): Router {
     next();
   });
 
+  /**
+   * @swagger
+   * /users:
+   *  get:
+   *    summary: Redirects to the user specified in the session, if available
+   *    tags:
+   *      - User
+   *    security:
+   *      - cookieAuth:
+   *          type: userId
+   *          in: cookie
+   *          name: JSESSIONID
+   *    description: Redirects to specific user api.
+   *    responses:
+   *      '302':
+   *        description: Found
+   *      '405':
+   *        description: Please specify a user ID by using /api/users/24 where "24" is the ID of the user.
+   */
   router.get('/', (req, res) => {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     if (req.session && req.session.userId) {
       res.redirect(`/api/users/${req.session.userId}`);
     } else {
       res.status(405);
-      res.send(
-        'Please specify a user ID by using /api/users/24 where ' +
-          '"24" is the ID of the user.'
-      );
+      res.send(errorDescriptions.userIdNotSpecified);
     }
   });
 
