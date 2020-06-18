@@ -52,8 +52,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// eslint-disable-next-line prefer-const
-let sess = {
+const sess = {
   secret: 'keyboard cat',
   cookie: {
     secure: false,
