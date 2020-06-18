@@ -197,11 +197,7 @@ class App extends React.Component<AppProps, AppState> {
         />
         {/* If projects and tasks exist, show project table */}
         {projects && tasks && user ? (
-          <ProjectTable
-            projects={projects}
-            tasks={tasks}
-            projectIds={user.projects}
-          />
+          <ProjectTable projects={projects} tasks={tasks} />
         ) : (
           ''
         )}

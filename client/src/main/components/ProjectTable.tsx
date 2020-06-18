@@ -35,7 +35,6 @@ function styles(theme: Theme) {
 
 export interface ProjectTableProps extends WithStyles<typeof styles> {
   projects: ProjectObjects;
-  projectIds: string[];
   tasks: TaskObjects;
 }
 
@@ -55,7 +54,7 @@ class ProjectTable extends React.Component<
   }
 
   render() {
-    const { projects, projectIds, tasks } = this.props;
+    const { projects, tasks } = this.props;
     const { projectTableOpen } = this.state;
     return (
       <TableContainer component={Paper}>
@@ -72,9 +71,9 @@ class ProjectTable extends React.Component<
             </TableRow>
           </TableHead>
           <TableBody>
-            {projectIds.map(project => (
-              <ProjectRow project={projects[project]} tasks={tasks} />
-            ))}
+            {Object.values(projects).map(projectDoc => {
+              return <ProjectRow project={projectDoc} tasks={tasks} />;
+            })}
           </TableBody>
           <TableBody />
         </Table>
