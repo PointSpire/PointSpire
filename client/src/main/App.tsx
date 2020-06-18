@@ -9,6 +9,8 @@ import {
   ProjectObjects,
   TaskObjects,
   UserSettings,
+  Project,
+  Task,
 } from './dbTypes';
 import ProjectTable from './components/ProjectTable';
 
@@ -89,6 +91,10 @@ class App extends React.Component<AppProps, AppState> {
     this.alert = this.alert.bind(this);
     this.updateSettings = this.updateSettings.bind(this);
     this.sendUpdatedUserToServer = this.sendUpdatedUserToServer.bind(this);
+    this.setProjects = this.setProjects.bind(this);
+    this.setProject = this.setProject.bind(this);
+    this.setTasks = this.setTasks.bind(this);
+    this.setTask = this.setTask.bind(this);
   }
 
   /**
@@ -102,6 +108,59 @@ class App extends React.Component<AppProps, AppState> {
       projects: userData.projects,
       tasks: userData.tasks,
     });
+  }
+
+  /**
+   * Updates the projects state on the app.
+   *
+   * @param {Project} updatedProjects the new ProjectObjects object to set for
+   * projects on the app
+   */
+  setProjects(updatedProjects: ProjectObjects): void {
+    this.setState({
+      projects: updatedProjects,
+    });
+  }
+
+  /**
+   * Updates a particular project in the projects state of the app.
+   *
+   * @param {Project} updatedProject the Project object to update in the
+   * projects state
+   */
+  setProject(updatedProject: Project): void {
+    const { projects } = this.state;
+    if (projects) {
+      // eslint-disable-next-line no-underscore-dangle
+      projects[updatedProject._id] = updatedProject;
+      this.setProjects(projects);
+    }
+  }
+
+  /**
+   * Updates the tasks state on the app.
+   *
+   * @param {Task} updatedTasks the new TaskObjects object to set for tasks on
+   * the app
+   */
+  setTasks(updatedTasks: TaskObjects): void {
+    this.setState({
+      tasks: updatedTasks,
+    });
+  }
+
+  /**
+   * Updates a particular task in the tasks state of the app.
+   *
+   * @param {Task} updatedTask the Task object to update in the tasks state
+   */
+  setTask(updatedTask: Task): void {
+    const { tasks } = this.state;
+    if (tasks) {
+      // eslint-disable-next-line no-underscore-dangle
+      tasks[updatedTask._id] = updatedTask;
+      this.setTasks(tasks);
+    }
   }
 
   /**
