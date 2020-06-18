@@ -89,11 +89,6 @@ class App extends React.Component<AppProps, AppState> {
     this.alert = this.alert.bind(this);
     this.updateSettings = this.updateSettings.bind(this);
     this.sendUpdatedUserToServer = this.sendUpdatedUserToServer.bind(this);
-
-    // SHOULD BE DELETED AFTER USAGE OF PROJECTS AND TASKS
-    this.temporaryLoggingForTasksAndProjects = this.temporaryLoggingForTasksAndProjects.bind(
-      this
-    );
   }
 
   /**
@@ -107,22 +102,6 @@ class App extends React.Component<AppProps, AppState> {
       projects: userData.projects,
       tasks: userData.tasks,
     });
-
-    // SHOULD BE DELETED AFTER USAGE OF PROJECTS AND TASKS
-    this.temporaryLoggingForTasksAndProjects();
-  }
-
-  /**
-   * This should be deleted as sooon as projects and tasks are used on the
-   * front end. This is kept in here so that no ESLint errors are thrown, but
-   * the logic is still present to make it easier later.
-   */
-  temporaryLoggingForTasksAndProjects(): void {
-    const { projects, tasks } = this.state;
-    // eslint-disable-next-line
-    console.log(JSON.stringify(projects, null, 2));
-    // eslint-disable-next-line
-    console.log(JSON.stringify(tasks, null, 2));
   }
 
   /**
