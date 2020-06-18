@@ -31,10 +31,11 @@ function styles(theme: Theme) {
 export interface ProjectRowProps extends WithStyles<typeof styles> {
   project: Project;
   tasks: TaskObjects;
+  handleChange: (taskId: string, inputId: string, value: string) => void;
 }
 
 function ProjectRow(props: ProjectRowProps) {
-  const { classes, project, tasks } = props;
+  const { classes, project, tasks, handleChange } = props;
   const [open, setOpen] = useState<boolean>(false);
   return (
     <>
@@ -57,7 +58,11 @@ function ProjectRow(props: ProjectRowProps) {
         <TableCell colSpan={6}>
           <Collapse in={open} timeout="auto">
             {project.subtasks.map(task => (
-              <TaskRow task={tasks[task]} tasks={tasks} />
+              <TaskRow
+                task={tasks[task]}
+                tasks={tasks}
+                handleChange={handleChange}
+              />
             ))}
           </Collapse>
         </TableCell>

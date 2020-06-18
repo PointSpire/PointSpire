@@ -37,10 +37,16 @@ export interface ProjectTableProps extends WithStyles<typeof styles> {
   projects: ProjectObjects;
   projectIds: string[];
   tasks: TaskObjects;
+
+  // updateUserData: (projectData: ProjectObjects) => void;
+  // createNewProject: () => void;
 }
 
 export interface ProjectTableState {
-  projectTableOpen: boolean;
+  projects: ProjectObjects;
+  projectIds: string[];
+  tasks: TaskObjects;
+  changeCount: number;
 }
 
 class ProjectTable extends React.Component<
@@ -50,13 +56,42 @@ class ProjectTable extends React.Component<
   constructor(props: ProjectTableProps) {
     super(props);
     this.state = {
-      projectTableOpen: true,
+      changeCount: 0,
+      projects: props.projects,
+      projectIds: props.projectIds,
+      tasks: props.tasks,
     };
+    this.handleInputChange = this.handleInputChange.bind(this);
   }
 
+  public handleInputChange = (
+    taskId: string,
+    inputId: string,
+    value: string
+  ) => {
+    const { tasks } = this.state;
+    const currentTasks = tasks;
+    const foundTask = currentTasks[taskId];
+    switch (inputId) {
+      case 'title-input':
+        foundTask.title = value;
+        break;
+      case 'note-input':
+        foundTask.note = value;
+        break;
+      default:
+        break;
+    }
+    currentTasks[taskId] = foundTask;
+    this.setState(currState => ({
+      tasks: currentTasks,
+      changeCount: currState.changeCount + 1,
+    }));
+  };
+
   render() {
-    const { projects, projectIds, tasks } = this.props;
-    const { projectTableOpen } = this.state;
+    // const { projects, projectIds, tasks } = this.props;
+    const { changeCount, projects, projectIds, tasks } = this.state;
     return (
       <TableContainer component={Paper}>
         <Table aria-label="collapsible table">
@@ -64,7 +99,7 @@ class ProjectTable extends React.Component<
             <TableRow>
               {/* This will be removed when the state has something to do. */}
               {/* eslint-disable-next-line */}
-              <TableCell>{`Remove Later! ${projectTableOpen}`}</TableCell>
+              <TableCell>{`Remove Later! ${changeCount}`}</TableCell>
               <TableCell>Title</TableCell>
               <TableCell align="right">Note</TableCell>
               <TableCell align="right">Date</TableCell>
@@ -73,7 +108,11 @@ class ProjectTable extends React.Component<
           </TableHead>
           <TableBody>
             {projectIds.map(project => (
-              <ProjectRow project={projects[project]} tasks={tasks} />
+              <ProjectRow
+                project={projects[project]}
+                tasks={tasks}
+                handleChange={this.handleInputChange}
+              />
             ))}
           </TableBody>
           <TableBody />
