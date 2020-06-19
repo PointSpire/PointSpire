@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  // Button,
+  Button,
   TableContainer,
   TableBody,
   TableCell,
@@ -8,6 +8,8 @@ import {
   TableRow,
   Paper,
   Table,
+  Collapse,
+  TextField,
 } from '@material-ui/core/';
 import {
   Theme,
@@ -26,27 +28,31 @@ function styles(theme: Theme) {
     root: {
       width: '100%',
       backgroundColor: theme.palette.background.paper,
+      alignItems: 'center',
     },
     nested: {
       paddingLeft: theme.spacing(4),
+    },
+    label: {
+      alignSelf: 'center',
     },
   });
 }
 
 export interface ProjectTableProps extends WithStyles<typeof styles> {
   projects: ProjectObjects;
-  projectIds: string[];
   tasks: TaskObjects;
 
   // updateUserData: (projectData: ProjectObjects) => void;
   // createNewProject: () => void;
+  addProject: (newTitle: string) => void;
+  handleChange: (taskId: string, inputId: string, value: string) => void;
 }
 
 export interface ProjectTableState {
-  projects: ProjectObjects;
-  projectIds: string[];
-  tasks: TaskObjects;
   changeCount: number;
+  addProjectOpen: boolean;
+  newProjectTitle: string;
 }
 
 class ProjectTable extends React.Component<
@@ -57,41 +63,39 @@ class ProjectTable extends React.Component<
     super(props);
     this.state = {
       changeCount: 0,
-      projects: props.projects,
-      projectIds: props.projectIds,
-      tasks: props.tasks,
+      addProjectOpen: false,
+      newProjectTitle: '',
     };
-    this.handleInputChange = this.handleInputChange.bind(this);
+    // this.handleInputChange = this.handleInputChange.bind(this);
   }
 
-  public handleInputChange = (
-    taskId: string,
-    inputId: string,
-    value: string
-  ) => {
-    const { tasks } = this.state;
-    const currentTasks = tasks;
-    const foundTask = currentTasks[taskId];
-    switch (inputId) {
-      case 'title-input':
-        foundTask.title = value;
-        break;
-      case 'note-input':
-        foundTask.note = value;
-        break;
-      default:
-        break;
-    }
-    currentTasks[taskId] = foundTask;
-    this.setState(currState => ({
-      tasks: currentTasks,
-      changeCount: currState.changeCount + 1,
-    }));
-  };
+  // public handleInputChange = (
+  //   taskId: string,
+  //   inputId: string,
+  //   value: string
+  // ) => {
+  //   const { tasks } = this.state;
+  //   const currentTasks = tasks;
+  //   const foundTask = currentTasks[taskId];
+  //   switch (inputId) {
+  //     case 'title-input':
+  //       foundTask.title = value;
+  //       break;
+  //     case 'note-input':
+  //       foundTask.note = value;
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  //   currentTasks[taskId] = foundTask;
+  //   this.setState(currState => ({
+  //     changeCount: currState.changeCount + 1,
+  //   }));
+  // };
 
   render() {
-    // const { projects, projectIds, tasks } = this.props;
-    const { changeCount, projects, projectIds, tasks } = this.state;
+    const { classes, projects, tasks, addProject, handleChange } = this.props;
+    const { addProjectOpen, newProjectTitle, changeCount } = this.state;
     return (
       <TableContainer component={Paper}>
         <Table aria-label="collapsible table">
@@ -107,15 +111,52 @@ class ProjectTable extends React.Component<
             </TableRow>
           </TableHead>
           <TableBody>
-            {projectIds.map(project => (
-              <ProjectRow
-                project={projects[project]}
-                tasks={tasks}
-                handleChange={this.handleInputChange}
-              />
-            ))}
+            {Object.values(projects).map(projectDoc => {
+              return (
+                <ProjectRow
+                  project={projectDoc}
+                  tasks={tasks}
+                  handleChange={handleChange}
+                />
+              );
+            })}
+            <Collapse in={addProjectOpen} timeout="auto">
+              <Paper>
+                <TextField
+                  id="new-project-title"
+                  label="New Project Title"
+                  value={newProjectTitle}
+                  onChange={e => {
+                    this.setState({
+                      newProjectTitle: e.target.value,
+                    });
+                  }}
+                  variant="outlined"
+                  size="small"
+                />
+                <Button
+                  variant="contained"
+                  onClick={() => addProject(newProjectTitle)}
+                >
+                  Done
+                </Button>
+              </Paper>
+            </Collapse>
+            <Button
+              className={classes.label}
+              variant="outlined"
+              fullWidth
+              onClick={() => {
+                this.setState(prev => {
+                  return {
+                    addProjectOpen: !prev.addProjectOpen,
+                  };
+                });
+              }}
+            >
+              {addProjectOpen ? 'Cancel' : 'Create Project'}
+            </Button>
           </TableBody>
-          <TableBody />
         </Table>
       </TableContainer>
     );

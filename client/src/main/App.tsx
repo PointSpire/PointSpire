@@ -9,8 +9,11 @@ import {
   ProjectObjects,
   TaskObjects,
   UserSettings,
+  Project,
+  Task,
 } from './dbTypes';
 import ProjectTable from './components/ProjectTable';
+import { postNewProject } from './fetchMethods';
 
 /**
  * Used to determine the severity of an alert for the snackbar of the app.
@@ -89,11 +92,11 @@ class App extends React.Component<AppProps, AppState> {
     this.alert = this.alert.bind(this);
     this.updateSettings = this.updateSettings.bind(this);
     this.sendUpdatedUserToServer = this.sendUpdatedUserToServer.bind(this);
-
-    // SHOULD BE DELETED AFTER USAGE OF PROJECTS AND TASKS
-    this.temporaryLoggingForTasksAndProjects = this.temporaryLoggingForTasksAndProjects.bind(
-      this
-    );
+    this.setProjects = this.setProjects.bind(this);
+    this.setProject = this.setProject.bind(this);
+    this.setTasks = this.setTasks.bind(this);
+    this.setTask = this.setTask.bind(this);
+    this.addProject = this.addProject.bind(this);
   }
 
   /**
@@ -107,23 +110,112 @@ class App extends React.Component<AppProps, AppState> {
       projects: userData.projects,
       tasks: userData.tasks,
     });
-
-    // SHOULD BE DELETED AFTER USAGE OF PROJECTS AND TASKS
-    this.temporaryLoggingForTasksAndProjects();
   }
 
   /**
-   * This should be deleted as sooon as projects and tasks are used on the
-   * front end. This is kept in here so that no ESLint errors are thrown, but
-   * the logic is still present to make it easier later.
+   * Updates the tasks state on the app.
+   *
+   * @param {Task} updatedTasks the new TaskObjects object to set for tasks on
+   * the app
    */
-  temporaryLoggingForTasksAndProjects(): void {
-    const { projects, tasks } = this.state;
-    // eslint-disable-next-line
-    console.log(JSON.stringify(projects, null, 2));
-    // eslint-disable-next-line
-    console.log(JSON.stringify(tasks, null, 2));
+  setTasks(updatedTasks: TaskObjects): void {
+    this.setState({
+      tasks: updatedTasks,
+    });
   }
+
+  /**
+   * Updates a particular task in the tasks state of the app.
+   *
+   * @param {Task} updatedTask the Task object to update in the tasks state
+   */
+  setTask(updatedTask: Task): void {
+    const { tasks } = this.state;
+    if (tasks) {
+      // eslint-disable-next-line no-underscore-dangle
+      tasks[updatedTask._id] = updatedTask;
+      this.setTasks(tasks);
+    }
+  }
+
+  // #region Project Functions
+  /**
+   * Updates the projects state on the app.
+   *
+   * @param {Project} updatedProjects the new ProjectObjects object to set for
+   * projects on the app
+   */
+  setProjects(updatedProjects: ProjectObjects): void {
+    this.setState({
+      projects: updatedProjects,
+    });
+  }
+
+  /**
+   * Updates a particular project in the projects state of the app.
+   *
+   * @param {Project} updatedProject the Project object to update in the
+   * projects state
+   */
+  setProject(updatedProject: Project): void {
+    const { projects } = this.state;
+    if (projects) {
+      // eslint-disable-next-line no-underscore-dangle
+      projects[updatedProject._id] = updatedProject;
+      this.setProjects(projects);
+    }
+  }
+
+  setUserProjects(newProject: Project): void {
+    const { user } = this.state;
+    if (user) {
+      const temp = user.projects;
+      // eslint-disable-next-line no-underscore-dangle
+      temp.push(newProject._id);
+      user.projects = temp;
+      this.setState({
+        user,
+      });
+    }
+  }
+
+  public handleInputChange = (
+    taskId: string,
+    inputId: string,
+    value: string
+  ): void => {
+    const { tasks } = this.state;
+    if (tasks) {
+      const currentTasks = tasks;
+      const foundTask = currentTasks[taskId];
+      switch (inputId) {
+        case 'title-input':
+          foundTask.title = value;
+          break;
+        case 'note-input':
+          foundTask.note = value;
+          break;
+        default:
+          break;
+      }
+      this.setTask(foundTask);
+    }
+  };
+
+  async addProject(newTitle: string): Promise<void> {
+    const { projects, user } = this.state;
+    if (user && projects) {
+      // TESTING
+      // const resProj = await getProjects(user.projects[0]);
+      // console.log(resProj);
+      // console.log(projects);
+      // eslint-disable-next-line no-underscore-dangle
+      const newProject = await postNewProject(user._id, newTitle);
+      this.setProject(newProject);
+      this.setUserProjects(newProject);
+    }
+  }
+  // #endregion
 
   /**
    * Sends the current `user` stored in the app's state to the server as a
@@ -207,6 +299,8 @@ class App extends React.Component<AppProps, AppState> {
       alert,
       updateSettings,
       sendUpdatedUserToServer,
+      addProject,
+      handleInputChange,
     } = this;
     return (
       <div className="App">
@@ -221,7 +315,8 @@ class App extends React.Component<AppProps, AppState> {
           <ProjectTable
             projects={projects}
             tasks={tasks}
-            projectIds={user.projects}
+            addProject={addProject}
+            handleChange={handleInputChange}
           />
         ) : (
           ''
