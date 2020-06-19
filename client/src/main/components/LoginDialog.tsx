@@ -11,9 +11,17 @@ type LoginDialogProps = {
   githubClientId: string;
 };
 
+/**
+ * Represents the login dialog, displaying login providers.
+ *
+ * @param {LoginDialogProps} props props passed to the LoginDialog
+ */
 export default function LoginDialog(props: LoginDialogProps): JSX.Element {
   const { setOpen, open, githubClientId } = props;
 
+  /**
+   * Handles the closing of the LoginDialog
+   */
   function handleClose(): void {
     setOpen(false);
   }

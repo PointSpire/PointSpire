@@ -125,6 +125,11 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
     }
   }
 
+  /**
+   * Sets the `loginOpen` state indicating if the LoginDialog is open or not.
+   *
+   * @param {boolean} open
+   */
   setLoginOpen(open: boolean) {
     this.setState({ loginOpen: open });
   }
@@ -149,6 +154,11 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
     };
   }
 
+  /**
+   * Creates a handler that sets the sate of the `loginOpen` state.
+   *
+   * @param {boolean} open
+   */
   createSetLoginOpenHandler(open: boolean) {
     return (event: React.KeyboardEvent | React.MouseEvent) => {
       if (
