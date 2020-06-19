@@ -143,7 +143,7 @@ class App extends React.Component<AppProps, AppState> {
   async componentDidMount(): Promise<void> {
     // Get the data for the user
     let userData: AllUserData;
-    if (process.env.REACT_APP_ENV === 'LOCAL_DE') {
+    if (process.env.REACT_APP_ENV === 'LOCAL_DEV') {
       userData = await getTestUserData();
     } else {
       userData = await getUserData();
