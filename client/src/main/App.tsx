@@ -72,8 +72,6 @@ async function getTestUserData(): Promise<AllUserData> {
 
 /**
  * Gets the user data from the server.
- *
- * CURRENTLY A PLACEHOLDER
  */
 async function getUserData(): Promise<AllUserData> {
   const githubCodeRegEx = /\?code=(.*)/;
