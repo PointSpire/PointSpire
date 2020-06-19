@@ -57,7 +57,6 @@ const baseServerUrl =
   process.env.REACT_APP_ENV === 'LOCAL_DEV'
     ? 'http://localhost:8055'
     : 'https://point-spire.herokuapp.com';
-
 const githubClientId = 'f6a5702090e186626681';
 
 /**
