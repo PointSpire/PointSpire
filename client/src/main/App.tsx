@@ -13,6 +13,7 @@ import {
   Task,
 } from './dbTypes';
 import ProjectTable from './components/ProjectTable';
+import { getProjects } from './fetchMethods';
 
 /**
  * Used to determine the severity of an alert for the snackbar of the app.
@@ -95,6 +96,7 @@ class App extends React.Component<AppProps, AppState> {
     this.setProject = this.setProject.bind(this);
     this.setTasks = this.setTasks.bind(this);
     this.setTask = this.setTask.bind(this);
+    this.addProject = this.addProject.bind(this);
   }
 
   /**
@@ -108,33 +110,6 @@ class App extends React.Component<AppProps, AppState> {
       projects: userData.projects,
       tasks: userData.tasks,
     });
-  }
-
-  /**
-   * Updates the projects state on the app.
-   *
-   * @param {Project} updatedProjects the new ProjectObjects object to set for
-   * projects on the app
-   */
-  setProjects(updatedProjects: ProjectObjects): void {
-    this.setState({
-      projects: updatedProjects,
-    });
-  }
-
-  /**
-   * Updates a particular project in the projects state of the app.
-   *
-   * @param {Project} updatedProject the Project object to update in the
-   * projects state
-   */
-  setProject(updatedProject: Project): void {
-    const { projects } = this.state;
-    if (projects) {
-      // eslint-disable-next-line no-underscore-dangle
-      projects[updatedProject._id] = updatedProject;
-      this.setProjects(projects);
-    }
   }
 
   /**
@@ -162,6 +137,45 @@ class App extends React.Component<AppProps, AppState> {
       this.setTasks(tasks);
     }
   }
+
+  // #region Project Functions
+  /**
+   * Updates the projects state on the app.
+   *
+   * @param {Project} updatedProjects the new ProjectObjects object to set for
+   * projects on the app
+   */
+  setProjects(updatedProjects: ProjectObjects): void {
+    this.setState({
+      projects: updatedProjects,
+    });
+  }
+
+  /**
+   * Updates a particular project in the projects state of the app.
+   *
+   * @param {Project} updatedProject the Project object to update in the
+   * projects state
+   */
+  setProject(updatedProject: Project): void {
+    const { projects } = this.state;
+    if (projects) {
+      // eslint-disable-next-line no-underscore-dangle
+      projects[updatedProject._id] = updatedProject;
+      this.setProjects(projects);
+    }
+  }
+
+  async addProject(): Promise<void> {
+    // TESTING
+    const { projects, user } = this.state;
+    if (user && projects) {
+      const resProj = await getProjects(user.projects[0]);
+      console.log(resProj);
+      // console.log(projects);
+    }
+  }
+  // #endregion
 
   /**
    * Sends the current `user` stored in the app's state to the server as a
@@ -245,6 +259,7 @@ class App extends React.Component<AppProps, AppState> {
       alert,
       updateSettings,
       sendUpdatedUserToServer,
+      addProject,
     } = this;
     return (
       <div className="App">
@@ -256,7 +271,11 @@ class App extends React.Component<AppProps, AppState> {
         />
         {/* If projects and tasks exist, show project table */}
         {projects && tasks && user ? (
-          <ProjectTable projects={projects} tasks={tasks} />
+          <ProjectTable
+            projects={projects}
+            tasks={tasks}
+            addProject={addProject}
+          />
         ) : (
           ''
         )}

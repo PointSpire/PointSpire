@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  // Button,
+  Button,
   TableContainer,
   TableBody,
   TableCell,
@@ -8,6 +8,8 @@ import {
   TableRow,
   Paper,
   Table,
+  Collapse,
+  TextField,
 } from '@material-ui/core/';
 import {
   Theme,
@@ -26,9 +28,13 @@ function styles(theme: Theme) {
     root: {
       width: '100%',
       backgroundColor: theme.palette.background.paper,
+      alignItems: 'center',
     },
     nested: {
       paddingLeft: theme.spacing(4),
+    },
+    label: {
+      alignSelf: 'center',
     },
   });
 }
@@ -36,10 +42,13 @@ function styles(theme: Theme) {
 export interface ProjectTableProps extends WithStyles<typeof styles> {
   projects: ProjectObjects;
   tasks: TaskObjects;
+  addProject: () => void;
 }
 
 export interface ProjectTableState {
   projectTableOpen: boolean;
+  addProjectOpen: boolean;
+  newProjectTitle: string;
 }
 
 class ProjectTable extends React.Component<
@@ -50,12 +59,14 @@ class ProjectTable extends React.Component<
     super(props);
     this.state = {
       projectTableOpen: true,
+      addProjectOpen: false,
+      newProjectTitle: '',
     };
   }
 
   render() {
-    const { projects, tasks } = this.props;
-    const { projectTableOpen } = this.state;
+    const { classes, projects, tasks, addProject } = this.props;
+    const { projectTableOpen, addProjectOpen, newProjectTitle } = this.state;
     return (
       <TableContainer component={Paper}>
         <Table aria-label="collapsible table">
@@ -74,8 +85,40 @@ class ProjectTable extends React.Component<
             {Object.values(projects).map(projectDoc => {
               return <ProjectRow project={projectDoc} tasks={tasks} />;
             })}
+            <Collapse in={addProjectOpen} timeout="auto">
+              <Paper>
+                <TextField
+                  id="new-project-title"
+                  label="New Project Title"
+                  value={newProjectTitle}
+                  onChange={e => {
+                    this.setState({
+                      newProjectTitle: e.target.value,
+                    });
+                  }}
+                  variant="outlined"
+                  size="small"
+                />
+                <Button variant="contained" onClick={() => addProject()}>
+                  Done
+                </Button>
+              </Paper>
+            </Collapse>
+            <Button
+              className={classes.label}
+              variant="outlined"
+              fullWidth
+              onClick={() => {
+                this.setState(prev => {
+                  return {
+                    addProjectOpen: !prev.addProjectOpen,
+                  };
+                });
+              }}
+            >
+              Create Project
+            </Button>
           </TableBody>
-          <TableBody />
         </Table>
       </TableContainer>
     );
