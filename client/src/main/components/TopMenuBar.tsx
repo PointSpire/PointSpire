@@ -21,6 +21,7 @@ import MenuIcon from '@material-ui/icons/Menu';
 import SettingsIcon from '@material-ui/icons/Settings';
 import HelpIcon from '@material-ui/icons/Help';
 import SettingsDialog from './SettingsDialog';
+import LoginDialog from './LoginDialog';
 import {
   AlertFunction,
   UpdateSettingsFunction,
@@ -56,6 +57,8 @@ export interface TopMenuBarProps extends WithStyles<typeof styles> {
   userSettings?: UserSettings;
   updateSettings?: UpdateSettingsFunction;
   sendUpdatedUserToServer: UpdateUserOnServerFunction;
+  baseServerUrl: string;
+  githubClientId: string;
 }
 
 export interface TopMenuBarState {
@@ -68,6 +71,7 @@ export interface TopMenuBarState {
    * Determines if the SettingsDialog is open.
    */
   settingsOpen: boolean;
+  loginOpen: boolean;
 }
 
 /**
@@ -94,12 +98,15 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
     this.state = {
       drawerOpen: false,
       settingsOpen: false,
+      loginOpen: false,
     };
 
     this.createSetSettingsOpenHandler = this.createSetSettingsOpenHandler.bind(
       this
     );
     this.setSettingsOpen = this.setSettingsOpen.bind(this);
+    this.createSetLoginOpenHandler = this.createSetLoginOpenHandler.bind(this);
+    this.setLoginOpen = this.setLoginOpen.bind(this);
     this.toggleDrawer = this.toggleDrawer.bind(this);
   }
 
@@ -119,6 +126,15 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
   }
 
   /**
+   * Sets the `loginOpen` state indicating if the LoginDialog is open or not.
+   *
+   * @param {boolean} open
+   */
+  setLoginOpen(open: boolean) {
+    this.setState({ loginOpen: open });
+  }
+
+  /**
    * Creates a handler that can be used to change the `settingsOpen` state.
    *
    * @param {boolean} open true if this should set the SettingsDialog to open,
@@ -135,6 +151,25 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
       }
 
       this.setSettingsOpen(open);
+    };
+  }
+
+  /**
+   * Creates a handler that sets the sate of the `loginOpen` state.
+   *
+   * @param {boolean} open
+   */
+  createSetLoginOpenHandler(open: boolean) {
+    return (event: React.KeyboardEvent | React.MouseEvent) => {
+      if (
+        event.type === 'keydown' &&
+        ((event as React.KeyboardEvent).key === 'Tab' ||
+          (event as React.KeyboardEvent).key === 'Shift')
+      ) {
+        return;
+      }
+
+      this.setLoginOpen(open);
     };
   }
 
@@ -162,6 +197,7 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
     const {
       state,
       setSettingsOpen,
+      setLoginOpen,
       toggleDrawer,
       createSetSettingsOpenHandler,
     } = this;
@@ -171,6 +207,7 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
       userSettings,
       updateSettings,
       sendUpdatedUserToServer,
+      githubClientId,
     } = this.props;
 
     // Set up the settingsDialog based on existence of user info
@@ -235,7 +272,12 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
             <Typography variant="h6" className={classes.title}>
               PointSpire
             </Typography>
-            <Button color="inherit">Login</Button>
+            <Button
+              color="inherit"
+              onClick={this.createSetLoginOpenHandler(true)}
+            >
+              Login
+            </Button>
           </Toolbar>
         </AppBar>
         <Drawer
@@ -245,6 +287,11 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
         >
           {menuList}
         </Drawer>
+        <LoginDialog
+          githubClientId={githubClientId}
+          open={state.loginOpen}
+          setOpen={setLoginOpen}
+        />
         {settingsDialog}
       </div>
     );
