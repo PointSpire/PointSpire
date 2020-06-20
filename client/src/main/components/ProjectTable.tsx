@@ -17,8 +17,9 @@ import {
   withStyles,
   WithStyles,
 } from '@material-ui/core/styles';
-import { ProjectObjects, TaskObjects } from '../dbTypes';
+import { ProjectObjects, TaskObjects, Project, User } from '../dbTypes';
 import ProjectRow from './ProjectRow';
+import { SetProjectsFunction, SetUserFunction } from '../App';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */
@@ -42,14 +43,16 @@ function styles(theme: Theme) {
 export interface ProjectTableProps extends WithStyles<typeof styles> {
   projects: ProjectObjects;
   tasks: TaskObjects;
-
-  // updateUserData: (projectData: ProjectObjects) => void;
-  // createNewProject: () => void;
-  addProject: (newTitle: string) => void;
-  handleChange: (taskId: string, inputId: string, value: string) => void;
+  // addProject: (newTitle: string) => void;
+  // handleChange: (taskId: string, inputId: string, value: string) => void;
+  baseServerUrl: string;
+  user: User;
+  setProjects: SetProjectsFunction;
+  setUser: SetUserFunction;
 }
 
 export interface ProjectTableState {
+  tasks: TaskObjects;
   changeCount: number;
   addProjectOpen: boolean;
   newProjectTitle: string;
@@ -62,39 +65,82 @@ class ProjectTable extends React.Component<
   constructor(props: ProjectTableProps) {
     super(props);
     this.state = {
+      tasks: props.tasks,
       changeCount: 0,
       addProjectOpen: false,
       newProjectTitle: '',
     };
-    // this.handleInputChange = this.handleInputChange.bind(this);
+
+    this.addProject = this.addProject.bind(this);
+    this.handleInputChange = this.handleInputChange.bind(this);
   }
 
-  // public handleInputChange = (
-  //   taskId: string,
-  //   inputId: string,
-  //   value: string
-  // ) => {
-  //   const { tasks } = this.state;
-  //   const currentTasks = tasks;
-  //   const foundTask = currentTasks[taskId];
-  //   switch (inputId) {
-  //     case 'title-input':
-  //       foundTask.title = value;
-  //       break;
-  //     case 'note-input':
-  //       foundTask.note = value;
-  //       break;
-  //     default:
-  //       break;
-  //   }
-  //   currentTasks[taskId] = foundTask;
-  //   this.setState(currState => ({
-  //     changeCount: currState.changeCount + 1,
-  //   }));
-  // };
+  public handleInputChange = (
+    taskId: string,
+    inputId: string,
+    value: string
+  ) => {
+    const { tasks } = this.state;
+    const currentTasks = tasks;
+    const foundTask = currentTasks[taskId];
+    switch (inputId) {
+      case 'title-input':
+        foundTask.title = value;
+        break;
+      case 'note-input':
+        foundTask.note = value;
+        break;
+      default:
+        break;
+    }
+    currentTasks[taskId] = foundTask;
+    this.setState(currState => ({
+      changeCount: currState.changeCount + 1,
+    }));
+  };
+
+  /**
+   * Adds the project to the user state and the project objects state.
+   *
+   * @private
+   * @param {Project} newProject the new project to add to state
+   */
+  _addProjectToState(newProject: Project): void {
+    const { setProjects, projects, user, setUser } = this.props;
+    projects[newProject._id] = newProject;
+    user.projects.push(newProject._id);
+    setProjects(projects);
+    setUser(user);
+  }
+
+  /**
+   * Adds a project to the server, and to state. This can be passed down to
+   * child components.
+   *
+   * @param {string} projectTitle the title of the new project
+   */
+  async addProject(projectTitle: string): Promise<void> {
+    const { baseServerUrl, user } = this.props;
+    const reqBody = {
+      title: projectTitle,
+    };
+
+    // REPLACE WITH FETCHMETHODS FILE
+    const res = await fetch(`${baseServerUrl}/api/users/${user._id}/projects`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(reqBody),
+    });
+    const newProject: Project = (await res.json()) as Project;
+
+    // Save the project to state
+    this._addProjectToState(newProject);
+  }
 
   render() {
-    const { classes, projects, tasks, addProject, handleChange } = this.props;
+    const { classes, projects, tasks } = this.props;
     const { addProjectOpen, newProjectTitle, changeCount } = this.state;
     return (
       <TableContainer component={Paper}>
@@ -116,7 +162,7 @@ class ProjectTable extends React.Component<
                 <ProjectRow
                   project={projectDoc}
                   tasks={tasks}
-                  handleChange={handleChange}
+                  handleChange={this.handleInputChange}
                 />
               );
             })}
@@ -136,7 +182,7 @@ class ProjectTable extends React.Component<
                 />
                 <Button
                   variant="contained"
-                  onClick={() => addProject(newProjectTitle)}
+                  onClick={() => this.addProject(newProjectTitle)}
                 >
                   Done
                 </Button>
