@@ -13,7 +13,12 @@ import {
   Task,
 } from './dbTypes';
 import ProjectTable from './components/ProjectTable';
-import { postNewProject, getUserData, getTestUserData } from './fetchMethods';
+import {
+  postNewProject,
+  getUserData,
+  getTestUserData,
+  baseServerUrl,
+} from './fetchMethods';
 
 /**
  * Used to determine the severity of an alert for the snackbar of the app.
@@ -54,13 +59,6 @@ type AppState = {
 
 type AppProps = unknown;
 
-/**
- * The base url for the server.
- */
-const baseServerUrl =
-  process.env.REACT_APP_ENV === 'LOCAL_DEV'
-    ? 'http://localhost:8055'
-    : 'https://point-spire.herokuapp.com';
 const githubClientId = 'f6a5702090e186626681';
 
 /**

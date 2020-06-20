@@ -35,6 +35,11 @@ const fetchData = {
 };
 
 /**
+ * The base url for the server.
+ */
+export const { baseServerUrl } = fetchData;
+
+/**
  * Gets the project with the specified ID.
  *
  * @param {string} id the id of the project to retrieve data for
