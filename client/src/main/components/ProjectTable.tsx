@@ -17,8 +17,9 @@ import {
   withStyles,
   WithStyles,
 } from '@material-ui/core/styles';
-import { ProjectObjects, TaskObjects } from '../dbTypes';
+import { ProjectObjects, TaskObjects, Project, User } from '../dbTypes';
 import ProjectRow from './ProjectRow';
+import { SetProjectsFunction, SetUserFunction } from '../App';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */
@@ -42,7 +43,10 @@ function styles(theme: Theme) {
 export interface ProjectTableProps extends WithStyles<typeof styles> {
   projects: ProjectObjects;
   tasks: TaskObjects;
-  addProject: () => void;
+  baseServerUrl: string;
+  user: User;
+  setProjects: SetProjectsFunction;
+  setUser: SetUserFunction;
 }
 
 export interface ProjectTableState {
@@ -62,10 +66,51 @@ class ProjectTable extends React.Component<
       addProjectOpen: false,
       newProjectTitle: '',
     };
+
+    this.addProject = this.addProject.bind(this);
+  }
+
+  /**
+   * Adds a project to the server, and to state. This can be passed down to
+   * child components.
+   *
+   * @param {string} projectTitle the title of the new project
+   */
+  async addProject(projectTitle: string): Promise<void> {
+    const { baseServerUrl, user } = this.props;
+    const reqBody = {
+      title: projectTitle,
+    };
+
+    const res = await fetch(`${baseServerUrl}/api/users/${user._id}/projects`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(reqBody),
+    });
+    const newProject: Project = (await res.json()) as Project;
+
+    // Save the project to state
+    this._addProjectToState(newProject);
+  }
+
+  /**
+   * Adds the project to the user state and the project objects state.
+   *
+   * @private
+   * @param {Project} newProject the new project to add to state
+   */
+  _addProjectToState(newProject: Project): void {
+    const { setProjects, projects, user, setUser } = this.props;
+    projects[newProject._id] = newProject;
+    user.projects.push(newProject._id);
+    setProjects(projects);
+    setUser(user);
   }
 
   render() {
-    const { classes, projects, tasks, addProject } = this.props;
+    const { classes, projects, tasks } = this.props;
     const { projectTableOpen, addProjectOpen, newProjectTitle } = this.state;
     return (
       <TableContainer component={Paper}>
@@ -99,7 +144,10 @@ class ProjectTable extends React.Component<
                   variant="outlined"
                   size="small"
                 />
-                <Button variant="contained" onClick={() => addProject()}>
+                <Button
+                  variant="contained"
+                  onClick={() => this.addProject(newProjectTitle)}
+                >
                   Done
                 </Button>
               </Paper>

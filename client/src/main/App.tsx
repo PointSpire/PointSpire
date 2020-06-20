@@ -13,7 +13,7 @@ import {
   Task,
 } from './dbTypes';
 import ProjectTable from './components/ProjectTable';
-import { getProjects } from './fetchMethods';
+// import { getProjects } from './fetchMethods';
 
 /**
  * Used to determine the severity of an alert for the snackbar of the app.
@@ -96,7 +96,7 @@ class App extends React.Component<AppProps, AppState> {
     this.setProject = this.setProject.bind(this);
     this.setTasks = this.setTasks.bind(this);
     this.setTask = this.setTask.bind(this);
-    this.addProject = this.addProject.bind(this);
+    this.setUser = this.setUser.bind(this);
   }
 
   /**
@@ -110,32 +110,6 @@ class App extends React.Component<AppProps, AppState> {
       projects: userData.projects,
       tasks: userData.tasks,
     });
-  }
-
-  /**
-   * Updates the tasks state on the app.
-   *
-   * @param {Task} updatedTasks the new TaskObjects object to set for tasks on
-   * the app
-   */
-  setTasks(updatedTasks: TaskObjects): void {
-    this.setState({
-      tasks: updatedTasks,
-    });
-  }
-
-  /**
-   * Updates a particular task in the tasks state of the app.
-   *
-   * @param {Task} updatedTask the Task object to update in the tasks state
-   */
-  setTask(updatedTask: Task): void {
-    const { tasks } = this.state;
-    if (tasks) {
-      // eslint-disable-next-line no-underscore-dangle
-      tasks[updatedTask._id] = updatedTask;
-      this.setTasks(tasks);
-    }
   }
 
   // #region Project Functions
@@ -166,16 +140,46 @@ class App extends React.Component<AppProps, AppState> {
     }
   }
 
-  async addProject(): Promise<void> {
-    // TESTING
-    const { projects, user } = this.state;
-    if (user && projects) {
-      const resProj = await getProjects(user.projects[0]);
-      console.log(resProj);
-      // console.log(projects);
+  /**
+   * Updates the tasks state on the app.
+   *
+   * @param {Task} updatedTasks the new TaskObjects object to set for tasks on
+   * the app
+   */
+  setTasks(updatedTasks: TaskObjects): void {
+    this.setState({
+      tasks: updatedTasks,
+    });
+  }
+
+  /**
+   * Updates a particular task in the tasks state of the app.
+   *
+   * @param {Task} updatedTask the Task object to update in the tasks state
+   */
+  setTask(updatedTask: Task): void {
+    const { tasks } = this.state;
+    if (tasks) {
+      tasks[updatedTask._id] = updatedTask;
+      this.setTasks(tasks);
     }
   }
   // #endregion
+
+  setUser(updatedUser: User): void {
+    this.setState({
+      user: updatedUser,
+    });
+  }
+
+  /**
+   * Closes the dialog / toast at the bottom of the screen.
+   */
+  handleSnackBarClose(): void {
+    this.setState({
+      snackBarOpen: false,
+    });
+  }
 
   /**
    * Sends the current `user` stored in the app's state to the server as a
@@ -201,15 +205,6 @@ class App extends React.Component<AppProps, AppState> {
   }
 
   /**
-   * Closes the dialog / toast at the bottom of the screen.
-   */
-  handleSnackBarClose(): void {
-    this.setState({
-      snackBarOpen: false,
-    });
-  }
-
-  /**
    * Updates the settings for the user on the client side. This does not send
    * the updated settings to the server. For that, use
    * `sendUpdatedUserToServer`. This can be passed down to components that
@@ -222,9 +217,7 @@ class App extends React.Component<AppProps, AppState> {
     const { user } = this.state;
     if (user) {
       user.settings = updatedSettings;
-      this.setState({
-        user,
-      });
+      this.setUser(user);
     }
   }
 
@@ -259,7 +252,8 @@ class App extends React.Component<AppProps, AppState> {
       alert,
       updateSettings,
       sendUpdatedUserToServer,
-      addProject,
+      setProjects,
+      setUser,
     } = this;
     return (
       <div className="App">
@@ -272,9 +266,12 @@ class App extends React.Component<AppProps, AppState> {
         {/* If projects and tasks exist, show project table */}
         {projects && tasks && user ? (
           <ProjectTable
+            setUser={setUser}
+            setProjects={setProjects}
+            baseServerUrl={baseServerUrl}
             projects={projects}
             tasks={tasks}
-            addProject={addProject}
+            user={user}
           />
         ) : (
           ''
@@ -308,5 +305,15 @@ export type UpdateSettingsFunction = typeof App.prototype.updateSettings;
  * The type of the method 'sendUpdatedUserToServer' on the App class.
  */
 export type UpdateUserOnServerFunction = typeof App.prototype.sendUpdatedUserToServer;
+
+/**
+ * The type of the method 'setProjects' on the App class.
+ */
+export type SetProjectsFunction = typeof App.prototype.setProjects;
+
+/**
+ * The type of the method 'setUser' on the App class.
+ */
+export type SetUserFunction = typeof App.prototype.setUser;
 
 export default App;
