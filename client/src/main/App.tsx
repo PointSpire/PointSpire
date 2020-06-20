@@ -297,7 +297,10 @@ class App extends React.Component<AppProps, AppState> {
       updateSettings,
       sendUpdatedUserToServer,
       setProjects,
+      setProject,
       setUser,
+      setTask,
+      setTasks,
     } = this;
     return (
       <div className="App">
@@ -312,6 +315,9 @@ class App extends React.Component<AppProps, AppState> {
           <ProjectTable
             setUser={setUser}
             setProjects={setProjects}
+            setProject={setProject}
+            setTask={setTask}
+            setTasks={setTasks}
             baseServerUrl={baseServerUrl}
             projects={projects}
             tasks={tasks}
@@ -356,8 +362,23 @@ export type UpdateUserOnServerFunction = typeof App.prototype.sendUpdatedUserToS
 export type SetProjectsFunction = typeof App.prototype.setProjects;
 
 /**
+ * The type of the method 'setProject' on the App class.
+ */
+export type SetProjectFunction = typeof App.prototype.setProject;
+
+/**
  * The type of the method 'setUser' on the App class.
  */
 export type SetUserFunction = typeof App.prototype.setUser;
+
+/**
+ * The type of the method 'setTask' on the App class.
+ */
+export type SetTaskFunction = typeof App.prototype.setTask;
+
+/**
+ * The type of the method 'setTasks' on the App class.
+ */
+export type SetTasksFunction = typeof App.prototype.setTasks;
 
 export default App;

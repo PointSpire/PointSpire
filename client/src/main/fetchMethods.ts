@@ -2,7 +2,7 @@
  * This file is used to store the fetch requests that access the database
  */
 
-import { ProjectObjects, Project, AllUserData, User } from './dbTypes';
+import { ProjectObjects, Project, AllUserData, User, Task } from './dbTypes';
 
 const fetchData = {
   baseServerUrl:
@@ -16,33 +16,42 @@ const fetchData = {
     projects: '/api/projects/',
     subTasks: '/subtasks',
   },
-  buildUrl(api: string, id: string | null) {
-    let output = this.baseServerUrl;
-    switch (api) {
-      case 'users':
-        output += this.api.users;
-        break;
-      case 'projects':
-        output += this.api.projects;
-        break;
-      case 'tasks':
-        output += this.api.tasks;
-        break;
-      default:
-        break;
+  basicHeader: {
+    'Content-Type': 'application/json',
+  },
+  /**
+   * Places the ID in the URL.
+   * @param {string} url The URL that accesses the api. Use a ~ to specify the id location.
+   * @param {string | null} id The ID to replace at the ~ location, or null to skip.
+   */
+  buildUrl(url: string, id: string | null): string {
+    const regEx = /(?<=\/)~/;
+    let output = url;
+    if (id && regEx.test(url)) {
+      output = url.replace(regEx, id);
     }
-    output += id === null ? '' : id;
     return output;
   },
 };
 
 export type FetchMethods = {
-  getProjects: () => Promise<ProjectObjects>;
-  postProjects: () => Promise<Project>;
+  getProjects: (id: string) => Promise<ProjectObjects>;
+  getUserData: (id: string) => Promise<AllUserData>;
+  getRequest: <T>(url: string, id: string) => Promise<T>;
+  postNewProject: (userId: string, projectTitle: string) => Promise<Project>;
+  patchProject: (url: string, project: Project) => Promise<Project>;
+  postNewTask: (
+    url: string,
+    parentId: string,
+    taskTitle: string
+  ) => Promise<Task>;
 };
 
 export async function getProjects(id: string): Promise<ProjectObjects> {
-  const url = fetchData.buildUrl('projects', id);
+  const url = fetchData.buildUrl(
+    `${fetchData.baseServerUrl}/api/projects/~`,
+    id
+  );
   // console.log(url);
   const data = await fetch(url);
   const projData = (await data.json()) as ProjectObjects;
@@ -53,7 +62,12 @@ export function getUserData(id: string): Promise<AllUserData> {
   const userId =
     process.env.REACT_APP_ENV === 'LOCAL_DEV' ? fetchData.testUser : id;
   return new Promise<AllUserData>((resolve, reject) => {
-    fetch(fetchData.buildUrl('users', userId))
+    fetch(
+      fetchData.buildUrl(
+        `${fetchData.baseServerUrl}/api/users/~/projects`,
+        userId
+      )
+    )
       .then(res => res.json())
       .then(data => resolve(data as AllUserData))
       .catch(err => reject(err));
@@ -62,16 +76,16 @@ export function getUserData(id: string): Promise<AllUserData> {
 
 export function getUser(id: string): Promise<User> {
   return new Promise<User>((resolve, reject) => {
-    fetch(fetchData.buildUrl('users', id))
+    fetch(fetchData.buildUrl(`${fetchData.baseServerUrl}/api/users/~`, id))
       .then(res => res.json())
       .then(data => resolve(data as User))
       .catch(err => reject(err));
   });
 }
 
-export function getRequest<T>(id: string, end: string): Promise<T> {
+export function getRequest<T>(url: string, id: string): Promise<T> {
   return new Promise<T>((resolve, reject) => {
-    fetch(fetchData.buildUrl(end, id))
+    fetch(fetchData.buildUrl(url, id))
       .then(res => res.json())
       .then(data => resolve(data as T))
       .catch(err => reject(err));
@@ -82,22 +96,55 @@ export async function postNewProject(
   userId: string,
   projectTitle: string
 ): Promise<Project> {
-  const userResponse = await getRequest<User>(userId, 'users');
-  if (userResponse) {
-    const tempProject = {
-      title: projectTitle,
-      note: '',
-    };
-    const url = fetchData.buildUrl('projects', userId) + fetchData.api.subTasks;
-    const projectRes = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(tempProject),
-    });
-    const newProject = (await projectRes.json()) as Project;
-    return newProject;
-  }
-  throw new Error('User not found.');
+  const tempProject = {
+    title: projectTitle,
+  };
+  const url = fetchData.buildUrl(
+    `${fetchData.baseServerUrl}/api/users/~/projects`,
+    userId
+  );
+  const projectRes = await fetch(url, {
+    method: 'POST',
+    headers: fetchData.basicHeader,
+    body: JSON.stringify(tempProject),
+  });
+  const newProject = (await projectRes.json()) as Project;
+  return newProject;
+}
+
+export async function patchProject(
+  url: string,
+  project: Project
+): Promise<Project> {
+  const { buildUrl, basicHeader } = fetchData;
+  const fullUrl = buildUrl(url, project._id);
+  const tempProject = project;
+  delete tempProject._id;
+  const projectRes = await fetch(fullUrl, {
+    method: 'PATCH',
+    headers: basicHeader,
+    body: JSON.stringify(tempProject),
+  });
+  const updatedProject = (await projectRes.json()) as Project;
+  return updatedProject;
+}
+
+export async function postNewTask(
+  url: string,
+  parentId: string,
+  taskTitle: string
+): Promise<Task> {
+  const { buildUrl, basicHeader } = fetchData;
+  const fullUrl = buildUrl(url, parentId);
+  const newTask = {
+    title: taskTitle,
+    note: 'blank',
+  };
+  const taskRes = await fetch(fullUrl, {
+    method: 'POST',
+    headers: basicHeader,
+    body: JSON.stringify(newTask),
+  });
+  const returnedTask = (await taskRes.json()) as Task;
+  return returnedTask;
 }

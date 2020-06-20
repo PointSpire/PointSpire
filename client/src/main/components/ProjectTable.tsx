@@ -17,9 +17,16 @@ import {
   withStyles,
   WithStyles,
 } from '@material-ui/core/styles';
-import { ProjectObjects, TaskObjects, Project, User } from '../dbTypes';
+import { ProjectObjects, TaskObjects, Project, User, Task } from '../dbTypes';
 import ProjectRow from './ProjectRow';
-import { SetProjectsFunction, SetUserFunction } from '../App';
+import {
+  SetProjectsFunction,
+  SetProjectFunction,
+  SetUserFunction,
+  SetTaskFunction,
+  SetTasksFunction,
+} from '../App';
+import { postNewProject, postNewTask } from '../fetchMethods';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */
@@ -48,14 +55,17 @@ export interface ProjectTableProps extends WithStyles<typeof styles> {
   baseServerUrl: string;
   user: User;
   setProjects: SetProjectsFunction;
+  setProject: SetProjectFunction;
   setUser: SetUserFunction;
+  setTask: SetTaskFunction;
+  setTasks: SetTasksFunction;
 }
 
 export interface ProjectTableState {
-  tasks: TaskObjects;
   changeCount: number;
   addProjectOpen: boolean;
   newProjectTitle: string;
+  newTaskTitle: string;
 }
 
 class ProjectTable extends React.Component<
@@ -65,24 +75,32 @@ class ProjectTable extends React.Component<
   constructor(props: ProjectTableProps) {
     super(props);
     this.state = {
-      tasks: props.tasks,
       changeCount: 0,
       addProjectOpen: false,
       newProjectTitle: '',
+      newTaskTitle: '',
     };
 
     this.addProject = this.addProject.bind(this);
+    this.addTaskToProject = this.addTaskToProject.bind(this);
+    this._addTaskToProjectState = this._addTaskToProjectState.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
+    this.deleteTask = this.deleteTask.bind(this);
   }
+
+  private handleTaskInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({
+      newTaskTitle: e.target.value,
+    });
+  };
 
   public handleInputChange = (
     taskId: string,
     inputId: string,
     value: string
   ) => {
-    const { tasks } = this.state;
-    const currentTasks = tasks;
-    const foundTask = currentTasks[taskId];
+    const { tasks, setTask } = this.props;
+    const foundTask = tasks[taskId];
     switch (inputId) {
       case 'title-input':
         foundTask.title = value;
@@ -93,10 +111,10 @@ class ProjectTable extends React.Component<
       default:
         break;
     }
-    currentTasks[taskId] = foundTask;
     this.setState(currState => ({
       changeCount: currState.changeCount + 1,
     }));
+    setTask(foundTask);
   };
 
   /**
@@ -119,41 +137,100 @@ class ProjectTable extends React.Component<
    *
    * @param {string} projectTitle the title of the new project
    */
-  async addProject(projectTitle: string): Promise<void> {
-    const { baseServerUrl, user } = this.props;
-    const reqBody = {
-      title: projectTitle,
-    };
+  async addProject(): Promise<void> {
+    // const { baseServerUrl, user } = this.props;
+    const { user } = this.props;
+    const { newProjectTitle } = this.state;
+    if (newProjectTitle.length > 0) {
+      // Calls the fetch method in ./fetchMethods.ts
+      const newProject = await postNewProject(user._id, newProjectTitle);
 
-    // REPLACE WITH FETCHMETHODS FILE
-    const res = await fetch(`${baseServerUrl}/api/users/${user._id}/projects`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(reqBody),
-    });
-    const newProject: Project = (await res.json()) as Project;
+      // Save the project to state
+      this._addProjectToState(newProject);
+      this.setState({
+        addProjectOpen: false,
+      });
+    }
+  }
 
-    // Save the project to state
-    this._addProjectToState(newProject);
+  private _addTaskToProjectState(newTask: Task, project: Project): void {
+    const { setTasks, tasks, setProject, projects } = this.props;
+    tasks[newTask._id] = newTask;
+    const p = projects[project._id];
+    p.subtasks.push(newTask._id);
+    setTasks(tasks);
+    setProject(p);
+  }
+
+  private _addTaskToTaskState(newTask: Task): void {
+    const { tasks, setTasks } = this.props;
+    tasks[newTask._id] = newTask;
+    setTasks(tasks);
+  }
+
+  async addTaskToProject(projectId: string) {
+    const { baseServerUrl, projects } = this.props;
+    const { newTaskTitle } = this.state;
+    const project = projects[projectId];
+
+    const newTask = await postNewTask(
+      `${baseServerUrl}/api/projects/~/subtasks`,
+      projectId,
+      newTaskTitle
+    );
+
+    this._addTaskToProjectState(newTask, project);
+  }
+
+  async addTaskToTask(parentId: string) {
+    const { baseServerUrl } = this.props;
+    const { newTaskTitle } = this.state;
+
+    const newTask = await postNewTask(
+      `${baseServerUrl}/api/tasks/~/subtasks`,
+      parentId,
+      newTaskTitle
+    );
+
+    this._addTaskToTaskState(newTask);
+  }
+
+  // eslint-disable-next-line
+  deleteTask(taskId: string) {
+    console.log(taskId);
+  }
+
+  autoUpdateUser() {
+    // eslint-disable-next-line
+    console.log(`Update user data: ${this.state.changeCount}`)
   }
 
   render() {
     const { classes, projects, tasks } = this.props;
-    const { addProjectOpen, newProjectTitle, changeCount } = this.state;
+    const {
+      addProjectOpen,
+      newProjectTitle,
+      changeCount,
+      newTaskTitle,
+    } = this.state;
+    const {
+      handleInputChange,
+      addProject,
+      addTaskToProject,
+      addTaskToTask,
+      handleTaskInput,
+      autoUpdateUser,
+      deleteTask,
+    } = this;
+    if (changeCount > 40) {
+      autoUpdateUser();
+    }
     return (
       <TableContainer component={Paper}>
         <Table aria-label="collapsible table">
           <TableHead>
             <TableRow>
-              {/* This will be removed when the state has something to do. */}
-              {/* eslint-disable-next-line */}
-              <TableCell>{`Remove Later! ${changeCount}`}</TableCell>
-              <TableCell>Title</TableCell>
-              <TableCell align="right">Note</TableCell>
-              <TableCell align="right">Date</TableCell>
-              <TableCell align="right">{projects.id}</TableCell>
+              <TableCell align="left">{projects.id}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -162,7 +239,12 @@ class ProjectTable extends React.Component<
                 <ProjectRow
                   project={projectDoc}
                   tasks={tasks}
-                  handleChange={this.handleInputChange}
+                  handleChange={handleInputChange}
+                  addTaskToProject={addTaskToProject}
+                  handleTaskInput={handleTaskInput}
+                  newTaskTitle={newTaskTitle}
+                  addTaskToTask={addTaskToTask}
+                  handleTaskDelete={deleteTask}
                 />
               );
             })}
@@ -177,13 +259,11 @@ class ProjectTable extends React.Component<
                       newProjectTitle: e.target.value,
                     });
                   }}
+                  error={newProjectTitle.length === 0}
                   variant="outlined"
                   size="small"
                 />
-                <Button
-                  variant="contained"
-                  onClick={() => this.addProject(newProjectTitle)}
-                >
+                <Button variant="contained" onClick={() => addProject()}>
                   Done
                 </Button>
               </Paper>
@@ -208,5 +288,9 @@ class ProjectTable extends React.Component<
     );
   }
 }
+
+export type AddTaskToProject = typeof ProjectTable.prototype.addTaskToProject;
+
+export type AddTaskToTask = typeof ProjectTable.prototype.addTaskToTask;
 
 export default withStyles(styles, { withTheme: true })(ProjectTable);

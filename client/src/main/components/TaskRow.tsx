@@ -4,7 +4,6 @@ import {
   TableCell,
   // Typography,
   // Paper,
-  // IconButton,
   WithStyles,
   createStyles,
   Theme,
@@ -16,6 +15,7 @@ import {
   TextField,
 } from '@material-ui/core';
 import { Task, TaskObjects } from '../dbTypes';
+import { AddTaskToTask } from './ProjectTable';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -33,12 +33,13 @@ export interface TaskRowProps extends WithStyles<typeof styles> {
   task: Task;
   tasks: TaskObjects;
   handleChange: (taskId: string, inputId: string, value: string) => void;
+  addTaskToTask: AddTaskToTask;
 }
 
 function TaskRow(props: TaskRowProps) {
-  const { classes, task, tasks, handleChange } = props;
+  const { classes, task, tasks, handleChange, addTaskToTask } = props;
   return (
-    <Box>
+    <Box key={task._id}>
       <Table size="small">
         <TableHead>
           <TableRow>
@@ -49,6 +50,7 @@ function TaskRow(props: TaskRowProps) {
         <TableBody>
           <TableCell>
             <TextField
+              key={task._id}
               id="title-input"
               label="Title"
               value={task.title}
@@ -57,6 +59,7 @@ function TaskRow(props: TaskRowProps) {
                 (e: React.ChangeEvent<HTMLInputElement>) =>
                   /* eslint-disable-next-line no-underscore-dangle */
                   handleChange(task._id, e.target.id, e.target.value)
+                // eslint and prettier are fighting on this line. not sure why.
                 /* eslint-disable-next-line */
               }
             />
@@ -72,6 +75,7 @@ function TaskRow(props: TaskRowProps) {
                 (e: React.ChangeEvent<HTMLInputElement>) =>
                   /* eslint-disable-next-line no-underscore-dangle */
                   handleChange(task._id, e.target.id, e.target.value)
+                // eslint and prettier are fighting on this line. not sure why.
                 /* eslint-disable-next-line */
               }
             />
@@ -82,6 +86,7 @@ function TaskRow(props: TaskRowProps) {
               task={tasks[subtask]}
               tasks={tasks}
               handleChange={handleChange}
+              addTaskToTask={addTaskToTask}
             />
           ))}
         </TableBody>
