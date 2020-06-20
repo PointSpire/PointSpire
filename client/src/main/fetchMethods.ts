@@ -89,6 +89,17 @@ export async function getUserData(): Promise<AllUserData> {
   return data;
 }
 
+/**
+ * Gets data for a test user. This is setup just for development purposes
+ * so the client always gets a user.
+ */
+export async function getTestUserData(): Promise<AllUserData> {
+  const url = `${fetchData.baseServerUrl}/api/users/5eda8ef7846e21ba6013cb19`;
+  const res = await fetch(url);
+  const data = (await res.json()) as AllUserData;
+  return data;
+}
+
 export function getUser(id: string): Promise<User> {
   return new Promise<User>((resolve, reject) => {
     fetch(fetchData.buildUrl(`${fetchData.baseServerUrl}/api/users/~`, id))
