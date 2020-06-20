@@ -2,7 +2,7 @@
  * This file is used to store the fetch requests that access the database
  */
 
-import { ProjectObjects, Project, AllUserData, User, Task } from './dbTypes';
+import { Project, AllUserData, User, Task } from './dbTypes';
 
 const fetchData = {
   baseServerUrl:
@@ -34,44 +34,59 @@ const fetchData = {
   },
 };
 
-export type FetchMethods = {
-  getProjects: (id: string) => Promise<ProjectObjects>;
-  getUserData: (id: string) => Promise<AllUserData>;
-  getRequest: <T>(url: string, id: string) => Promise<T>;
-  postNewProject: (userId: string, projectTitle: string) => Promise<Project>;
-  patchProject: (url: string, project: Project) => Promise<Project>;
-  postNewTask: (
-    url: string,
-    parentId: string,
-    taskTitle: string
-  ) => Promise<Task>;
-};
-
-export async function getProjects(id: string): Promise<ProjectObjects> {
+/**
+ * Gets the project with the specified ID.
+ *
+ * @param {string} id the id of the project to retrieve data for
+ */
+export async function getProject(id: string): Promise<Project> {
   const url = fetchData.buildUrl(
     `${fetchData.baseServerUrl}/api/projects/~`,
     id
   );
-  // console.log(url);
   const data = await fetch(url);
-  const projData = (await data.json()) as ProjectObjects;
+  const projData = (await data.json()) as Project;
   return projData;
 }
 
-export function getUserData(id: string): Promise<AllUserData> {
-  const userId =
-    process.env.REACT_APP_ENV === 'LOCAL_DEV' ? fetchData.testUser : id;
-  return new Promise<AllUserData>((resolve, reject) => {
-    fetch(
-      fetchData.buildUrl(
-        `${fetchData.baseServerUrl}/api/users/~/projects`,
-        userId
-      )
-    )
-      .then(res => res.json())
-      .then(data => resolve(data as AllUserData))
-      .catch(err => reject(err));
+/**
+ * Gets the user data from the server by using the current code in the user's
+ * url path. If the code isn't there, then it makes a request to `/api/users`
+ * expected the user to have a cookie with a valid session ID in it, so the
+ * server returns the correct AllUserData object.
+ */
+export async function getUserData(): Promise<AllUserData> {
+  const githubCodeRegEx = /\?code=(.*)/;
+  const githubCodeMatch = githubCodeRegEx.exec(window.location.href);
+  let githubCode = '';
+  if (githubCodeMatch) {
+    githubCode = githubCodeMatch && githubCodeMatch[1];
+  }
+  if (githubCode !== '') {
+    const url = `${fetchData.baseServerUrl}/auth/github`;
+    const userDocRes = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        code: githubCode,
+      }),
+      credentials: 'include',
+    });
+    const user: User = (await userDocRes.json()) as User;
+    const getUserUrl = `${fetchData.baseServerUrl}/api/users/${user._id}`;
+    const res = await fetch(getUserUrl);
+    const data = (await res.json()) as AllUserData;
+    return data;
+  }
+  const url = `${fetchData.baseServerUrl}/api/users`;
+  const res = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
   });
+  const data = (await res.json()) as AllUserData;
+  return data;
 }
 
 export function getUser(id: string): Promise<User> {
