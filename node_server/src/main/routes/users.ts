@@ -29,6 +29,9 @@ const errorDescriptions = {
   newUserDetailsNotDefined:
     `Details for the new user were not specified in ` +
     `the body of the message. Please define at least the userName in the body.`,
+  userIdNotSpecified:
+    `Please specify a user ID by using /api/users/24 where ` +
+    `"24" is the ID of the user.`,
 };
 
 /**
@@ -42,12 +45,38 @@ function createUsersRouter(db: typeof mongoose): Router {
   const Project: ProjectModel = createProjectModel(db);
   const Task: TaskModel = createTaskModel(db);
 
+  router.options('/', (req, res, next) => {
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    next();
+  });
+
+  /**
+   * @swagger
+   * /users:
+   *  get:
+   *    summary: Redirects to the user specified in the session, if available
+   *    tags:
+   *      - User
+   *    security:
+   *      - cookieAuth:
+   *          type: userId
+   *          in: cookie
+   *          name: JSESSIONID
+   *    description: Redirects to specific user api.
+   *    responses:
+   *      '302':
+   *        description: Found
+   *      '405':
+   *        description: Please specify a user ID by using /api/users/24 where "24" is the ID of the user.
+   */
   router.get('/', (req, res) => {
-    res.status(405);
-    res.send(
-      'Please specify a user ID by using /api/users/24 where ' +
-        '"24" is the ID of the user.'
-    );
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    if (req.session && req.session.userId) {
+      res.redirect(`/api/users/${req.session.userId}`);
+    } else {
+      res.status(405);
+      res.send(errorDescriptions.userIdNotSpecified);
+    }
   });
 
   /**
@@ -199,11 +228,17 @@ function createUsersRouter(db: typeof mongoose): Router {
     }
   }
 
+  router.options('/:userId', (req, res, next) => {
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    next();
+  });
+
   /**
    * @swagger
    * /users/{userId}:
    *  get:
    *    summary: Gets the user at the specified ID
+   *    description: Gets the user data at the specified ID. This also sets a cookie on the requester's browser that indicates the `userId`.
    *    tags:
    *    - User
    *    responses:
@@ -218,7 +253,9 @@ function createUsersRouter(db: typeof mongoose): Router {
    */
   router.get('/:userId', async (req, res) => {
     try {
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
       const userData = await graphQueryUser(req.params.userId);
+      res.cookie('userId', req.params.userId);
       res.json(userData);
     } catch (err) {
       res.status(400);

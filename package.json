@@ -6,7 +6,7 @@
     "doc": "docs"
   },
   "scripts": {
-    "deploy": "git subtree push --prefix node_server heroku master"
+    "deploy": "git push --force heroku master"
   },
   "repository": {
     "type": "git",
@@ -21,7 +21,7 @@
   "comments": {
     "generalInformation": "Turning on line wrapping in your IDE for this file would be very helpful for sanity haha. See this link: https://code.visualstudio.com/docs/getstarted/settings#_language-specific-editor-settings. Also this comments portion is NOT built in to npm. It is just a space to add comments because JSON doesn't allow you to do that.",
     "scripts": {
-      "deploy": "Deploys the node_server folder only to the heroku repo with the current branch, the heroku repo needs to be setup locally first though for this to work. Keep in mind that only committed changes to the current branch will be pushed. This should only be run locally and not on a server remotely."
+      "deploy": "Deploys the current branch to heroku. This forces the push."
     }
   }
 }

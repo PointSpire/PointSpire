@@ -61,6 +61,7 @@ const baseServerUrl =
   process.env.REACT_APP_ENV === 'LOCAL_DEV'
     ? 'http://localhost:8055'
     : 'https://point-spire.herokuapp.com';
+const githubClientId = 'f6a5702090e186626681';
 
 /**
  * Gets data for a test user. This is setup just for development purposes
@@ -69,6 +70,44 @@ const baseServerUrl =
 async function getTestUserData(): Promise<AllUserData> {
   const url = `${baseServerUrl}/api/users/5eda8ef7846e21ba6013cb19`;
   const res = await fetch(url);
+  const data = (await res.json()) as AllUserData;
+  return data;
+}
+
+/**
+ * Gets the user data from the server.
+ */
+async function getUserData(): Promise<AllUserData> {
+  const githubCodeRegEx = /\?code=(.*)/;
+  const githubCodeMatch = githubCodeRegEx.exec(window.location.href);
+  let githubCode = '';
+  if (githubCodeMatch) {
+    githubCode = githubCodeMatch && githubCodeMatch[1];
+  }
+  if (githubCode !== '') {
+    const url = `${baseServerUrl}/auth/github`;
+    const userDocRes = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        code: githubCode,
+      }),
+      credentials: 'include',
+    });
+    const user: User = (await userDocRes.json()) as User;
+    // eslint-disable-next-line no-underscore-dangle
+    const getUserUrl = `${baseServerUrl}/api/users/${user._id}`;
+    const res = await fetch(getUserUrl);
+    const data = (await res.json()) as AllUserData;
+    return data;
+  }
+  const url = `${baseServerUrl}/api/users`;
+  const res = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+  });
   const data = (await res.json()) as AllUserData;
   return data;
 }
@@ -104,7 +143,12 @@ class App extends React.Component<AppProps, AppState> {
    */
   async componentDidMount(): Promise<void> {
     // Get the data for the user
-    const userData = await getTestUserData();
+    let userData: AllUserData;
+    if (process.env.REACT_APP_ENV === 'LOCAL_DEV') {
+      userData = await getTestUserData();
+    } else {
+      userData = await getUserData();
+    }
     this.setState({
       user: userData.user,
       projects: userData.projects,
@@ -305,6 +349,8 @@ class App extends React.Component<AppProps, AppState> {
     return (
       <div className="App">
         <TopMenuBar
+          githubClientId={githubClientId}
+          baseServerUrl={baseServerUrl}
           sendUpdatedUserToServer={sendUpdatedUserToServer}
           alert={alert}
           userSettings={user ? user.settings : undefined}
