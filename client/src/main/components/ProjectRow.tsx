@@ -25,6 +25,16 @@ function styles(theme: Theme) {
     },
     nested: {
       paddingLeft: theme.spacing(4),
+      borderColor: theme.palette.secondary.main,
+    },
+    iconNutton: {
+      backgroundColor: theme.palette.secondary.main,
+      '&:hover': {
+        backgroundColor: theme.palette.secondary.light,
+      },
+    },
+    iconButtonHover: {
+      backgroundColor: theme.palette.primary.main,
     },
   });
 }
@@ -44,15 +54,7 @@ export interface ProjectRowProps extends WithStyles<typeof styles> {
 }
 
 function ProjectRow(props: ProjectRowProps) {
-  const {
-    classes,
-    project,
-    tasks,
-    // newTaskTitle,
-    // addTaskToProject,
-    addTaskToTask,
-    setTask,
-  } = props;
+  const { classes, project, tasks, addTaskToTask, setTask } = props;
   const [open, setOpen] = useState<boolean>(false);
   const [anchor, setAnchor] = useState<{
     mouseX: number | null;
@@ -86,6 +88,7 @@ function ProjectRow(props: ProjectRowProps) {
         <TableCell align="left">{project.dateCreated}</TableCell>
         <TableCell align="right">
           <IconButton
+            className={classes.iconNutton}
             aria-label="new-project-task-button"
             // onClick={(e: React.MouseEvent<HTMLElement>) => {
             //   setAnchor({
@@ -130,7 +133,7 @@ function ProjectRow(props: ProjectRowProps) {
         </TableCell>
       </TableRow>
       <TableRow>
-        <TableCell colSpan={6}>
+        <TableCell colSpan={6} className={classes.nested}>
           <Collapse in={open} timeout="auto">
             {project.subtasks.map(task => (
               <TaskRow
