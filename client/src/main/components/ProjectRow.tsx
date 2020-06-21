@@ -101,6 +101,10 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
       // eslint-disable-next-line
       console.error(err);
     });
+
+    /* TODO: Try to get the transition to run when it opens. Right now it
+    doesn't. */
+    this.setOpen(true);
   }
 
   bindOpen(e: React.MouseEvent<HTMLElement>): void {
