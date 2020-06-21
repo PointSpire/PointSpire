@@ -173,6 +173,16 @@ const definition = {
           priority: {
             type: 'number',
           },
+          startDate: {
+            type: 'string',
+            description:
+              'A Date string that represents when this project should be started',
+          },
+          dueDate: {
+            type: 'string',
+            description:
+              'A Date string that represents when this project is due',
+          },
         },
         example: {
           title: 'Fix the fence',
@@ -190,6 +200,16 @@ const definition = {
           },
           priority: {
             type: 'number',
+          },
+          startDate: {
+            type: 'string',
+            description:
+              'A Date string that represents when this project should be started',
+          },
+          dueDate: {
+            type: 'string',
+            description:
+              'A Date string that represents when this project is due',
           },
           dateCreated: {
             type: 'object',
@@ -232,6 +252,15 @@ const definition = {
           priority: {
             type: 'number',
           },
+          startDate: {
+            type: 'string',
+            description:
+              'A Date string that represents when this task should be started',
+          },
+          dueDate: {
+            type: 'string',
+            description: 'A Date string that represents when this task is due',
+          },
         },
         example: {
           title: 'Get geared up for next battle',
@@ -255,6 +284,15 @@ const definition = {
             type: 'object',
             description:
               'A Date object representing the date this task was created.',
+          },
+          startDate: {
+            type: 'string',
+            description:
+              'A Date string that represents when this task should be started',
+          },
+          dueDate: {
+            type: 'string',
+            description: 'A Date string that represents when this task is due',
           },
         },
       },
