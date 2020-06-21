@@ -174,6 +174,26 @@ export async function postNewProject(
 }
 
 /**
+ * Parses the dates returned by a server call into actual date objects. This
+ * is needed becuase the data is sent via JSON, and needs to be re-constructed
+ * into a class object.
+ *
+ * @param {Task | Project} returnedObject the task or project to convert the
+ * dates for
+ * @returns {Task | Project} the converted original object
+ */
+function parseReturnedDates(returnedObject: Task | Project): Task {
+  const convertedObject = returnedObject;
+  if (returnedObject.startDate) {
+    convertedObject.startDate = new Date(returnedObject.startDate);
+  }
+  if (returnedObject.dueDate) {
+    convertedObject.dueDate = new Date(returnedObject.dueDate);
+  }
+  return convertedObject;
+}
+
+/**
  * Makes a patch request to the server with the given project.
  *
  * @param {Project} project the project to send to update on the server
@@ -190,7 +210,8 @@ export async function patchProject(project: Task): Promise<boolean> {
     body: JSON.stringify(project),
   });
   const returnedProject = (await res.json()) as Task;
-  if (projectsAreEqual(project, returnedProject)) {
+  const parsedProject = parseReturnedDates(returnedProject);
+  if (projectsAreEqual(project, parsedProject)) {
     return true;
   }
   return false;
@@ -227,7 +248,9 @@ export async function postNewTask(
     body: JSON.stringify(newTask),
   });
   const returnedTask = (await taskRes.json()) as Task;
-  return returnedTask;
+  const parsedTask = parseReturnedDates(returnedTask);
+
+  return parsedTask;
 }
 
 /**

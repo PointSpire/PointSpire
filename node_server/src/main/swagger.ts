@@ -175,11 +175,13 @@ const definition = {
           },
           startDate: {
             type: 'string',
+            nullable: true,
             description:
               'A Date string that represents when this project should be started',
           },
           dueDate: {
             type: 'string',
+            nullable: true,
             description:
               'A Date string that represents when this project is due',
           },
@@ -203,11 +205,13 @@ const definition = {
           },
           startDate: {
             type: 'string',
+            nullable: true,
             description:
               'A Date string that represents when this project should be started',
           },
           dueDate: {
             type: 'string',
+            nullable: true,
             description:
               'A Date string that represents when this project is due',
           },
@@ -254,11 +258,13 @@ const definition = {
           },
           startDate: {
             type: 'string',
+            nullable: true,
             description:
               'A Date string that represents when this task should be started',
           },
           dueDate: {
             type: 'string',
+            nullable: true,
             description: 'A Date string that represents when this task is due',
           },
         },
@@ -287,11 +293,13 @@ const definition = {
           },
           startDate: {
             type: 'string',
+            nullable: true,
             description:
               'A Date string that represents when this task should be started',
           },
           dueDate: {
             type: 'string',
+            nullable: true,
             description: 'A Date string that represents when this task is due',
           },
         },

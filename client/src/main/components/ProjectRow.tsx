@@ -6,16 +6,17 @@ import {
   Theme,
   withStyles,
   Collapse,
-  Typography,
   Grid,
   List,
   ListItem,
   TextField,
   Card,
 } from '@material-ui/core';
+import { DatePicker } from '@material-ui/pickers';
 import UpIcon from '@material-ui/icons/ArrowUpward';
 import DownIcon from '@material-ui/icons/ArrowDownward';
 import AddListIcon from '@material-ui/icons/PlaylistAdd';
+import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import { Project, TaskObjects, Task } from '../dbTypes';
 import TaskRow from './TaskRow';
 import { SetTaskFunction, SetTasksFunction, SetProjectFunction } from '../App';
@@ -56,6 +57,28 @@ type MousePos = {
   mouseY: number | null;
 };
 
+/**
+ * Saves the project to the server and logs to the console what happened.
+ *
+ * @param {Project} project the updated Project
+ */
+function saveProject(project: Project): void {
+  patchProject(project)
+    .then(result => {
+      if (result) {
+        // eslint-disable-next-line
+        console.log('Project was successfully saved to the server');
+      } else {
+        // eslint-disable-next-line
+        console.log('Project was not saved to the server. There was an error.');
+      }
+    })
+    .catch(err => {
+      // eslint-disable-next-line
+      console.error(err);
+    });
+}
+
 export interface ProjectRowProps extends WithStyles<typeof styles> {
   project: Project;
   tasks: TaskObjects;
@@ -94,6 +117,8 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
     this.handleNoteChange = this.handleNoteChange.bind(this);
     this.handlePriorityChange = this.handlePriorityChange.bind(this);
     this.handleTitleChange = this.handleTitleChange.bind(this);
+    this.handleStartDateChange = this.handleStartDateChange.bind(this);
+    this.handleDueDateChange = this.handleDueDateChange.bind(this);
   }
 
   setAnchor(anchor: MousePos): void {
@@ -133,6 +158,30 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
     });
   }
 
+  handleStartDateChange(newDate: MaterialUiPickersDate): void {
+    const { setProject, project } = this.props;
+
+    if (newDate) {
+      project.startDate = newDate.toDate();
+    } else {
+      project.startDate = null;
+    }
+    setProject(project);
+    saveProject(project);
+  }
+
+  handleDueDateChange(newDate: MaterialUiPickersDate): void {
+    const { setProject, project } = this.props;
+
+    if (newDate) {
+      project.dueDate = newDate.toDate();
+    } else {
+      project.dueDate = null;
+    }
+    setProject(project);
+    saveProject(project);
+  }
+
   /**
    * Handles losing focus on an input element. This will save the project to the
    * applications state and on the server.
@@ -144,22 +193,7 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
     project.note = note;
     project.priority = priority;
     setProject(project);
-    patchProject(project)
-      .then(result => {
-        if (result) {
-          // eslint-disable-next-line
-          console.log('Project was successfully saved to the server');
-        } else {
-          // eslint-disable-next-line
-          console.log(
-            'Project was not saved to the server. There was an error.'
-          );
-        }
-      })
-      .catch(err => {
-        // eslint-disable-next-line
-        console.error(err);
-      });
+    saveProject(project);
   }
 
   /**
@@ -232,14 +266,12 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
       handlePriorityChange,
       handleTitleChange,
       handleLoseFocus,
+      handleDueDateChange,
+      handleStartDateChange,
     } = this;
-
-    // Create the date rendering
-    const date = new Date(project.dateCreated);
-    const dateCreated = date.toDateString();
     return (
       <ListItem className={classes.root} key={project._id}>
-        <Card variant="outlined" className={classes.card}>
+        <Card variant="outlined" className={`${classes.card} ${classes.root}`}>
           <Grid
             container
             spacing={1}
@@ -273,7 +305,24 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
               />
             </Grid>
             <Grid item>
-              <Typography align="left">{`Created ${dateCreated}`}</Typography>
+              <DatePicker
+                variant="dialog"
+                clearable
+                onBlur={handleLoseFocus}
+                label="Start Date"
+                value={project.startDate}
+                onChange={handleStartDateChange}
+              />
+            </Grid>
+            <Grid item>
+              <DatePicker
+                variant="dialog"
+                label="Due Date"
+                value={project.dueDate}
+                onBlur={handleLoseFocus}
+                clearable
+                onChange={handleDueDateChange}
+              />
             </Grid>
             <Grid item>
               <IconButton

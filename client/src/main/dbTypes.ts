@@ -51,6 +51,8 @@ export type AllUserData = {
 export interface Task extends Document {
   subtasks: Array<string>;
   dateCreated: Date;
+  startDate: Date | null;
+  dueDate: Date | null;
   note: string;
   title: string;
   priority: number;
@@ -63,7 +65,12 @@ export type TaskObjects = {
 export function tasksAreEqual(task1: Task, task2: Task): boolean {
   let equal = true;
   Object.keys(task1).forEach(key => {
-    if (key !== '__v' && key !== 'subtasks') {
+    if (
+      key !== '__v' &&
+      key !== 'subtasks' &&
+      key !== 'startDate' &&
+      key !== 'dueDate'
+    ) {
       if (task1[key] !== task2[key]) {
         equal = false;
       }
