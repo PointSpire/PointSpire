@@ -17,6 +17,7 @@ import DownIcon from '@material-ui/icons/ArrowDownward';
 import { Task, TaskObjects } from '../dbTypes';
 import { AddTaskToTask } from './ProjectTable';
 import { SetTaskFunction } from '../App';
+import { patchTask } from '../fetchMethods';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -94,6 +95,20 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
     task.title = title;
     task.note = note;
     setTask(task);
+    patchTask(task)
+      .then(result => {
+        if (result) {
+          // eslint-disable-next-line
+          console.log('Task was successfully saved to the server');
+        } else {
+          // eslint-disable-next-line
+          console.log('Task was not saved to the server. There was an error.');
+        }
+      })
+      .catch(err => {
+        // eslint-disable-next-line
+        console.error(err);
+      });
   }
 
   handleTaskInputChange(event: React.ChangeEvent<HTMLInputElement>): void {

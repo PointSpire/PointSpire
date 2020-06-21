@@ -2,7 +2,7 @@
  * This file is used to store the fetch requests that access the database
  */
 
-import { Project, AllUserData, User, Task } from './dbTypes';
+import { Project, AllUserData, User, Task, tasksAreEqual } from './dbTypes';
 
 const fetchData = {
   baseServerUrl:
@@ -52,6 +52,29 @@ export async function getProject(id: string): Promise<Project> {
   const data = await fetch(url);
   const projData = (await data.json()) as Project;
   return projData;
+}
+
+/**
+ * Makes a patch request to the server with the given task.
+ *
+ * @param {Task} task the task to send to update on the server
+ * @returns {Promise<boolean>} true if succeeded and false if not
+ */
+export async function patchTask(task: Task): Promise<boolean> {
+  const url = fetchData.buildUrl(
+    `${fetchData.baseServerUrl}/api/tasks/~`,
+    task._id
+  );
+  const res = await fetch(url, {
+    method: 'PATCH',
+    headers: fetchData.basicHeader,
+    body: JSON.stringify(task),
+  });
+  const returnedTask = (await res.json()) as Task;
+  if (tasksAreEqual(task, returnedTask)) {
+    return true;
+  }
+  return false;
 }
 
 /**

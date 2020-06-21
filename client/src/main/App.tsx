@@ -131,18 +131,6 @@ class App extends React.Component<AppProps, AppState> {
   }
 
   /**
-   * Updates the tasks state on the app.
-   *
-   * @param {Task} updatedTasks the new TaskObjects object to set for tasks on
-   * the app
-   */
-  setTasks(updatedTasks: TaskObjects): void {
-    this.setState({
-      tasks: updatedTasks,
-    });
-  }
-
-  /**
    * Updates a particular task in the tasks state of the app.
    *
    * @param {Task} updatedTask the Task object to update in the tasks state
@@ -153,13 +141,6 @@ class App extends React.Component<AppProps, AppState> {
       tasks[updatedTask._id] = updatedTask;
       this.setTasks(tasks);
     }
-  }
-  // #endregion
-
-  setUser(updatedUser: User): void {
-    this.setState({
-      user: updatedUser,
-    });
   }
 
   setUserProjects(newProject: Project): void {
@@ -172,6 +153,25 @@ class App extends React.Component<AppProps, AppState> {
         user,
       });
     }
+  }
+  // #endregion
+
+  setUser(updatedUser: User): void {
+    this.setState({
+      user: updatedUser,
+    });
+  }
+
+  /**
+   * Updates the tasks state on the app.
+   *
+   * @param {Task} updatedTasks the new TaskObjects object to set for tasks on
+   * the app
+   */
+  setTasks(updatedTasks: TaskObjects): void {
+    this.setState({
+      tasks: updatedTasks,
+    });
   }
 
   async addProject(newTitle: string): Promise<void> {

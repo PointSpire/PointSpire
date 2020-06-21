@@ -6,10 +6,17 @@
 /**
  * The basic type for a document from MongoDB.
  */
-type Document = {
+interface Document extends IndexableProperties {
   _id: string;
   __v: number;
-};
+}
+
+/**
+ *
+ */
+interface IndexableProperties {
+  [key: string]: unknown;
+}
 
 /* User Types */
 
@@ -59,3 +66,15 @@ export interface Task extends Document {
 export type TaskObjects = {
   [id: string]: Task;
 };
+
+export function tasksAreEqual(task1: Task, task2: Task): boolean {
+  let equal = true;
+  Object.keys(task1).forEach(key => {
+    if (key !== '__v' && key !== 'subtasks') {
+      if (task1[key] !== task2[key]) {
+        equal = false;
+      }
+    }
+  });
+  return equal;
+}
