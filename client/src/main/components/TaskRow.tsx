@@ -1,17 +1,19 @@
 import React from 'react';
 import {
-  TableRow,
   TableCell,
   WithStyles,
   createStyles,
   Theme,
   withStyles,
-  TableHead,
   TableBody,
   Table,
   Box,
   TextField,
+  Collapse,
+  IconButton,
 } from '@material-ui/core';
+import UpIcon from '@material-ui/icons/ArrowUpward';
+import DownIcon from '@material-ui/icons/ArrowDownward';
 import { Task, TaskObjects } from '../dbTypes';
 import { AddTaskToTask } from './ProjectTable';
 import { SetTaskFunction } from '../App';
@@ -47,15 +49,14 @@ type TaskRowState = {
   title: string;
 
   /**
-   * The note for the task
+   * The note for the task.
    */
   note: string;
 
   /**
-   * Used so that you can programatically change the state based on the id of
-   * the element being changed.
+   * Determines if the subtasks are open or not.
    */
-  [taskProperty: string]: string;
+  subTasksOpen: boolean;
 };
 
 class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
@@ -67,16 +68,20 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
     this.state = {
       title: task.title,
       note: task.note,
+      subTasksOpen: false,
     };
 
     this.handleTaskInputChange = this.handleTaskInputChange.bind(this);
     this.handleLoseFocus = this.handleLoseFocus.bind(this);
+    this.setSubTasksOpen = this.setSubTasksOpen.bind(this);
+    this.generateSubTaskCollapse = this.generateSubTaskCollapse.bind(this);
+    this.generateTaskExpanderButton = this.generateTaskExpanderButton.bind(
+      this
+    );
   }
 
-  handleTaskInputChange(event: React.ChangeEvent<HTMLInputElement>): void {
-    this.setState({
-      [event.target.id]: event.target.value,
-    });
+  setSubTasksOpen(open: boolean) {
+    this.setState({ subTasksOpen: open });
   }
 
   /**
@@ -91,20 +96,84 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
     setTask(task);
   }
 
+  handleTaskInputChange(event: React.ChangeEvent<HTMLInputElement>): void {
+    switch (event.target.id) {
+      case 'title':
+        this.setState({
+          title: event.target.value,
+        });
+        break;
+      case 'note':
+        this.setState({
+          note: event.target.value,
+        });
+        break;
+      default:
+        break;
+    }
+  }
+
+  /**
+   * Generates the task expander button only if this task has subtasks.
+   */
+  generateTaskExpanderButton(): JSX.Element | null {
+    const { task } = this.props;
+    const { subTasksOpen } = this.state;
+    if (task.subtasks.length !== 0) {
+      return (
+        <TableCell>
+          <IconButton
+            aria-label="project-expander"
+            onClick={() => {
+              this.setSubTasksOpen(!subTasksOpen);
+            }}
+          >
+            {subTasksOpen ? <UpIcon /> : <DownIcon />}
+          </IconButton>
+        </TableCell>
+      );
+    }
+    return null;
+  }
+
+  /**
+   * Generates the Collapse element only if this task has subtasks.
+   */
+  generateSubTaskCollapse(): JSX.Element | null {
+    const { task, setTask, classes, tasks, addTaskToTask } = this.props;
+    const { subTasksOpen } = this.state;
+    if (task.subtasks.length !== 0) {
+      return (
+        <Collapse in={subTasksOpen} timeout="auto">
+          {task.subtasks.map(taskId => (
+            <TaskRow
+              setTask={setTask}
+              classes={classes}
+              task={tasks[taskId]}
+              tasks={tasks}
+              addTaskToTask={addTaskToTask}
+            />
+          ))}
+        </Collapse>
+      );
+    }
+    return null;
+  }
+
   render() {
-    const { classes, task, tasks, addTaskToTask, setTask } = this.props;
+    const { task } = this.props;
     const { title, note } = this.state;
-    const { handleTaskInputChange, handleLoseFocus } = this;
+    const {
+      handleTaskInputChange,
+      handleLoseFocus,
+      generateSubTaskCollapse,
+      generateTaskExpanderButton,
+    } = this;
     return (
       <Box key={task._id}>
         <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>Title</TableCell>
-              <TableCell>Note</TableCell>
-            </TableRow>
-          </TableHead>
           <TableBody>
+            {generateTaskExpanderButton()}
             <TableCell>
               <TextField
                 key={task._id}
@@ -127,17 +196,9 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
                 onBlur={handleLoseFocus}
               />
             </TableCell>
-            {task.subtasks.map(subtask => (
-              <TaskRow
-                setTask={setTask}
-                classes={classes}
-                task={tasks[subtask]}
-                tasks={tasks}
-                addTaskToTask={addTaskToTask}
-              />
-            ))}
           </TableBody>
         </Table>
+        {generateSubTaskCollapse()}
       </Box>
     );
   }
