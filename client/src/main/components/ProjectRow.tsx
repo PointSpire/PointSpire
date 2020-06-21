@@ -10,6 +10,8 @@ import {
   Grid,
   List,
   ListItem,
+  TextField,
+  Card,
 } from '@material-ui/core';
 import UpIcon from '@material-ui/icons/ArrowUpward';
 import DownIcon from '@material-ui/icons/ArrowDownward';
@@ -17,7 +19,7 @@ import AddListIcon from '@material-ui/icons/PlaylistAdd';
 import { Project, TaskObjects, Task } from '../dbTypes';
 import TaskRow from './TaskRow';
 import { SetTaskFunction, SetTasksFunction, SetProjectFunction } from '../App';
-import { postNewTask, deleteTask } from '../fetchMethods';
+import { postNewTask, deleteTask, patchProject } from '../fetchMethods';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -37,6 +39,9 @@ function styles(theme: Theme) {
     },
     iconButtonHover: {
       backgroundColor: theme.palette.primary.main,
+    },
+    card: {
+      padding: theme.spacing(2),
     },
   });
 }
@@ -62,18 +67,33 @@ export interface ProjectRowProps extends WithStyles<typeof styles> {
 export interface ProjectRowState {
   open: boolean;
   anchor: MousePos;
+  priority: number;
+  title: string;
+  note: string;
 }
 
 class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
   constructor(props: ProjectRowProps) {
     super(props);
-    this.state = { open: false, anchor: blankMouse };
+
+    const { project } = this.props;
+    this.state = {
+      open: false,
+      anchor: blankMouse,
+      priority: project.priority,
+      title: project.title,
+      note: project.note,
+    };
 
     this.addSubTask = this.addSubTask.bind(this);
     this.bindOpen = this.bindOpen.bind(this);
     this.setOpen = this.setOpen.bind(this);
     this.handleAddNewTaskClick = this.handleAddNewTaskClick.bind(this);
     this.deleteSubTask = this.deleteSubTask.bind(this);
+    this.handleLoseFocus = this.handleLoseFocus.bind(this);
+    this.handleNoteChange = this.handleNoteChange.bind(this);
+    this.handlePriorityChange = this.handlePriorityChange.bind(this);
+    this.handleTitleChange = this.handleTitleChange.bind(this);
   }
 
   setAnchor(anchor: MousePos): void {
@@ -86,6 +106,60 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
     this.setState({
       open,
     });
+  }
+
+  handleTitleChange(event: React.ChangeEvent<HTMLInputElement>): void {
+    this.setState({
+      title: event.target.value,
+    });
+  }
+
+  handlePriorityChange(event: React.ChangeEvent<HTMLInputElement>): void {
+    // Check to make sure they typed an int
+    if (event.target.value.length === 0) {
+      this.setState({
+        priority: 0,
+      });
+    } else if (!Number.isNaN(Number.parseInt(event.target.value, 10))) {
+      this.setState({
+        priority: Number.parseInt(event.target.value, 10),
+      });
+    }
+  }
+
+  handleNoteChange(event: React.ChangeEvent<HTMLInputElement>): void {
+    this.setState({
+      note: event.target.value,
+    });
+  }
+
+  /**
+   * Handles losing focus on an input element. This will save the project to the
+   * applications state and on the server.
+   */
+  handleLoseFocus(): void {
+    const { setProject, project } = this.props;
+    const { title, note, priority } = this.state;
+    project.title = title;
+    project.note = note;
+    project.priority = priority;
+    setProject(project);
+    patchProject(project)
+      .then(result => {
+        if (result) {
+          // eslint-disable-next-line
+          console.log('Project was successfully saved to the server');
+        } else {
+          // eslint-disable-next-line
+          console.log(
+            'Project was not saved to the server. There was an error.'
+          );
+        }
+      })
+      .catch(err => {
+        // eslint-disable-next-line
+        console.error(err);
+      });
   }
 
   /**
@@ -149,53 +223,92 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
 
   render(): JSX.Element {
     const { classes, project, tasks, setTask, setTasks } = this.props;
-    const { open } = this.state;
-    const { setOpen, handleAddNewTaskClick, deleteSubTask } = this;
+    const { open, title, note, priority } = this.state;
+    const {
+      setOpen,
+      handleAddNewTaskClick,
+      deleteSubTask,
+      handleNoteChange,
+      handlePriorityChange,
+      handleTitleChange,
+      handleLoseFocus,
+    } = this;
+
+    // Create the date rendering
+    const date = new Date(project.dateCreated);
+    const dateCreated = date.toDateString();
     return (
       <ListItem className={classes.root} key={project._id}>
-        <Grid container spacing={4} justify="space-between" alignItems="center">
-          <Grid item>
-            <IconButton
-              aria-label="project-expander"
-              onClick={() => {
-                setOpen(!open);
-              }}
-            >
-              {open ? <UpIcon /> : <DownIcon />}
-            </IconButton>
+        <Card variant="outlined" className={classes.card}>
+          <Grid
+            container
+            spacing={1}
+            justify="space-between"
+            alignItems="center"
+          >
+            <Grid item>
+              <IconButton
+                aria-label="project-expander"
+                onClick={() => {
+                  setOpen(!open);
+                }}
+              >
+                {open ? <UpIcon /> : <DownIcon />}
+              </IconButton>
+            </Grid>
+            <Grid item>
+              <TextField
+                onChange={handleTitleChange}
+                label="Project Title"
+                value={title}
+                onBlur={handleLoseFocus}
+              />
+            </Grid>
+            <Grid item>
+              <TextField
+                onChange={handlePriorityChange}
+                label="Priority"
+                value={priority}
+                onBlur={handleLoseFocus}
+              />
+            </Grid>
+            <Grid item>
+              <Typography align="left">{`Created ${dateCreated}`}</Typography>
+            </Grid>
+            <Grid item>
+              <IconButton
+                aria-label="new-project-task-button"
+                onClick={handleAddNewTaskClick}
+              >
+                <AddListIcon fontSize="large" />
+              </IconButton>
+            </Grid>
+            <Grid item className={classes.root}>
+              <TextField
+                multiline
+                id="note"
+                label="Project Note"
+                value={note}
+                onChange={handleNoteChange}
+                fullWidth
+                onBlur={handleLoseFocus}
+              />
+            </Grid>
+            <Collapse in={open} timeout="auto" className={classes.root}>
+              <List>
+                {project.subtasks.map(task => (
+                  <TaskRow
+                    setTasks={setTasks}
+                    setTask={setTask}
+                    task={tasks[task]}
+                    tasks={tasks}
+                    deleteSubTask={deleteSubTask}
+                  />
+                ))}
+              </List>
+            </Collapse>
           </Grid>
-          <Grid item>
-            <Typography align="left">{project.title}</Typography>
-          </Grid>
-          <Grid item>
-            <Typography align="left">{project.note}</Typography>
-          </Grid>
-          <Grid item>
-            <Typography align="left">{project.dateCreated}</Typography>
-          </Grid>
-
-          <Grid item>
-            <IconButton
-              aria-label="new-project-task-button"
-              onClick={handleAddNewTaskClick}
-            >
-              <AddListIcon fontSize="large" />
-            </IconButton>
-          </Grid>
-          <Collapse in={open} timeout="auto" className={classes.root}>
-            <List>
-              {project.subtasks.map(task => (
-                <TaskRow
-                  setTasks={setTasks}
-                  setTask={setTask}
-                  task={tasks[task]}
-                  tasks={tasks}
-                  deleteSubTask={deleteSubTask}
-                />
-              ))}
-            </List>
-          </Collapse>
-        </Grid>
+        </Card>
       </ListItem>
     );
   }

@@ -46,14 +46,6 @@ export type AllUserData = {
   tasks: TaskObjects;
 };
 
-/* Project Types */
-
-export type Project = Task;
-
-export type ProjectObjects = {
-  [id: string]: Project;
-};
-
 /* Task Types */
 
 export interface Task extends Document {
@@ -61,6 +53,7 @@ export interface Task extends Document {
   dateCreated: Date;
   note: string;
   title: string;
+  priority: number;
 }
 
 export type TaskObjects = {
@@ -77,4 +70,19 @@ export function tasksAreEqual(task1: Task, task2: Task): boolean {
     }
   });
   return equal;
+}
+
+/* Project Types */
+
+export type Project = Task;
+
+export type ProjectObjects = {
+  [id: string]: Project;
+};
+
+export function projectsAreEqual(
+  project1: Project,
+  project2: Project
+): boolean {
+  return tasksAreEqual(project1, project2);
 }
