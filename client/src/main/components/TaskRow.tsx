@@ -1,16 +1,15 @@
 import React from 'react';
 import {
-  TableCell,
   WithStyles,
   createStyles,
   Theme,
   withStyles,
-  TableBody,
-  Table,
-  Box,
+  ListItem,
+  List,
   TextField,
   Collapse,
   IconButton,
+  Grid,
 } from '@material-ui/core';
 import UpIcon from '@material-ui/icons/ArrowUpward';
 import DownIcon from '@material-ui/icons/ArrowDownward';
@@ -197,7 +196,7 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
     const { subTasksOpen } = this.state;
     if (task.subtasks.length !== 0) {
       return (
-        <TableCell>
+        <Grid item>
           <IconButton
             aria-label="project-expander"
             onClick={() => {
@@ -206,7 +205,7 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
           >
             {subTasksOpen ? <UpIcon /> : <DownIcon />}
           </IconButton>
-        </TableCell>
+        </Grid>
       );
     }
     return null;
@@ -221,17 +220,19 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
     const { deleteSubTask } = this;
     if (task.subtasks.length !== 0) {
       return (
-        <Collapse in={subTasksOpen} timeout="auto">
-          {task.subtasks.map(taskId => (
-            <TaskRow
-              deleteSubTask={deleteSubTask}
-              setTasks={setTasks}
-              setTask={setTask}
-              classes={classes}
-              task={tasks[taskId]}
-              tasks={tasks}
-            />
-          ))}
+        <Collapse in={subTasksOpen} timeout="auto" className={classes.root}>
+          <List>
+            {task.subtasks.map(taskId => (
+              <TaskRow
+                deleteSubTask={deleteSubTask}
+                setTasks={setTasks}
+                setTask={setTask}
+                classes={classes}
+                task={tasks[taskId]}
+                tasks={tasks}
+              />
+            ))}
+          </List>
         </Collapse>
       );
     }
@@ -239,7 +240,7 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
   }
 
   render() {
-    const { task } = this.props;
+    const { task, classes } = this.props;
     const { title, note } = this.state;
     const {
       handleTaskInputChange,
@@ -250,39 +251,37 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
       addSubTask,
     } = this;
     return (
-      <Box key={task._id}>
-        <Table size="small">
-          <TableBody>
-            {generateTaskExpanderButton()}
-            <TableCell>
-              <TextField
-                key={task._id}
-                id="title"
-                label="Title"
-                value={title}
-                variant="outlined"
-                onChange={handleTaskInputChange}
-                onBlur={handleLoseFocus}
-              />
-            </TableCell>
-            <TableCell>
-              <TextField
-                id="note"
-                label="Notes"
-                value={note}
-                multiline
-                variant="outlined"
-                onChange={handleTaskInputChange}
-                onBlur={handleLoseFocus}
-              />
-            </TableCell>
-            <TableCell>
-              <TaskMenu addSubTask={addSubTask} deleteTask={deleteTask} />
-            </TableCell>
-          </TableBody>
-        </Table>
-        {generateSubTaskCollapse()}
-      </Box>
+      <ListItem key={task._id} className={classes.root}>
+        <Grid container spacing={4} justify="space-between" alignItems="center">
+          {generateTaskExpanderButton()}
+          <Grid item>
+            <TextField
+              key={task._id}
+              id="title"
+              label="Title"
+              value={title}
+              variant="outlined"
+              onChange={handleTaskInputChange}
+              onBlur={handleLoseFocus}
+            />
+          </Grid>
+          <Grid item>
+            <TextField
+              id="note"
+              label="Notes"
+              value={note}
+              multiline
+              variant="outlined"
+              onChange={handleTaskInputChange}
+              onBlur={handleLoseFocus}
+            />
+          </Grid>
+          <Grid item>
+            <TaskMenu addSubTask={addSubTask} deleteTask={deleteTask} />
+          </Grid>
+          {generateSubTaskCollapse()}
+        </Grid>
+      </ListItem>
     );
   }
 }

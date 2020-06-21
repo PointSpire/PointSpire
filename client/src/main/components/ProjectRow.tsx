@@ -1,13 +1,15 @@
 import React from 'react';
 import {
-  TableRow,
-  TableCell,
   IconButton,
   WithStyles,
   createStyles,
   Theme,
   withStyles,
   Collapse,
+  Typography,
+  Grid,
+  List,
+  ListItem,
 } from '@material-ui/core';
 import UpIcon from '@material-ui/icons/ArrowUpward';
 import DownIcon from '@material-ui/icons/ArrowDownward';
@@ -27,7 +29,7 @@ function styles(theme: Theme) {
       paddingLeft: theme.spacing(4),
       borderColor: theme.palette.secondary.main,
     },
-    iconNutton: {
+    iconButton: {
       backgroundColor: theme.palette.secondary.main,
       '&:hover': {
         backgroundColor: theme.palette.secondary.light,
@@ -150,9 +152,9 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
     const { open } = this.state;
     const { setOpen, handleAddNewTaskClick, deleteSubTask } = this;
     return (
-      <>
-        <TableRow className={classes.root} key={project._id}>
-          <TableCell>
+      <ListItem className={classes.root} key={project._id}>
+        <Grid container spacing={4} justify="space-between" alignItems="center">
+          <Grid item>
             <IconButton
               aria-label="project-expander"
               onClick={() => {
@@ -161,52 +163,27 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
             >
               {open ? <UpIcon /> : <DownIcon />}
             </IconButton>
-          </TableCell>
-          <TableCell align="left">{project.title}</TableCell>
-          <TableCell align="left">{project.note}</TableCell>
-          <TableCell align="left">{project.dateCreated}</TableCell>
-          <TableCell align="right">
+          </Grid>
+          <Grid item>
+            <Typography align="left">{project.title}</Typography>
+          </Grid>
+          <Grid item>
+            <Typography align="left">{project.note}</Typography>
+          </Grid>
+          <Grid item>
+            <Typography align="left">{project.dateCreated}</Typography>
+          </Grid>
+
+          <Grid item>
             <IconButton
               aria-label="new-project-task-button"
               onClick={handleAddNewTaskClick}
             >
               <AddListIcon fontSize="large" />
             </IconButton>
-            {/*
-          <NewItemMenu
-            itemName={newTaskTitle}
-            parentId={project._id}
-            handleConfirm={addTaskToProject}
-            anchor={anchor}
-            handleClose={setAnchor}
-          />
-          */}
-            {/* <Menu
-            keepMounted
-            open={anchor.mouseX !== null}
-            anchorReference="anchorPosition"
-            onClose={() => setAnchor(blankMouse)}
-            anchorPosition={
-              anchor.mouseX && anchor.mouseY
-                ? { top: anchor.mouseY, left: anchor.mouseX }
-                : undefined
-            }
-          >
-            <TextField
-              error={newTaskTitle.length === 0}
-              label="Task Title"
-              onChange={handleTaskInput}
-              value={newTaskTitle}
-            />
-            <IconButton onClick={() => addTaskToProject(project._id)}>
-              <AddIcon />
-            </IconButton>
-          </Menu> */}
-          </TableCell>
-        </TableRow>
-        <TableRow>
-          <TableCell colSpan={6}>
-            <Collapse in={open} timeout="auto">
+          </Grid>
+          <Collapse in={open} timeout="auto" className={classes.root}>
+            <List>
               {project.subtasks.map(task => (
                 <TaskRow
                   setTasks={setTasks}
@@ -216,10 +193,10 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
                   deleteSubTask={deleteSubTask}
                 />
               ))}
-            </Collapse>
-          </TableCell>
-        </TableRow>
-      </>
+            </List>
+          </Collapse>
+        </Grid>
+      </ListItem>
     );
   }
 }

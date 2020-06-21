@@ -1,14 +1,5 @@
 import React from 'react';
-import {
-  Button,
-  TableContainer,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Paper,
-  Table,
-} from '@material-ui/core/';
+import { Button, List, ListItem } from '@material-ui/core/';
 import {
   Theme,
   createStyles,
@@ -135,26 +126,19 @@ class ProjectTable extends React.Component<
     } = this.props;
     const { addProjectOpen } = this.state;
     return (
-      <TableContainer component={Paper}>
-        <Table aria-label="collapsible table">
-          <TableHead>
-            <TableRow>
-              <TableCell align="left">{projects.id}</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {Object.values(projects).map(projectDoc => {
-              return (
-                <ProjectRow
-                  setTasks={setTasks}
-                  setProject={setProject}
-                  project={projectDoc}
-                  tasks={tasks}
-                  setTask={setTask}
-                />
-              );
-            })}
-            {/*
+      <List>
+        {Object.values(projects).map(projectDoc => {
+          return (
+            <ProjectRow
+              setTasks={setTasks}
+              setProject={setProject}
+              project={projectDoc}
+              tasks={tasks}
+              setTask={setTask}
+            />
+          );
+        })}
+        {/*
             <Collapse in={addProjectOpen} timeout="auto">
               <Paper>
                 <TextField
@@ -176,23 +160,23 @@ class ProjectTable extends React.Component<
               </Paper>
             </Collapse>
             */}
-            <Button
-              className={classes.label}
-              variant="outlined"
-              fullWidth
-              onClick={() => {
-                this.setState(prev => {
-                  return {
-                    addProjectOpen: !prev.addProjectOpen,
-                  };
-                });
-              }}
-            >
-              {addProjectOpen ? 'Cancel' : 'Create Project'}
-            </Button>
-          </TableBody>
-        </Table>
-      </TableContainer>
+        <ListItem>
+          <Button
+            className={classes.label}
+            variant="outlined"
+            fullWidth
+            onClick={() => {
+              this.setState(prev => {
+                return {
+                  addProjectOpen: !prev.addProjectOpen,
+                };
+              });
+            }}
+          >
+            {addProjectOpen ? 'Cancel' : 'Create Project'}
+          </Button>
+        </ListItem>
+      </List>
     );
   }
 }
