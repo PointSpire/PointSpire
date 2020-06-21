@@ -9,6 +9,11 @@ const taskSchema = new Schema({
   title: String,
   note: String,
   dateCreated: { type: Date, default: Date.now },
+  /**
+   * Uses the int32 type from mongoose which just runs Math.floor basically
+   * on any input values.
+   */
+  priority: require('mongoose-int32'),
   subtasks: [
     {
       type: ObjectId,
@@ -26,6 +31,7 @@ export interface TaskDoc extends Document {
   title: string;
   note: string;
   dateCreated: Date;
+  priority: number;
   subtasks: Array<typeof ObjectId>;
 }
 

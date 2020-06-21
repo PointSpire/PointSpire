@@ -170,6 +170,9 @@ const definition = {
           note: {
             type: 'string',
           },
+          priority: {
+            type: 'number',
+          },
         },
         example: {
           title: 'Fix the fence',
@@ -184,6 +187,9 @@ const definition = {
           },
           note: {
             type: 'string',
+          },
+          priority: {
+            type: 'number',
           },
           dateCreated: {
             type: 'object',
@@ -223,10 +229,14 @@ const definition = {
           note: {
             type: 'string',
           },
+          priority: {
+            type: 'number',
+          },
         },
         example: {
           title: 'Get geared up for next battle',
           note: 'Should get:\n- Helment\n- New Sword\n- New Shield',
+          priority: 2,
         },
       },
       taskObjectBasis: {
@@ -237,6 +247,9 @@ const definition = {
           },
           note: {
             type: 'string',
+          },
+          priority: {
+            type: 'number',
           },
           dateCreated: {
             type: 'object',
