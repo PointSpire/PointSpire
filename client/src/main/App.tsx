@@ -166,7 +166,6 @@ class App extends React.Component<AppProps, AppState> {
     const { user } = this.state;
     if (user) {
       const temp = user.projects;
-      // eslint-disable-next-line no-underscore-dangle
       temp.push(newProject._id);
       user.projects = temp;
       this.setState({
@@ -174,29 +173,6 @@ class App extends React.Component<AppProps, AppState> {
       });
     }
   }
-
-  public handleInputChange = (
-    taskId: string,
-    inputId: string,
-    value: string
-  ): void => {
-    const { tasks } = this.state;
-    if (tasks) {
-      const currentTasks = tasks;
-      const foundTask = currentTasks[taskId];
-      switch (inputId) {
-        case 'title-input':
-          foundTask.title = value;
-          break;
-        case 'note-input':
-          foundTask.note = value;
-          break;
-        default:
-          break;
-      }
-      this.setTask(foundTask);
-    }
-  };
 
   async addProject(newTitle: string): Promise<void> {
     const { projects, user } = this.state;
@@ -228,7 +204,6 @@ class App extends React.Component<AppProps, AppState> {
   async sendUpdatedUserToServer(): Promise<boolean> {
     const { user } = this.state;
     if (user) {
-      // eslint-disable-next-line no-underscore-dangle
       const res = await fetch(`${baseServerUrl}/api/users/${user._id}`, {
         method: 'PATCH',
         headers: {

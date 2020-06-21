@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import {
   TableRow,
   TableCell,
-  // Typography,
-  // Paper,
   IconButton,
   WithStyles,
   createStyles,
@@ -17,7 +15,7 @@ import AddListIcon from '@material-ui/icons/PlaylistAdd';
 import { Project, TaskObjects } from '../dbTypes';
 import TaskRow from './TaskRow';
 import { AddTaskToProject, AddTaskToTask } from './ProjectTable';
-import NewItemMenu from './NewItemMenu';
+import { SetTaskFunction } from '../App';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -39,12 +37,10 @@ const blankMouse = {
 export interface ProjectRowProps extends WithStyles<typeof styles> {
   project: Project;
   tasks: TaskObjects;
-  handleChange: (taskId: string, inputId: string, value: string) => void;
   addTaskToProject: AddTaskToProject;
   addTaskToTask: AddTaskToTask;
-  handleTaskInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleTaskDelete: (id: string) => void;
   newTaskTitle: string;
+  setTask: SetTaskFunction;
 }
 
 function ProjectRow(props: ProjectRowProps) {
@@ -52,12 +48,10 @@ function ProjectRow(props: ProjectRowProps) {
     classes,
     project,
     tasks,
-    newTaskTitle,
-    handleChange,
-    addTaskToProject,
+    // newTaskTitle,
+    // addTaskToProject,
     addTaskToTask,
-    handleTaskInput,
-    handleTaskDelete,
+    setTask,
   } = props;
   const [open, setOpen] = useState<boolean>(false);
   const [anchor, setAnchor] = useState<{
@@ -66,6 +60,8 @@ function ProjectRow(props: ProjectRowProps) {
   }>(blankMouse);
 
   const bindOpen = (e: React.MouseEvent<HTMLElement>) => {
+    // eslint-disable-next-line
+    console.log(anchor);
     setAnchor({
       mouseX: e.clientX,
       mouseY: e.clientY,
@@ -101,15 +97,15 @@ function ProjectRow(props: ProjectRowProps) {
           >
             <AddListIcon fontSize="large" />
           </IconButton>
+          {/*
           <NewItemMenu
             itemName={newTaskTitle}
             parentId={project._id}
             handleConfirm={addTaskToProject}
-            handleInput={handleTaskInput}
-            handleDelete={handleTaskDelete}
             anchor={anchor}
             handleClose={setAnchor}
           />
+          */}
           {/* <Menu
             keepMounted
             open={anchor.mouseX !== null}
@@ -138,9 +134,9 @@ function ProjectRow(props: ProjectRowProps) {
           <Collapse in={open} timeout="auto">
             {project.subtasks.map(task => (
               <TaskRow
+                setTask={setTask}
                 task={tasks[task]}
                 tasks={tasks}
-                handleChange={handleChange}
                 addTaskToTask={addTaskToTask}
               />
             ))}

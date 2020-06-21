@@ -84,38 +84,15 @@ class ProjectTable extends React.Component<
     this.addProject = this.addProject.bind(this);
     this.addTaskToProject = this.addTaskToProject.bind(this);
     this._addTaskToProjectState = this._addTaskToProjectState.bind(this);
-    this.handleInputChange = this.handleInputChange.bind(this);
-    this.deleteTask = this.deleteTask.bind(this);
   }
 
+  /*
   private handleTaskInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({
       newTaskTitle: e.target.value,
     });
   };
-
-  public handleInputChange = (
-    taskId: string,
-    inputId: string,
-    value: string
-  ) => {
-    const { tasks, setTask } = this.props;
-    const foundTask = tasks[taskId];
-    switch (inputId) {
-      case 'title-input':
-        foundTask.title = value;
-        break;
-      case 'note-input':
-        foundTask.note = value;
-        break;
-      default:
-        break;
-    }
-    this.setState(currState => ({
-      changeCount: currState.changeCount + 1,
-    }));
-    setTask(foundTask);
-  };
+  */
 
   /**
    * Adds the project to the user state and the project objects state.
@@ -195,18 +172,13 @@ class ProjectTable extends React.Component<
     this._addTaskToTaskState(newTask);
   }
 
-  // eslint-disable-next-line
-  deleteTask(taskId: string) {
-    console.log(taskId);
-  }
-
   autoUpdateUser() {
     // eslint-disable-next-line
-    console.log(`Update user data: ${this.state.changeCount}`)
+    console.log(`Update user data: ${this.state.changeCount}`);
   }
 
   render() {
-    const { classes, projects, tasks } = this.props;
+    const { classes, projects, tasks, setTask } = this.props;
     const {
       addProjectOpen,
       newProjectTitle,
@@ -214,13 +186,10 @@ class ProjectTable extends React.Component<
       newTaskTitle,
     } = this.state;
     const {
-      handleInputChange,
       addProject,
       addTaskToProject,
       addTaskToTask,
-      handleTaskInput,
       autoUpdateUser,
-      deleteTask,
     } = this;
     if (changeCount > 40) {
       autoUpdateUser();
@@ -239,12 +208,10 @@ class ProjectTable extends React.Component<
                 <ProjectRow
                   project={projectDoc}
                   tasks={tasks}
-                  handleChange={handleInputChange}
                   addTaskToProject={addTaskToProject}
-                  handleTaskInput={handleTaskInput}
                   newTaskTitle={newTaskTitle}
                   addTaskToTask={addTaskToTask}
-                  handleTaskDelete={deleteTask}
+                  setTask={setTask}
                 />
               );
             })}

@@ -2,8 +2,6 @@ import React from 'react';
 import {
   TableRow,
   TableCell,
-  // Typography,
-  // Paper,
   WithStyles,
   createStyles,
   Theme,
@@ -16,6 +14,7 @@ import {
 } from '@material-ui/core';
 import { Task, TaskObjects } from '../dbTypes';
 import { AddTaskToTask } from './ProjectTable';
+import { SetTaskFunction } from '../App';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -32,67 +31,116 @@ function styles(theme: Theme) {
 export interface TaskRowProps extends WithStyles<typeof styles> {
   task: Task;
   tasks: TaskObjects;
-  handleChange: (taskId: string, inputId: string, value: string) => void;
   addTaskToTask: AddTaskToTask;
+  setTask: SetTaskFunction;
 }
 
-function TaskRow(props: TaskRowProps) {
-  const { classes, task, tasks, handleChange, addTaskToTask } = props;
-  return (
-    <Box key={task._id}>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell>Title</TableCell>
-            <TableCell>Note</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          <TableCell>
-            <TextField
-              key={task._id}
-              id="title-input"
-              label="Title"
-              value={task.title}
-              variant="outlined"
-              onChange={
-                (e: React.ChangeEvent<HTMLInputElement>) =>
-                  /* eslint-disable-next-line no-underscore-dangle */
-                  handleChange(task._id, e.target.id, e.target.value)
-                // eslint and prettier are fighting on this line. not sure why.
-                /* eslint-disable-next-line */
-              }
-            />
-          </TableCell>
-          <TableCell>
-            <TextField
-              id="note-input"
-              label="Notes"
-              value={task.note}
-              multiline
-              variant="outlined"
-              onChange={
-                (e: React.ChangeEvent<HTMLInputElement>) =>
-                  /* eslint-disable-next-line no-underscore-dangle */
-                  handleChange(task._id, e.target.id, e.target.value)
-                // eslint and prettier are fighting on this line. not sure why.
-                /* eslint-disable-next-line */
-              }
-            />
-          </TableCell>
-          {task.subtasks.map(subtask => (
-            <TaskRow
-              classes={classes}
-              task={tasks[subtask]}
-              tasks={tasks}
-              handleChange={handleChange}
-              addTaskToTask={addTaskToTask}
-            />
-          ))}
-        </TableBody>
-      </Table>
-    </Box>
-  );
+/**
+ * Some of the details of the task are held in state to make it more efficient.
+ * Then when the focus is left from a field in the row, then the current state
+ * is saved to the task.
+ */
+type TaskRowState = {
+  /**
+   * The title for the task.
+   */
+  title: string;
+
+  /**
+   * The note for the task
+   */
+  note: string;
+
+  /**
+   * Used so that you can programatically change the state based on the id of
+   * the element being changed.
+   */
+  [taskProperty: string]: string;
+};
+
+class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
+  constructor(props: TaskRowProps) {
+    super(props);
+
+    const { task } = props;
+
+    this.state = {
+      title: task.title,
+      note: task.note,
+    };
+
+    this.handleTaskInputChange = this.handleTaskInputChange.bind(this);
+    this.handleLoseFocus = this.handleLoseFocus.bind(this);
+  }
+
+  handleTaskInputChange(event: React.ChangeEvent<HTMLInputElement>): void {
+    this.setState({
+      [event.target.id]: event.target.value,
+    });
+  }
+
+  /**
+   * Handles losing focus on an input element. This will save the task to the
+   * applications state.
+   */
+  handleLoseFocus(): void {
+    const { setTask, task } = this.props;
+    const { title, note } = this.state;
+    task.title = title;
+    task.note = note;
+    setTask(task);
+  }
+
+  render() {
+    const { classes, task, tasks, addTaskToTask, setTask } = this.props;
+    const { title, note } = this.state;
+    const { handleTaskInputChange, handleLoseFocus } = this;
+    return (
+      <Box key={task._id}>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell>Title</TableCell>
+              <TableCell>Note</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            <TableCell>
+              <TextField
+                key={task._id}
+                id="title"
+                label="Title"
+                value={title}
+                variant="outlined"
+                onChange={handleTaskInputChange}
+                onBlur={handleLoseFocus}
+              />
+            </TableCell>
+            <TableCell>
+              <TextField
+                id="note"
+                label="Notes"
+                value={note}
+                multiline
+                variant="outlined"
+                onChange={handleTaskInputChange}
+                onBlur={handleLoseFocus}
+              />
+            </TableCell>
+            {task.subtasks.map(subtask => (
+              <TaskRow
+                setTask={setTask}
+                classes={classes}
+                task={tasks[subtask]}
+                tasks={tasks}
+                addTaskToTask={addTaskToTask}
+              />
+            ))}
+          </TableBody>
+        </Table>
+      </Box>
+    );
+  }
 }
 
 export default withStyles(styles, { withTheme: true })(TaskRow);
