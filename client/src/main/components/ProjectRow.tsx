@@ -345,11 +345,12 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
             </Grid>
             <Collapse in={open} timeout="auto" className={classes.root}>
               <List>
-                {project.subtasks.map(task => (
+                {project.subtasks.map(taskId => (
                   <TaskRow
+                    key={taskId}
                     setTasks={setTasks}
                     setTask={setTask}
-                    task={tasks[task]}
+                    task={tasks[taskId]}
                     tasks={tasks}
                     deleteSubTask={deleteSubTask}
                   />

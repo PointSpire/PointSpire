@@ -41,9 +41,6 @@ function styles(theme: Theme) {
 export interface ProjectTableProps extends WithStyles<typeof styles> {
   projects: ProjectObjects;
   tasks: TaskObjects;
-  // addProject: (newTitle: string) => void;
-  // handleChange: (taskId: string, inputId: string, value: string) => void;
-  baseServerUrl: string;
   user: User;
   setProjects: SetProjectsFunction;
   setProject: SetProjectFunction;
@@ -52,10 +49,7 @@ export interface ProjectTableProps extends WithStyles<typeof styles> {
   setTasks: SetTasksFunction;
 }
 
-export interface ProjectTableState {
-  changeCount: number;
-  addProjectOpen: boolean;
-}
+export type ProjectTableState = unknown;
 
 class ProjectTable extends React.Component<
   ProjectTableProps,
@@ -63,10 +57,6 @@ class ProjectTable extends React.Component<
 > {
   constructor(props: ProjectTableProps) {
     super(props);
-    this.state = {
-      changeCount: 0,
-      addProjectOpen: false,
-    };
 
     this.addProject = this.addProject.bind(this);
   }
@@ -85,7 +75,7 @@ class ProjectTable extends React.Component<
    * @private
    * @param {Project} newProject the new project to add to state
    */
-  private _addProjectToState(newProject: Project): void {
+  private addProjectToState(newProject: Project): void {
     const { setProjects, projects, user, setUser } = this.props;
     projects[newProject._id] = newProject;
     user.projects.push(newProject._id);
@@ -104,15 +94,7 @@ class ProjectTable extends React.Component<
     const newProject = await postNewProject(user._id, 'Untitled');
 
     // Save the project to state
-    this._addProjectToState(newProject);
-    this.setState({
-      addProjectOpen: false,
-    });
-  }
-
-  autoUpdateUser() {
-    // eslint-disable-next-line
-    console.log(`Update user data: ${this.state.changeCount}`);
+    this.addProjectToState(newProject);
   }
 
   render() {
@@ -124,12 +106,13 @@ class ProjectTable extends React.Component<
       setProject,
       setTasks,
     } = this.props;
-    const { addProjectOpen } = this.state;
+    const { addProject } = this;
     return (
       <List>
         {Object.values(projects).map(projectDoc => {
           return (
             <ProjectRow
+              key={projectDoc._id}
               setTasks={setTasks}
               setProject={setProject}
               project={projectDoc}
@@ -138,42 +121,14 @@ class ProjectTable extends React.Component<
             />
           );
         })}
-        {/*
-            <Collapse in={addProjectOpen} timeout="auto">
-              <Paper>
-                <TextField
-                  id="new-project-title"
-                  label="New Project Title"
-                  value={newProjectTitle}
-                  onChange={e => {
-                    this.setState({
-                      newProjectTitle: e.target.value,
-                    });
-                  }}
-                  error={newProjectTitle.length === 0}
-                  variant="outlined"
-                  size="small"
-                />
-                <Button variant="contained" onClick={() => addProject()}>
-                  Done
-                </Button>
-              </Paper>
-            </Collapse>
-            */}
         <ListItem>
           <Button
             className={classes.label}
             variant="outlined"
             fullWidth
-            onClick={() => {
-              this.setState(prev => {
-                return {
-                  addProjectOpen: !prev.addProjectOpen,
-                };
-              });
-            }}
+            onClick={addProject}
           >
-            {addProjectOpen ? 'Cancel' : 'Create Project'}
+            Add Project
           </Button>
         </ListItem>
       </List>

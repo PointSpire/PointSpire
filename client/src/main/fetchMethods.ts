@@ -16,7 +16,10 @@ const fetchData = {
     process.env.REACT_APP_ENV === 'LOCAL_DEV'
       ? 'http://localhost:8055'
       : 'https://point-spire.herokuapp.com',
-  testUser: '5eda8ef7846e21ba6013cb19',
+  /**
+   * Used just for development, this is a manually created user.
+   */
+  testUser: '5eefe797ecd8e59379c172a8',
   api: {
     users: '/api/users/',
     tasks: '/api/tasks/',
@@ -87,7 +90,7 @@ export async function patchTask(task: Task): Promise<boolean> {
 /**
  * Gets the user data from the server by using the current code in the user's
  * url path. If the code isn't there, then it makes a request to `/api/users`
- * expected the user to have a cookie with a valid session ID in it, so the
+ * expecting the user to have a cookie with a valid session ID in it, so the
  * server returns the correct AllUserData object.
  */
 export async function getUserData(): Promise<AllUserData> {
@@ -129,9 +132,12 @@ export async function getUserData(): Promise<AllUserData> {
  * so the client always gets a user.
  */
 export async function getTestUserData(): Promise<AllUserData> {
-  const url = `${fetchData.baseServerUrl}/api/users/5eda8ef7846e21ba6013cb19`;
+  const url = `${fetchData.baseServerUrl}/api/users/${fetchData.testUser}`;
   const res = await fetch(url);
   const data = (await res.json()) as AllUserData;
+
+  // eslint-disable-next-line
+  console.log(JSON.stringify(data, null, 2));
   return data;
 }
 
@@ -153,6 +159,12 @@ export function getRequest<T>(url: string, id: string): Promise<T> {
   });
 }
 
+/**
+ * Makes a post request to the server to add a new project with the given title.
+ *
+ * @param {string} userId the ID of the user to add this project to
+ * @param {string} projectTitle the title of the new project
+ */
 export async function postNewProject(
   userId: string,
   projectTitle: string

@@ -71,11 +71,17 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
 
     const { task } = props;
 
-    this.state = {
-      title: task.title,
-      note: task.note,
-      subTasksOpen: false,
-    };
+    // DELETE ME
+    try {
+      this.state = {
+        title: task.title,
+        note: task.note,
+        subTasksOpen: false,
+      };
+    } catch (err) {
+      // eslint-disable-next-line
+      console.log(err, JSON.stringify(task, null, 2));
+    }
 
     this.handleTaskInputChange = this.handleTaskInputChange.bind(this);
     this.handleLoseFocus = this.handleLoseFocus.bind(this);

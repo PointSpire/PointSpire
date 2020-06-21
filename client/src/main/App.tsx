@@ -306,7 +306,6 @@ class App extends React.Component<AppProps, AppState> {
               setProject={setProject}
               setTask={setTask}
               setTasks={setTasks}
-              baseServerUrl={baseServerUrl}
               projects={projects}
               tasks={tasks}
               user={user}

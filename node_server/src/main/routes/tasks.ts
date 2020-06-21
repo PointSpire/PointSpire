@@ -196,9 +196,7 @@ function createTasksRouter(db: typeof mongoose): Router {
    * /tasks/{taskId}:
    *  delete:
    *    summary: Deletes a task
-   *    description: 'Deletes the task with the given taskId and deletes that taskId
-   * from any project which has it in their `subtasks` array. If successful,
-   * it returns the deleted document.'
+   *    description: 'Deletes the task with the given taskId and deletes that taskId from any project which has it in their `subtasks` array as well as any task that has it in their subtasks array. If successful, it returns the deleted document.'
    *    tags:
    *      - Task
    *    responses:
@@ -219,6 +217,10 @@ function createTasksRouter(db: typeof mongoose): Router {
       await Promise.all([
         Task.deleteOne({ _id: taskDoc._id }).exec(),
         Project.updateOne(
+          { subtasks: taskDoc._id },
+          { $pull: { subtasks: taskDoc._id } }
+        ).exec(),
+        Task.updateOne(
           { subtasks: taskDoc._id },
           { $pull: { subtasks: taskDoc._id } }
         ).exec(),
