@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   TableRow,
   TableCell,
@@ -14,8 +14,8 @@ import DownIcon from '@material-ui/icons/ArrowDownward';
 import AddListIcon from '@material-ui/icons/PlaylistAdd';
 import { Project, TaskObjects } from '../dbTypes';
 import TaskRow from './TaskRow';
-import { AddTaskToProject, AddTaskToTask } from './ProjectTable';
-import { SetTaskFunction } from '../App';
+import { SetTaskFunction, SetTasksFunction, SetProjectFunction } from '../App';
+import { postNewTask } from '../fetchMethods';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -29,75 +29,118 @@ function styles(theme: Theme) {
   });
 }
 
-const blankMouse = {
+const blankMouse: MousePos = {
   mouseX: null,
   mouseY: null,
+};
+
+type MousePos = {
+  mouseX: number | null;
+  mouseY: number | null;
 };
 
 export interface ProjectRowProps extends WithStyles<typeof styles> {
   project: Project;
   tasks: TaskObjects;
-  addTaskToProject: AddTaskToProject;
-  addTaskToTask: AddTaskToTask;
-  newTaskTitle: string;
   setTask: SetTaskFunction;
+  setTasks: SetTasksFunction;
+  setProject: SetProjectFunction;
 }
 
-function ProjectRow(props: ProjectRowProps) {
-  const {
-    classes,
-    project,
-    tasks,
-    // newTaskTitle,
-    // addTaskToProject,
-    addTaskToTask,
-    setTask,
-  } = props;
-  const [open, setOpen] = useState<boolean>(false);
-  const [anchor, setAnchor] = useState<{
-    mouseX: number | null;
-    mouseY: number | null;
-  }>(blankMouse);
+export interface ProjectRowState {
+  open: boolean;
+  anchor: MousePos;
+}
 
-  const bindOpen = (e: React.MouseEvent<HTMLElement>) => {
+class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
+  constructor(props: ProjectRowProps) {
+    super(props);
+    this.state = { open: false, anchor: blankMouse };
+
+    this.addSubTask = this.addSubTask.bind(this);
+    this.bindOpen = this.bindOpen.bind(this);
+    this.setOpen = this.setOpen.bind(this);
+    this.handleAddNewTaskClick = this.handleAddNewTaskClick.bind(this);
+  }
+
+  setAnchor(anchor: MousePos): void {
+    this.setState({
+      anchor,
+    });
+  }
+
+  setOpen(open: boolean): void {
+    this.setState({
+      open,
+    });
+  }
+
+  /**
+   * Adds a new task to this project on the server and in state.
+   *
+   * @param {string} title the title of the new task
+   * @returns {Promise<Task>} the new Task returned from the server
+   */
+  async addSubTask(title: string): Promise<void> {
+    const { setTasks, tasks, project, setProject } = this.props;
+
+    // Make the request for the new task
+    const newTask = await postNewTask('project', project._id, title);
+
+    // Add the new task to the task objects
+    tasks[newTask._id] = newTask;
+    setTasks(tasks);
+
+    // Add the new task to the project
+    project.subtasks.push(newTask._id);
+    setProject(project);
+  }
+
+  handleAddNewTaskClick(): void {
+    this.addSubTask('Untitled').catch(err => {
+      // eslint-disable-next-line
+      console.error(err);
+    });
+  }
+
+  bindOpen(e: React.MouseEvent<HTMLElement>): void {
+    const { anchor } = this.state;
     // eslint-disable-next-line
     console.log(anchor);
-    setAnchor({
+    this.setAnchor({
       mouseX: e.clientX,
       mouseY: e.clientY,
     });
-  };
+  }
 
-  return (
-    <>
-      <TableRow className={classes.root} key={project._id}>
-        <TableCell>
-          <IconButton
-            aria-label="project-expander"
-            onClick={() => {
-              setOpen(!open);
-            }}
-          >
-            {open ? <UpIcon /> : <DownIcon />}
-          </IconButton>
-        </TableCell>
-        <TableCell align="left">{project.title}</TableCell>
-        <TableCell align="left">{project.note}</TableCell>
-        <TableCell align="left">{project.dateCreated}</TableCell>
-        <TableCell align="right">
-          <IconButton
-            aria-label="new-project-task-button"
-            // onClick={(e: React.MouseEvent<HTMLElement>) => {
-            //   setAnchor({
-            //     mouseX: e.clientX,
-            //     mouseY: e.clientY,
-            //   });
-            // }}
-            onClick={bindOpen}
-          >
-            <AddListIcon fontSize="large" />
-          </IconButton>
-          {/*
+  render(): JSX.Element {
+    const { classes, project, tasks, setTask } = this.props;
+    const { open } = this.state;
+    const { setOpen, handleAddNewTaskClick } = this;
+    return (
+      <>
+        <TableRow className={classes.root} key={project._id}>
+          <TableCell>
+            <IconButton
+              aria-label="project-expander"
+              onClick={() => {
+                setOpen(!open);
+              }}
+            >
+              {open ? <UpIcon /> : <DownIcon />}
+            </IconButton>
+          </TableCell>
+          <TableCell align="left">{project.title}</TableCell>
+          <TableCell align="left">{project.note}</TableCell>
+          <TableCell align="left">{project.dateCreated}</TableCell>
+          <TableCell align="right">
+            <IconButton
+              aria-label="new-project-task-button"
+              onClick={handleAddNewTaskClick}
+            >
+              <AddListIcon fontSize="large" />
+            </IconButton>
+            {/*
           <NewItemMenu
             itemName={newTaskTitle}
             parentId={project._id}
@@ -106,7 +149,7 @@ function ProjectRow(props: ProjectRowProps) {
             handleClose={setAnchor}
           />
           */}
-          {/* <Menu
+            {/* <Menu
             keepMounted
             open={anchor.mouseX !== null}
             anchorReference="anchorPosition"
@@ -127,24 +170,20 @@ function ProjectRow(props: ProjectRowProps) {
               <AddIcon />
             </IconButton>
           </Menu> */}
-        </TableCell>
-      </TableRow>
-      <TableRow>
-        <TableCell colSpan={6}>
-          <Collapse in={open} timeout="auto">
-            {project.subtasks.map(task => (
-              <TaskRow
-                setTask={setTask}
-                task={tasks[task]}
-                tasks={tasks}
-                addTaskToTask={addTaskToTask}
-              />
-            ))}
-          </Collapse>
-        </TableCell>
-      </TableRow>
-    </>
-  );
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell colSpan={6}>
+            <Collapse in={open} timeout="auto">
+              {project.subtasks.map(task => (
+                <TaskRow setTask={setTask} task={tasks[task]} tasks={tasks} />
+              ))}
+            </Collapse>
+          </TableCell>
+        </TableRow>
+      </>
+    );
+  }
 }
 
 export default withStyles(styles, { withTheme: true })(ProjectRow);

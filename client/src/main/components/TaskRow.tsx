@@ -15,9 +15,9 @@ import {
 import UpIcon from '@material-ui/icons/ArrowUpward';
 import DownIcon from '@material-ui/icons/ArrowDownward';
 import { Task, TaskObjects } from '../dbTypes';
-import { AddTaskToTask } from './ProjectTable';
 import { SetTaskFunction } from '../App';
 import { patchTask } from '../fetchMethods';
+import TaskMenu from './TaskMenu';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -34,7 +34,6 @@ function styles(theme: Theme) {
 export interface TaskRowProps extends WithStyles<typeof styles> {
   task: Task;
   tasks: TaskObjects;
-  addTaskToTask: AddTaskToTask;
   setTask: SetTaskFunction;
 }
 
@@ -155,7 +154,7 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
    * Generates the Collapse element only if this task has subtasks.
    */
   generateSubTaskCollapse(): JSX.Element | null {
-    const { task, setTask, classes, tasks, addTaskToTask } = this.props;
+    const { task, setTask, classes, tasks } = this.props;
     const { subTasksOpen } = this.state;
     if (task.subtasks.length !== 0) {
       return (
@@ -166,7 +165,6 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
               classes={classes}
               task={tasks[taskId]}
               tasks={tasks}
-              addTaskToTask={addTaskToTask}
             />
           ))}
         </Collapse>
@@ -210,6 +208,9 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
                 onChange={handleTaskInputChange}
                 onBlur={handleLoseFocus}
               />
+            </TableCell>
+            <TableCell>
+              <TaskMenu />
             </TableCell>
           </TableBody>
         </Table>

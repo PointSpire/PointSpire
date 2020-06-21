@@ -183,16 +183,30 @@ export async function patchProject(
   return updatedProject;
 }
 
+/**
+ * Makes a post request to the server with the new task title and returns
+ * the new Task that the server produces.
+ *
+ * @param {"task" | "project"} parentType the type of the parent that the task
+ * is being attached to
+ * @param {string} parentId the id of the parent
+ * @param {string} taskTitle the title of the new task
+ * @returns {Promise<Task>} the Task that the server produced
+ */
 export async function postNewTask(
-  url: string,
+  parentType: 'task' | 'project',
   parentId: string,
   taskTitle: string
 ): Promise<Task> {
-  const { buildUrl, basicHeader } = fetchData;
-  const fullUrl = buildUrl(url, parentId);
+  const { basicHeader } = fetchData;
+  let fullUrl: string;
+  if (parentType === 'project') {
+    fullUrl = `${baseServerUrl}/api/projects/${parentId}/subtasks`;
+  } else {
+    fullUrl = `${baseServerUrl}/api/tasks/${parentId}/subtasks`;
+  }
   const newTask = {
     title: taskTitle,
-    note: 'blank',
   };
   const taskRes = await fetch(fullUrl, {
     method: 'POST',

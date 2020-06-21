@@ -8,8 +8,6 @@ import {
   TableRow,
   Paper,
   Table,
-  Collapse,
-  TextField,
 } from '@material-ui/core/';
 import {
   Theme,
@@ -17,7 +15,7 @@ import {
   withStyles,
   WithStyles,
 } from '@material-ui/core/styles';
-import { ProjectObjects, TaskObjects, Project, User, Task } from '../dbTypes';
+import { ProjectObjects, TaskObjects, Project, User } from '../dbTypes';
 import ProjectRow from './ProjectRow';
 import {
   SetProjectsFunction,
@@ -26,7 +24,7 @@ import {
   SetTaskFunction,
   SetTasksFunction,
 } from '../App';
-import { postNewProject, postNewTask } from '../fetchMethods';
+import { postNewProject } from '../fetchMethods';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */
@@ -64,8 +62,6 @@ export interface ProjectTableProps extends WithStyles<typeof styles> {
 export interface ProjectTableState {
   changeCount: number;
   addProjectOpen: boolean;
-  newProjectTitle: string;
-  newTaskTitle: string;
 }
 
 class ProjectTable extends React.Component<
@@ -77,13 +73,9 @@ class ProjectTable extends React.Component<
     this.state = {
       changeCount: 0,
       addProjectOpen: false,
-      newProjectTitle: '',
-      newTaskTitle: '',
     };
 
     this.addProject = this.addProject.bind(this);
-    this.addTaskToProject = this.addTaskToProject.bind(this);
-    this._addTaskToProjectState = this._addTaskToProjectState.bind(this);
   }
 
   /*
@@ -100,7 +92,7 @@ class ProjectTable extends React.Component<
    * @private
    * @param {Project} newProject the new project to add to state
    */
-  _addProjectToState(newProject: Project): void {
+  private _addProjectToState(newProject: Project): void {
     const { setProjects, projects, user, setUser } = this.props;
     projects[newProject._id] = newProject;
     user.projects.push(newProject._id);
@@ -115,61 +107,14 @@ class ProjectTable extends React.Component<
    * @param {string} projectTitle the title of the new project
    */
   async addProject(): Promise<void> {
-    // const { baseServerUrl, user } = this.props;
     const { user } = this.props;
-    const { newProjectTitle } = this.state;
-    if (newProjectTitle.length > 0) {
-      // Calls the fetch method in ./fetchMethods.ts
-      const newProject = await postNewProject(user._id, newProjectTitle);
+    const newProject = await postNewProject(user._id, 'Untitled');
 
-      // Save the project to state
-      this._addProjectToState(newProject);
-      this.setState({
-        addProjectOpen: false,
-      });
-    }
-  }
-
-  private _addTaskToProjectState(newTask: Task, project: Project): void {
-    const { setTasks, tasks, setProject, projects } = this.props;
-    tasks[newTask._id] = newTask;
-    const p = projects[project._id];
-    p.subtasks.push(newTask._id);
-    setTasks(tasks);
-    setProject(p);
-  }
-
-  private _addTaskToTaskState(newTask: Task): void {
-    const { tasks, setTasks } = this.props;
-    tasks[newTask._id] = newTask;
-    setTasks(tasks);
-  }
-
-  async addTaskToProject(projectId: string) {
-    const { baseServerUrl, projects } = this.props;
-    const { newTaskTitle } = this.state;
-    const project = projects[projectId];
-
-    const newTask = await postNewTask(
-      `${baseServerUrl}/api/projects/~/subtasks`,
-      projectId,
-      newTaskTitle
-    );
-
-    this._addTaskToProjectState(newTask, project);
-  }
-
-  async addTaskToTask(parentId: string) {
-    const { baseServerUrl } = this.props;
-    const { newTaskTitle } = this.state;
-
-    const newTask = await postNewTask(
-      `${baseServerUrl}/api/tasks/~/subtasks`,
-      parentId,
-      newTaskTitle
-    );
-
-    this._addTaskToTaskState(newTask);
+    // Save the project to state
+    this._addProjectToState(newProject);
+    this.setState({
+      addProjectOpen: false,
+    });
   }
 
   autoUpdateUser() {
@@ -178,22 +123,15 @@ class ProjectTable extends React.Component<
   }
 
   render() {
-    const { classes, projects, tasks, setTask } = this.props;
     const {
-      addProjectOpen,
-      newProjectTitle,
-      changeCount,
-      newTaskTitle,
-    } = this.state;
-    const {
-      addProject,
-      addTaskToProject,
-      addTaskToTask,
-      autoUpdateUser,
-    } = this;
-    if (changeCount > 40) {
-      autoUpdateUser();
-    }
+      classes,
+      projects,
+      tasks,
+      setTask,
+      setProject,
+      setTasks,
+    } = this.props;
+    const { addProjectOpen } = this.state;
     return (
       <TableContainer component={Paper}>
         <Table aria-label="collapsible table">
@@ -206,15 +144,15 @@ class ProjectTable extends React.Component<
             {Object.values(projects).map(projectDoc => {
               return (
                 <ProjectRow
+                  setTasks={setTasks}
+                  setProject={setProject}
                   project={projectDoc}
                   tasks={tasks}
-                  addTaskToProject={addTaskToProject}
-                  newTaskTitle={newTaskTitle}
-                  addTaskToTask={addTaskToTask}
                   setTask={setTask}
                 />
               );
             })}
+            {/*
             <Collapse in={addProjectOpen} timeout="auto">
               <Paper>
                 <TextField
@@ -235,6 +173,7 @@ class ProjectTable extends React.Component<
                 </Button>
               </Paper>
             </Collapse>
+            */}
             <Button
               className={classes.label}
               variant="outlined"
@@ -255,9 +194,5 @@ class ProjectTable extends React.Component<
     );
   }
 }
-
-export type AddTaskToProject = typeof ProjectTable.prototype.addTaskToProject;
-
-export type AddTaskToTask = typeof ProjectTable.prototype.addTaskToTask;
 
 export default withStyles(styles, { withTheme: true })(ProjectTable);
