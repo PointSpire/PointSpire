@@ -11,6 +11,7 @@ import {
   ListItem,
   TextField,
   Card,
+  Tooltip,
 } from '@material-ui/core';
 import { DatePicker } from '@material-ui/pickers';
 import UpIcon from '@material-ui/icons/ArrowUpward';
@@ -325,12 +326,14 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
               />
             </Grid>
             <Grid item>
-              <IconButton
-                aria-label="new-project-task-button"
-                onClick={handleAddNewTaskClick}
-              >
-                <AddListIcon fontSize="large" />
-              </IconButton>
+              <Tooltip title="Add Subtask">
+                <IconButton
+                  aria-label="new-project-task-button"
+                  onClick={handleAddNewTaskClick}
+                >
+                  <AddListIcon fontSize="large" />
+                </IconButton>
+              </Tooltip>
             </Grid>
             <Grid item className={classes.root}>
               <TextField
