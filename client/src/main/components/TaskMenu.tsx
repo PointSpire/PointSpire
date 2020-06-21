@@ -1,10 +1,11 @@
 import React from 'react';
 import { IconButton, Menu, MenuItem } from '@material-ui/core';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
-import { deleteTaskFunction } from './TaskRow';
+import { DeleteTaskFunction, AddSubTaskFunction } from './TaskRow';
 
 export type TaskMenuProps = {
-  deleteTask: deleteTaskFunction;
+  deleteTask: DeleteTaskFunction;
+  addSubTask: AddSubTaskFunction;
 };
 
 export interface TaskMenuState {
@@ -21,6 +22,7 @@ class TaskMenu extends React.Component<TaskMenuProps, TaskMenuState> {
     this.handleClick = this.handleClick.bind(this);
     this.handleClose = this.handleClose.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
+    this.handleAddSubTask = this.handleAddSubTask.bind(this);
   }
 
   setAnchorEl(element: HTMLElement | null): void {
@@ -38,12 +40,20 @@ class TaskMenu extends React.Component<TaskMenuProps, TaskMenuState> {
     this.setAnchorEl(event.currentTarget);
   }
 
+  handleAddSubTask(): void {
+    const { addSubTask } = this.props;
+    addSubTask('Untitled').catch(err => {
+      // eslint-disable-next-line
+      console.error(err);
+    });
+  }
+
   handleClose(): void {
     this.setAnchorEl(null);
   }
 
   render(): JSX.Element {
-    const { handleClick, handleClose, handleDelete } = this;
+    const { handleClick, handleClose, handleDelete, handleAddSubTask } = this;
     const { anchorEl } = this.state;
     return (
       <div>
@@ -60,8 +70,8 @@ class TaskMenu extends React.Component<TaskMenuProps, TaskMenuState> {
           open={Boolean(anchorEl)}
           onClose={handleClose}
         >
+          <MenuItem onClick={handleAddSubTask}>Add SubTask</MenuItem>
           <MenuItem onClick={handleDelete}>Delete</MenuItem>
-          <MenuItem>Some other test menu item</MenuItem>
         </Menu>
       </div>
     );

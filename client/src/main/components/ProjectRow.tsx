@@ -90,7 +90,6 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
    * Adds a new task to this project on the server and in state.
    *
    * @param {string} title the title of the new task
-   * @returns {Promise<Task>} the new Task returned from the server
    */
   async addSubTask(title: string): Promise<void> {
     const { setTasks, tasks, project, setProject } = this.props;

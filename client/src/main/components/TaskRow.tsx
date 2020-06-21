@@ -16,7 +16,11 @@ import UpIcon from '@material-ui/icons/ArrowUpward';
 import DownIcon from '@material-ui/icons/ArrowDownward';
 import { Task, TaskObjects } from '../dbTypes';
 import { SetTaskFunction, SetTasksFunction } from '../App';
-import { patchTask, deleteTask as deleteTaskOnServer } from '../fetchMethods';
+import {
+  patchTask,
+  deleteTask as deleteTaskOnServer,
+  postNewTask,
+} from '../fetchMethods';
 import TaskMenu from './TaskMenu';
 import { DeleteSubTaskFunction } from './ProjectRow';
 
@@ -83,6 +87,7 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
     );
     this.deleteTask = this.deleteTask.bind(this);
     this.deleteSubTask = this.deleteSubTask.bind(this);
+    this.addSubTask = this.addSubTask.bind(this);
   }
 
   setSubTasksOpen(open: boolean) {
@@ -130,6 +135,29 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
       default:
         break;
     }
+  }
+
+  /**
+   * Adds a new sub task to this task on the server and in state. This also
+   * opens the subtasks if they weren't already.
+   *
+   * @param {string} title the title of the new task
+   */
+  async addSubTask(title: string): Promise<void> {
+    const { setTasks, tasks, task, setTask } = this.props;
+
+    // Make the request for the new task
+    const newTask = await postNewTask('task', task._id, title);
+
+    // Add the new task to the task objects
+    tasks[newTask._id] = newTask;
+    setTasks(tasks);
+
+    // Add the new task to the project
+    task.subtasks.push(newTask._id);
+    setTask(task);
+
+    this.setSubTasksOpen(true);
   }
 
   /**
@@ -219,6 +247,7 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
       generateSubTaskCollapse,
       generateTaskExpanderButton,
       deleteTask,
+      addSubTask,
     } = this;
     return (
       <Box key={task._id}>
@@ -248,7 +277,7 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
               />
             </TableCell>
             <TableCell>
-              <TaskMenu deleteTask={deleteTask} />
+              <TaskMenu addSubTask={addSubTask} deleteTask={deleteTask} />
             </TableCell>
           </TableBody>
         </Table>
@@ -260,4 +289,6 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
 
 export default withStyles(styles, { withTheme: true })(TaskRow);
 
-export type deleteTaskFunction = typeof TaskRow.prototype.deleteTask;
+export type DeleteTaskFunction = typeof TaskRow.prototype.deleteTask;
+
+export type AddSubTaskFunction = typeof TaskRow.prototype.addSubTask;
