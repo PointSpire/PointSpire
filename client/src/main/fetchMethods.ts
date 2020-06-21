@@ -216,3 +216,21 @@ export async function postNewTask(
   const returnedTask = (await taskRes.json()) as Task;
   return returnedTask;
 }
+
+/**
+ * Deletes the given task from the server and returns the successfully deleted
+ * task.
+ *
+ * @param {Task} task the task to delete
+ * @returns {Promise<Task>} the successfully deleted Task
+ */
+export async function deleteTask(task: Task): Promise<Task> {
+  const { basicHeader } = fetchData;
+  const fullUrl = `${baseServerUrl}/api/tasks/${task._id}`;
+  const res = await fetch(fullUrl, {
+    method: 'DELETE',
+    headers: basicHeader,
+  });
+  const returnedTask = (await res.json()) as Task;
+  return returnedTask;
+}

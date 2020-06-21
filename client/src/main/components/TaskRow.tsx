@@ -15,9 +15,10 @@ import {
 import UpIcon from '@material-ui/icons/ArrowUpward';
 import DownIcon from '@material-ui/icons/ArrowDownward';
 import { Task, TaskObjects } from '../dbTypes';
-import { SetTaskFunction } from '../App';
-import { patchTask } from '../fetchMethods';
+import { SetTaskFunction, SetTasksFunction } from '../App';
+import { patchTask, deleteTask as deleteTaskOnServer } from '../fetchMethods';
 import TaskMenu from './TaskMenu';
+import { DeleteSubTaskFunction } from './ProjectRow';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -35,6 +36,8 @@ export interface TaskRowProps extends WithStyles<typeof styles> {
   task: Task;
   tasks: TaskObjects;
   setTask: SetTaskFunction;
+  setTasks: SetTasksFunction;
+  deleteSubTask: DeleteSubTaskFunction;
 }
 
 /**
@@ -78,6 +81,8 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
     this.generateTaskExpanderButton = this.generateTaskExpanderButton.bind(
       this
     );
+    this.deleteTask = this.deleteTask.bind(this);
+    this.deleteSubTask = this.deleteSubTask.bind(this);
   }
 
   setSubTasksOpen(open: boolean) {
@@ -128,6 +133,35 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
   }
 
   /**
+   * Deletes this task.
+   */
+  deleteTask() {
+    const { task, deleteSubTask } = this.props;
+    deleteSubTask(task).catch(err => {
+      // eslint-disable-next-line
+      console.error(err);
+    });
+  }
+
+  /**
+   * Deletes the given task from state and from the server.
+   *
+   * @param {Task} task the task to delete
+   */
+  async deleteSubTask(taskToDelete: Task): Promise<void> {
+    const { setTask, setTasks, tasks, task } = this.props;
+
+    // Delete the task from state first
+    delete tasks[taskToDelete._id];
+    setTasks(tasks);
+    task.subtasks.splice(task.subtasks.indexOf(taskToDelete._id), 1);
+    setTask(task);
+
+    // Make the request to delete the task
+    await deleteTaskOnServer(task);
+  }
+
+  /**
    * Generates the task expander button only if this task has subtasks.
    */
   generateTaskExpanderButton(): JSX.Element | null {
@@ -154,13 +188,16 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
    * Generates the Collapse element only if this task has subtasks.
    */
   generateSubTaskCollapse(): JSX.Element | null {
-    const { task, setTask, classes, tasks } = this.props;
+    const { task, setTask, classes, tasks, setTasks } = this.props;
     const { subTasksOpen } = this.state;
+    const { deleteSubTask } = this;
     if (task.subtasks.length !== 0) {
       return (
         <Collapse in={subTasksOpen} timeout="auto">
           {task.subtasks.map(taskId => (
             <TaskRow
+              deleteSubTask={deleteSubTask}
+              setTasks={setTasks}
               setTask={setTask}
               classes={classes}
               task={tasks[taskId]}
@@ -181,6 +218,7 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
       handleLoseFocus,
       generateSubTaskCollapse,
       generateTaskExpanderButton,
+      deleteTask,
     } = this;
     return (
       <Box key={task._id}>
@@ -210,7 +248,7 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
               />
             </TableCell>
             <TableCell>
-              <TaskMenu />
+              <TaskMenu deleteTask={deleteTask} />
             </TableCell>
           </TableBody>
         </Table>
@@ -221,3 +259,5 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
 }
 
 export default withStyles(styles, { withTheme: true })(TaskRow);
+
+export type deleteTaskFunction = typeof TaskRow.prototype.deleteTask;

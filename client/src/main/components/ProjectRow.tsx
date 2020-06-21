@@ -12,10 +12,10 @@ import {
 import UpIcon from '@material-ui/icons/ArrowUpward';
 import DownIcon from '@material-ui/icons/ArrowDownward';
 import AddListIcon from '@material-ui/icons/PlaylistAdd';
-import { Project, TaskObjects } from '../dbTypes';
+import { Project, TaskObjects, Task } from '../dbTypes';
 import TaskRow from './TaskRow';
 import { SetTaskFunction, SetTasksFunction, SetProjectFunction } from '../App';
-import { postNewTask } from '../fetchMethods';
+import { postNewTask, deleteTask } from '../fetchMethods';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -71,6 +71,7 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
     this.bindOpen = this.bindOpen.bind(this);
     this.setOpen = this.setOpen.bind(this);
     this.handleAddNewTaskClick = this.handleAddNewTaskClick.bind(this);
+    this.deleteSubTask = this.deleteSubTask.bind(this);
   }
 
   setAnchor(anchor: MousePos): void {
@@ -106,6 +107,24 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
     setProject(project);
   }
 
+  /**
+   * Deletes the given task from state and from the server.
+   *
+   * @param {Task} task the task to delete
+   */
+  async deleteSubTask(task: Task): Promise<void> {
+    const { setTasks, tasks, project, setProject } = this.props;
+
+    // Delete the task from state first
+    delete tasks[task._id];
+    setTasks(tasks);
+    project.subtasks.splice(project.subtasks.indexOf(task._id), 1);
+    setProject(project);
+
+    // Make the request to delete the task
+    await deleteTask(task);
+  }
+
   handleAddNewTaskClick(): void {
     this.addSubTask('Untitled').catch(err => {
       // eslint-disable-next-line
@@ -128,9 +147,9 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
   }
 
   render(): JSX.Element {
-    const { classes, project, tasks, setTask } = this.props;
+    const { classes, project, tasks, setTask, setTasks } = this.props;
     const { open } = this.state;
-    const { setOpen, handleAddNewTaskClick } = this;
+    const { setOpen, handleAddNewTaskClick, deleteSubTask } = this;
     return (
       <>
         <TableRow className={classes.root} key={project._id}>
@@ -190,7 +209,13 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
           <TableCell colSpan={6}>
             <Collapse in={open} timeout="auto">
               {project.subtasks.map(task => (
-                <TaskRow setTask={setTask} task={tasks[task]} tasks={tasks} />
+                <TaskRow
+                  setTasks={setTasks}
+                  setTask={setTask}
+                  task={tasks[task]}
+                  tasks={tasks}
+                  deleteSubTask={deleteSubTask}
+                />
               ))}
             </Collapse>
           </TableCell>
@@ -201,3 +226,5 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
 }
 
 export default withStyles(styles, { withTheme: true })(ProjectRow);
+
+export type DeleteSubTaskFunction = typeof ProjectRow.prototype.deleteSubTask;
