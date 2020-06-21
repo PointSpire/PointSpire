@@ -36,8 +36,10 @@ function styles(theme: Theme) {
       backgroundColor: theme.palette.background.paper,
       alignItems: 'center',
     },
-    nested: {
+    projectItem: {
       paddingLeft: theme.spacing(4),
+      backgroundColor: theme.palette.background.paper,
+      borderColor: theme.palette.secondary.main,
     },
     label: {
       alignSelf: 'center',

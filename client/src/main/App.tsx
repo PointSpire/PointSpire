@@ -1,5 +1,6 @@
 import React from 'react';
 import './App.css';
+import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
 import MuiAlert from '@material-ui/lab/Alert';
 import { Snackbar } from '@material-ui/core';
 import TopMenuBar from './components/TopMenuBar';
@@ -19,6 +20,22 @@ import {
   getTestUserData,
   baseServerUrl,
 } from './fetchMethods';
+
+const theme = createMuiTheme({
+  palette: {
+    primary: {
+      main: '#90caf9',
+    },
+    secondary: {
+      main: '#f2ac83',
+    },
+    error: {
+      main: '#ff8aa5',
+    },
+    contrastThreshold: 3,
+    tonalOffset: 0.2,
+  },
+});
 
 /**
  * Used to determine the severity of an alert for the snackbar of the app.
@@ -272,39 +289,45 @@ class App extends React.Component<AppProps, AppState> {
     } = this;
     return (
       <div className="App">
-        <TopMenuBar
-          githubClientId={githubClientId}
-          baseServerUrl={baseServerUrl}
-          sendUpdatedUserToServer={sendUpdatedUserToServer}
-          alert={alert}
-          userSettings={user ? user.settings : undefined}
-          updateSettings={updateSettings}
-        />
-        {/* If projects and tasks exist, show project table */}
-        {projects && tasks && user ? (
-          <ProjectTable
-            setUser={setUser}
-            setProjects={setProjects}
-            setProject={setProject}
-            setTask={setTask}
-            setTasks={setTasks}
+        <ThemeProvider theme={theme}>
+          <TopMenuBar
+            githubClientId={githubClientId}
             baseServerUrl={baseServerUrl}
-            projects={projects}
-            tasks={tasks}
-            user={user}
+            sendUpdatedUserToServer={sendUpdatedUserToServer}
+            alert={alert}
+            userSettings={user ? user.settings : undefined}
+            updateSettings={updateSettings}
           />
-        ) : (
-          ''
-        )}
-        <Snackbar
-          open={snackBarOpen}
-          autoHideDuration={3000}
-          onClose={handleSnackBarClose}
-        >
-          <MuiAlert elevation={6} variant="filled" severity={snackBarSeverity}>
-            {snackBarText}
-          </MuiAlert>
-        </Snackbar>
+          {/* If projects and tasks exist, show project table */}
+          {projects && tasks && user ? (
+            <ProjectTable
+              setUser={setUser}
+              setProjects={setProjects}
+              setProject={setProject}
+              setTask={setTask}
+              setTasks={setTasks}
+              baseServerUrl={baseServerUrl}
+              projects={projects}
+              tasks={tasks}
+              user={user}
+            />
+          ) : (
+            ''
+          )}
+          <Snackbar
+            open={snackBarOpen}
+            autoHideDuration={3000}
+            onClose={handleSnackBarClose}
+          >
+            <MuiAlert
+              elevation={6}
+              variant="filled"
+              severity={snackBarSeverity}
+            >
+              {snackBarText}
+            </MuiAlert>
+          </Snackbar>
+        </ThemeProvider>
       </div>
     );
   }

@@ -25,6 +25,16 @@ function styles(theme: Theme) {
     },
     nested: {
       paddingLeft: theme.spacing(4),
+      borderColor: theme.palette.secondary.main,
+    },
+    iconNutton: {
+      backgroundColor: theme.palette.secondary.main,
+      '&:hover': {
+        backgroundColor: theme.palette.secondary.light,
+      },
+    },
+    iconButtonHover: {
+      backgroundColor: theme.palette.primary.main,
     },
   });
 }
