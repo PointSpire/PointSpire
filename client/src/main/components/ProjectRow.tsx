@@ -48,16 +48,6 @@ function styles(theme: Theme) {
   });
 }
 
-const blankMouse: MousePos = {
-  mouseX: null,
-  mouseY: null,
-};
-
-type MousePos = {
-  mouseX: number | null;
-  mouseY: number | null;
-};
-
 /**
  * Saves the project to the server and logs to the console what happened.
  *
@@ -90,7 +80,6 @@ export interface ProjectRowProps extends WithStyles<typeof styles> {
 
 export interface ProjectRowState {
   open: boolean;
-  anchor: MousePos;
   priority: number;
   title: string;
   note: string;
@@ -103,14 +92,12 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
     const { project } = this.props;
     this.state = {
       open: false,
-      anchor: blankMouse,
       priority: project.priority,
       title: project.title,
       note: project.note,
     };
 
     this.addSubTask = this.addSubTask.bind(this);
-    this.bindOpen = this.bindOpen.bind(this);
     this.setOpen = this.setOpen.bind(this);
     this.handleAddNewTaskClick = this.handleAddNewTaskClick.bind(this);
     this.deleteSubTask = this.deleteSubTask.bind(this);
@@ -120,12 +107,6 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
     this.handleTitleChange = this.handleTitleChange.bind(this);
     this.handleStartDateChange = this.handleStartDateChange.bind(this);
     this.handleDueDateChange = this.handleDueDateChange.bind(this);
-  }
-
-  setAnchor(anchor: MousePos): void {
-    this.setState({
-      anchor,
-    });
   }
 
   setOpen(open: boolean): void {
@@ -244,16 +225,6 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
     /* TODO: Try to get the transition to run when it opens. Right now it
     doesn't. */
     this.setOpen(true);
-  }
-
-  bindOpen(e: React.MouseEvent<HTMLElement>): void {
-    const { anchor } = this.state;
-    // eslint-disable-next-line
-    console.log(anchor);
-    this.setAnchor({
-      mouseX: e.clientX,
-      mouseY: e.clientY,
-    });
   }
 
   render(): JSX.Element {

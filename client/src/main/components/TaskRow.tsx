@@ -71,19 +71,14 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
 
     const { task } = props;
 
-    // DELETE ME
-    try {
-      this.state = {
-        title: task.title,
-        note: task.note,
-        subTasksOpen: false,
-      };
-    } catch (err) {
-      // eslint-disable-next-line
-      console.log(err, JSON.stringify(task, null, 2));
-    }
+    this.state = {
+      title: task.title,
+      note: task.note,
+      subTasksOpen: false,
+    };
 
-    this.handleTaskInputChange = this.handleTaskInputChange.bind(this);
+    this.handleNoteChange = this.handleNoteChange.bind(this);
+    this.handleTitleChange = this.handleTitleChange.bind(this);
     this.handleLoseFocus = this.handleLoseFocus.bind(this);
     this.setSubTasksOpen = this.setSubTasksOpen.bind(this);
     this.generateSubTaskCollapse = this.generateSubTaskCollapse.bind(this);
@@ -125,21 +120,16 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
       });
   }
 
-  handleTaskInputChange(event: React.ChangeEvent<HTMLInputElement>): void {
-    switch (event.target.id) {
-      case 'title':
-        this.setState({
-          title: event.target.value,
-        });
-        break;
-      case 'note':
-        this.setState({
-          note: event.target.value,
-        });
-        break;
-      default:
-        break;
-    }
+  handleTitleChange(event: React.ChangeEvent<HTMLInputElement>): void {
+    this.setState({
+      title: event.target.value,
+    });
+  }
+
+  handleNoteChange(event: React.ChangeEvent<HTMLInputElement>): void {
+    this.setState({
+      note: event.target.value,
+    });
   }
 
   /**
@@ -250,12 +240,13 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
     const { task, classes } = this.props;
     const { title, note } = this.state;
     const {
-      handleTaskInputChange,
+      handleTitleChange,
       handleLoseFocus,
       generateSubTaskCollapse,
       generateTaskExpanderButton,
       deleteTask,
       addSubTask,
+      handleNoteChange,
     } = this;
     return (
       <ListItem key={task._id} className={classes.root}>
@@ -264,22 +255,20 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
           <Grid item>
             <TextField
               key={task._id}
-              id="title"
               label="Title"
               value={title}
               variant="outlined"
-              onChange={handleTaskInputChange}
+              onChange={handleTitleChange}
               onBlur={handleLoseFocus}
             />
           </Grid>
           <Grid item>
             <TextField
-              id="note"
               label="Notes"
               value={note}
               multiline
               variant="outlined"
-              onChange={handleTaskInputChange}
+              onChange={handleNoteChange}
               onBlur={handleLoseFocus}
             />
           </Grid>

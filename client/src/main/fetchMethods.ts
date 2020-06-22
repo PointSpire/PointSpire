@@ -135,9 +135,6 @@ export async function getTestUserData(): Promise<AllUserData> {
   const url = `${fetchData.baseServerUrl}/api/users/${fetchData.testUser}`;
   const res = await fetch(url);
   const data = (await res.json()) as AllUserData;
-
-  // eslint-disable-next-line
-  console.log(JSON.stringify(data, null, 2));
   return data;
 }
 
