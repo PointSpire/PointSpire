@@ -27,7 +27,7 @@ import {
   UpdateSettingsFunction,
   UpdateUserOnServerFunction,
 } from '../App';
-import { UserSettings } from '../dbTypes';
+import { UserSettings } from '../logic/dbTypes';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */

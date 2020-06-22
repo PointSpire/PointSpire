@@ -12,14 +12,14 @@ import {
   UserSettings,
   Project,
   Task,
-} from './dbTypes';
+} from './logic/dbTypes';
 import ProjectTable from './components/ProjectTable';
 import {
   postNewProject,
   getUserData,
   getTestUserData,
   baseServerUrl,
-} from './fetchMethods';
+} from './logic/fetchMethods';
 
 const theme = createMuiTheme({
   palette: {

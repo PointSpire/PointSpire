@@ -15,7 +15,7 @@ import {
   UpdateSettingsFunction,
   UpdateUserOnServerFunction,
 } from '../App';
-import { UserSettings } from '../dbTypes';
+import { UserSettings } from '../logic/dbTypes';
 
 type SettingsDialogProps = {
   open: boolean;

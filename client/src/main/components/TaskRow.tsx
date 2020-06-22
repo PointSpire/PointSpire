@@ -15,13 +15,13 @@ import UpIcon from '@material-ui/icons/ArrowUpward';
 import DownIcon from '@material-ui/icons/ArrowDownward';
 import { DatePicker } from '@material-ui/pickers';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
-import { Task, TaskObjects } from '../dbTypes';
+import { Task, TaskObjects } from '../logic/dbTypes';
 import { SetTaskFunction, SetTasksFunction } from '../App';
 import {
   patchTask,
   deleteTask as deleteTaskOnServer,
   postNewTask,
-} from '../fetchMethods';
+} from '../logic/fetchMethods';
 import TaskMenu from './TaskMenu';
 import { DeleteSubTaskFunction } from './ProjectRow';
 

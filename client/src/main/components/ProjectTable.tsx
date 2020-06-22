@@ -6,7 +6,7 @@ import {
   withStyles,
   WithStyles,
 } from '@material-ui/core/styles';
-import { ProjectObjects, TaskObjects, Project, User } from '../dbTypes';
+import { ProjectObjects, TaskObjects, Project, User } from '../logic/dbTypes';
 import ProjectRow from './ProjectRow';
 import {
   SetProjectsFunction,
@@ -15,8 +15,8 @@ import {
   SetTaskFunction,
   SetTasksFunction,
 } from '../App';
-import { postNewProject } from '../fetchMethods';
-import prioritySortDescending from '../sortingFunctions';
+import { postNewProject } from '../logic/fetchMethods';
+import prioritySortDescending from '../logic/sortingFunctions';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */

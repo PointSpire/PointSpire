@@ -18,10 +18,10 @@ import UpIcon from '@material-ui/icons/ArrowUpward';
 import DownIcon from '@material-ui/icons/ArrowDownward';
 import AddListIcon from '@material-ui/icons/PlaylistAdd';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
-import { Project, TaskObjects, Task } from '../dbTypes';
+import { Project, TaskObjects, Task } from '../logic/dbTypes';
 import TaskRow from './TaskRow';
 import { SetTaskFunction, SetTasksFunction, SetProjectFunction } from '../App';
-import { postNewTask, deleteTask, patchProject } from '../fetchMethods';
+import { postNewTask, deleteTask, patchProject } from '../logic/fetchMethods';
 
 function styles(theme: Theme) {
   return createStyles({
