@@ -16,6 +16,7 @@ import {
   SetTasksFunction,
 } from '../App';
 import { postNewProject } from '../fetchMethods';
+import prioritySortDescending from '../sortingFunctions';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */
@@ -109,18 +110,20 @@ class ProjectTable extends React.Component<
     const { addProject } = this;
     return (
       <List>
-        {Object.values(projects).map(projectDoc => {
-          return (
-            <ProjectRow
-              key={projectDoc._id}
-              setTasks={setTasks}
-              setProject={setProject}
-              project={projectDoc}
-              tasks={tasks}
-              setTask={setTask}
-            />
-          );
-        })}
+        {Object.values(projects)
+          .sort(prioritySortDescending)
+          .map(projectDoc => {
+            return (
+              <ProjectRow
+                key={projectDoc._id}
+                setTasks={setTasks}
+                setProject={setProject}
+                project={projectDoc}
+                tasks={tasks}
+                setTask={setTask}
+              />
+            );
+          })}
         <ListItem>
           <Button
             className={classes.label}
