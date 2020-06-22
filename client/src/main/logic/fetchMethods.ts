@@ -13,11 +13,12 @@ import {
 
 const fetchData = {
   baseServerUrl:
-    process.env.REACT_APP_ENV === 'LOCAL_DEV'
+    process.env.REACT_APP_ENV === 'LOCAL_DEV' ||
+    process.env.REACT_APP_ENV === 'LOCAL'
       ? 'http://localhost:8055'
       : 'https://point-spire.herokuapp.com',
   /**
-   * Used just for development, this is a manually created user.
+   * Used just for LOCAL_DEV, this is a manually created user.
    */
   testUser: '5eefe797ecd8e59379c172a8',
   api: {

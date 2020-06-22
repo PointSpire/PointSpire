@@ -76,7 +76,13 @@ type AppState = {
 
 type AppProps = unknown;
 
-const githubClientId = 'f6a5702090e186626681';
+// Set the githubClientId. See the .env file for details.
+let githubClientId: string;
+if (process.env.REACT_APP_AUTH === 'LOCAL') {
+  githubClientId = '57646d785e4ce63a280c';
+} else {
+  githubClientId = 'f6a5702090e186626681';
+}
 
 /**
  * Represents the main application window.
