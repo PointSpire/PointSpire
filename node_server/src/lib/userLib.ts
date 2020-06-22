@@ -3,7 +3,11 @@ import mongoose from 'mongoose';
 
 type GithubProfile = {
   id: string;
-  username: string;
+
+  /**
+   * login is the username in the github profile
+   */
+  login: string;
 };
 
 /**
@@ -17,9 +21,8 @@ export function createUserObjectGithub(
   profile: GithubProfile
 ): UserDoc {
   const User: UserModel = createUserModel(db);
-  let newUser = new User({ userName: profile.username });
+  let newUser = new User({ userName: profile.login });
   newUser = Object.assign(newUser, {
-    userName: profile.username,
     firstName: '',
     lastName: '',
     githubId: profile.id,

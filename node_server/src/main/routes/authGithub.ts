@@ -8,6 +8,17 @@ import mongoose from 'mongoose';
 
 const router = express.Router();
 
+// Set the githubClientId and githubClientSecret. See .env for details.
+let githubClientId: string | undefined;
+let githubClientSecret: string | undefined;
+if (process.env.AUTH_METHOD === 'LOCAL') {
+  githubClientId = process.env.GITHUB_LOCAL_CLIENT_ID;
+  githubClientSecret = process.env.GITHUB_LOCAL_CLIENT_SECRET;
+} else {
+  githubClientId = process.env.GITHUB_CLIENT_ID;
+  githubClientSecret = process.env.GITHUB_CLIENT_SECRET;
+}
+
 /**
  * Creates the express Router for the `/auth/github` endpoint.
  *
@@ -26,9 +37,9 @@ function authGithubRouter(db: typeof mongoose): Router {
       if (req.body && req.body.code) {
         const githubReqBody = {
           // eslint-disable-next-line @typescript-eslint/camelcase
-          client_id: process.env.GITHUB_CLIENT_ID,
+          client_id: githubClientId,
           // eslint-disable-next-line @typescript-eslint/camelcase
-          client_secret: process.env.GITHUB_CLIENT_SECRET,
+          client_secret: githubClientSecret,
           code: req.body.code,
         };
         const githubRes = await fetch(
@@ -63,6 +74,7 @@ function authGithubRouter(db: typeof mongoose): Router {
       }
     } catch (err) {
       res.status(400);
+      console.log(err);
       res.send(err);
     }
   });
