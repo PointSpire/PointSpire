@@ -19,11 +19,11 @@ import App from './main/App';
 import * as serviceWorker from './serviceWorker';
 
 ReactDOM.render(
-  <React.StrictMode>
+  <>
     <MuiPickersUtilsProvider utils={MomentUtils}>
       <App />
     </MuiPickersUtilsProvider>
-  </React.StrictMode>,
+  </>,
   document.getElementById('root')
 );
 

@@ -230,6 +230,7 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
           <List>
             {task.subtasks.map(taskId => (
               <TaskRow
+                key={taskId}
                 deleteSubTask={deleteSubTask}
                 setTasks={setTasks}
                 setTask={setTask}

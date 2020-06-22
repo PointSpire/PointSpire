@@ -346,7 +346,12 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
                 onBlur={handleLoseFocus}
               />
             </Grid>
-            <Collapse in={open} timeout="auto" className={classes.root}>
+            <Collapse
+              in={open}
+              timeout="auto"
+              className={classes.root}
+              component={List}
+            >
               <List>
                 {project.subtasks.map(taskId => (
                   <TaskRow
