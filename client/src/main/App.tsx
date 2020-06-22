@@ -194,11 +194,6 @@ class App extends React.Component<AppProps, AppState> {
   async addProject(newTitle: string): Promise<void> {
     const { projects, user } = this.state;
     if (user && projects) {
-      // TESTING
-      // const resProj = await getProjects(user.projects[0]);
-      // console.log(resProj);
-      // console.log(projects);
-      // eslint-disable-next-line no-underscore-dangle
       const newProject = await postNewProject(user._id, newTitle);
       this.setProject(newProject);
       this.setUserProjects(newProject);
