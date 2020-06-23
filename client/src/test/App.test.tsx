@@ -4,7 +4,7 @@ import App from '../main/App';
 import '@testing-library/jest-dom/extend-expect';
 
 test('renders pointspire title', () => {
-  const { getByText } = render(<App />);
-  const linkElement = getByText(/PointSpire/i);
-  expect(linkElement).toBeInTheDocument();
+  const { getAllByText } = render(<App />);
+  const pointSpireElements = getAllByText(/PointSpire/i);
+  expect(pointSpireElements.length > 0).toBeTruthy();
 });

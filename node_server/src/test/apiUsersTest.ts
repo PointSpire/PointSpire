@@ -1,9 +1,9 @@
 import chai from 'chai';
 import chaiHttp from 'chai-http';
 import Globals from './Globals';
-import { ProjectDoc, isProjectDocArr } from '../main/models/project';
-import { UserDoc } from '../main/models/user';
-import { TaskDoc, isTaskDocArr } from '../main/models/task';
+import { ProjectDoc } from '../main/models/project';
+import { UserDoc, AllUserData } from '../main/models/user';
+import { TaskDoc } from '../main/models/task';
 
 // Configure chai
 chai.use(chaiHttp);
@@ -56,12 +56,12 @@ describe('GET', () => {
 });
 
 describe('GET /id', () => {
-  it('should return the user specified by the given id if the id is valid', async () => {
+  it('should return the user data specified by the given id if the id is valid', async () => {
     const res = await chai
       .request(Globals.app)
       .get(`/api/users/${Globals.testUser._id}`);
     assert.equal(res.status, 200);
-    const returnedUser: UserDoc = res.body;
+    const returnedUser: UserDoc = res.body.user;
     assert.equal(returnedUser.userName, Globals.testUser.userName);
     assert.equal(returnedUser._id, Globals.testUser._id);
     assert.equal(returnedUser.firstName, Globals.testUser.firstName);
@@ -123,7 +123,7 @@ describe('DELETE /id', () => {
         .delete(`/api/users/${testUser._id}`);
       assert.equal(deleteRes.status, 200);
       assert.typeOf(deleteRes.body, 'object');
-      assert.equal(deleteRes.body._id, testUser._id);
+      assert.equal(deleteRes.body.user._id, testUser._id);
 
       // Make sure the project has been deleted
       const projectDeleteRes = await chai
@@ -167,32 +167,13 @@ describe('POST /id/projects', () => {
     const userRes = await chai
       .request(Globals.app)
       .get(`/api/users/${testUser._id}`);
-    const returnedUser: UserDoc = userRes.body;
+    const returnedUserData: AllUserData = userRes.body;
 
-    if (isProjectDocArr(returnedUser.projects)) {
-      const matchedProject = returnedUser.projects.find(project => {
-        return project._id == newProject._id;
-      });
-      assert.isTrue(matchedProject !== undefined);
-      if (matchedProject && isTaskDocArr(matchedProject.subtasks)) {
-        assert.isTrue(
-          matchedProject.subtasks.find(task => {
-            return task._id == newTask._id;
-          }) !== undefined
-        );
-      } else {
-        assert.fail(
-          'User request returned a ProjectDoc array but did not ' +
-            'have a project that contained a subtask array when it had a task' +
-            'assigned to it.'
-        );
-      }
-    } else {
-      assert.fail(
-        'User request did not return ProjectDoc array when it' +
-          'should have a project assigned to it.'
-      );
-    }
+    const matchedProject = returnedUserData.projects[newProject._id];
+    assert.isTrue(matchedProject !== undefined);
+    assert.isTrue(matchedProject.subtasks.includes(newTask._id));
+    const matchedSubTask = returnedUserData.tasks[newTask._id];
+    assert.isTrue(matchedSubTask !== undefined);
     await removeUser(testUser._id);
   });
   it('should not add a project if invalid content is sent', async () => {
@@ -207,7 +188,7 @@ describe('POST /id/projects', () => {
     const userRes = await chai
       .request(Globals.app)
       .get(`/api/users/${testUser._id}`);
-    const returnedUser: UserDoc = userRes.body;
+    const returnedUser: UserDoc = userRes.body.user;
     assert.deepEqual(returnedUser, testUser);
     await removeUser(testUser._id);
   });

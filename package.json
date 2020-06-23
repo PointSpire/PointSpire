@@ -1,0 +1,27 @@
+{
+  "name": "pointspire",
+  "version": "1.0.0",
+  "description": "A personal project managment tool",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "deploy": "git push --force heroku HEAD:master"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PointSpire/PointSpire.git"
+  },
+  "author": "PointSpire Team",
+  "license": "SEE LICENSE IN LICENSE FILE",
+  "bugs": {
+    "url": "https://github.com/PointSpire/PointSpire/issues"
+  },
+  "homepage": "https://github.com/PointSpire/PointSpire#readme",
+  "comments": {
+    "generalInformation": "Turning on line wrapping in your IDE for this file would be very helpful for sanity haha. See this link: https://code.visualstudio.com/docs/getstarted/settings#_language-specific-editor-settings. Also this comments portion is NOT built in to npm. It is just a space to add comments because JSON doesn't allow you to do that.",
+    "scripts": {
+      "deploy": "Deploys the current branch to heroku. This forces the push."
+    }
+  }
+}

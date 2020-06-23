@@ -8,7 +8,20 @@ const ObjectId = mongoose.Types.ObjectId;
 const taskSchema = new Schema({
   title: String,
   note: String,
-  date: { type: Date, default: Date.now },
+  dateCreated: { type: Date, default: Date.now },
+  startDate: {
+    type: Date,
+    default: null,
+  },
+  dueDate: {
+    type: Date,
+    default: null,
+  },
+  /**
+   * Uses the int32 type from mongoose which just runs Math.floor basically
+   * on any input values.
+   */
+  priority: require('mongoose-int32'),
   subtasks: [
     {
       type: ObjectId,
@@ -25,29 +38,20 @@ const taskSchema = new Schema({
 export interface TaskDoc extends Document {
   title: string;
   note: string;
-  date: Date;
-  subtasks: Array<typeof ObjectId> | Array<TaskDoc>;
+  dateCreated: Date;
+  startDate: Date | null;
+  dueDate: Date | null;
+  priority: number;
+  subtasks: Array<typeof ObjectId>;
 }
 
 /**
- * Tests if an array is a TaskDoc array or an ObjectId array. This is used
- * for the situation where `populate` is used in a mongoose query, likely for
- * the `Project` class.
- *
- * @param {Array<typeof ObjectId> | Array<TaskDoc>} array the array to test
- * if it is an ObjectId array or TaskDoc array.
- * @returns {boolean} true if the array is a TaskDoc array and false if it is
- * not or the array is empty
+ * Used to hold a map of task IDs paired with their TaskDoc. This
+ * is used when building an AllUserData object.
  */
-export function isTaskDocArr(
-  array: Array<typeof ObjectId> | Array<TaskDoc>
-): array is Array<TaskDoc> {
-  if (array.length === 0) {
-    return false;
-  } else {
-    return (array as TaskDoc[])[0].title !== undefined;
-  }
-}
+export type TaskObjects = {
+  [id: string]: TaskDoc;
+};
 
 /**
  * A `Task` class that represents a task in the MongoDB. This extends

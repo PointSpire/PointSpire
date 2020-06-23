@@ -6,14 +6,24 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
+/**
+ * Used to provide the date picker library to the rest of the application
+ */
+import { MuiPickersUtilsProvider } from '@material-ui/pickers';
+/**
+ * Currently using Moment.js for date picker thangs ⏳🌍
+ */
+import MomentUtils from '@date-io/moment';
 import './main/index.css';
 import App from './main/App';
 import * as serviceWorker from './serviceWorker';
 
 ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
+  <>
+    <MuiPickersUtilsProvider utils={MomentUtils}>
+      <App />
+    </MuiPickersUtilsProvider>
+  </>,
   document.getElementById('root')
 );
 

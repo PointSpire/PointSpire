@@ -1,10 +1,11 @@
 import express from 'express';
+import session from 'express-session';
 import path from 'path';
 import dotenv from 'dotenv';
-import cookieParser = require('cookie-parser');
 import logger from 'morgan';
 import mongoose from 'mongoose';
 import http from 'http';
+import cors from 'cors';
 
 /**
  * Allows usage of the .env file in the root directory of `node_server`. Should
@@ -14,6 +15,8 @@ dotenv.config();
 
 import indexRouter from './src/main/routes/index';
 import apiRouter from './src/main/routes/api';
+import authRouter from './src/main/routes/auth';
+import logoutRouter from './src/main/routes/logout';
 
 /**
  * @fires started when the server is finished setting up and connected to
@@ -38,10 +41,34 @@ function setupLogger(): void {
 }
 
 setupLogger();
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      callback(null, true);
+    },
+    preflightContinue: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+const sess = {
+  secret: 'keyboard cat',
+  cookie: {
+    secure: false,
+  },
+  resave: true,
+  saveUninitialized: true,
+};
+
+// serve secure cookie in production environment
+if (app.get('env') === 'production') {
+  app.set('trust proxy', 1);
+  sess.cookie.secure = true;
+}
+
+app.use(session(sess));
 
 /**
  * Represents the connection options for the mongoose MongoDB connection.
@@ -62,6 +89,8 @@ const mongooseConnectionOptions = {
 function setupRoutes(db: typeof mongoose): void {
   app.use('/', indexRouter);
   app.use('/api', apiRouter(db));
+  app.use('/auth', authRouter(db));
+  app.use('/logout', logoutRouter());
 }
 
 /**
@@ -129,6 +158,7 @@ new Promise<string>((resolve, reject) => {
   .then(db => {
     console.log('Connection successfully made to the database');
     setupRoutes(db);
+
     startServer();
   })
   .catch(err => {

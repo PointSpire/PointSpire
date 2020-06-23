@@ -12,34 +12,36 @@ const projectSchema = new Schema({
     required: true,
   },
   note: String,
-  date: { type: Date, default: Date.now },
+  startDate: {
+    type: Date,
+    default: null,
+  },
+  dueDate: {
+    type: Date,
+    default: null,
+  },
+  priority: require('mongoose-int32'),
+  dateCreated: { type: Date, default: Date.now },
   subtasks: [{ type: ObjectId, ref: 'Task', default: [] }],
 });
+
+/**
+ * Used to hold a map of project IDs paired with their ProjectDoc. This
+ * is used when building an AllUserData object.
+ */
+export type ProjectObjects = {
+  [id: string]: ProjectDoc;
+};
 
 /**
  * The type representing a Project document in the database. This extends the
  * `TaskDoc` type.
  */
-export type ProjectDoc = TaskDoc;
-
-/**
- * Tests if an array is a ProjectDoc array or an ObjectId array. This is used
- * for the situation where `populate` is used in a mongoose query, likely for
- * the `User` class.
- *
- * @param {Array<typeof ObjectId> | Array<ProjectDoc>} array the array to test
- * if it is an ObjectId array or ProjectDoc array.
- * @returns {boolean} true if the array is a ProjectDoc array, and false if it
- * is not or the array is empty
- */
-export function isProjectDocArr(
-  array: Array<typeof ObjectId> | Array<ProjectDoc>
-): array is Array<ProjectDoc> {
-  if (array && array.length !== 0) {
-    return (array as ProjectDoc[])[0].title !== undefined;
-  } else {
-    return false;
-  }
+export interface ProjectDoc extends TaskDoc {
+  /**
+   * To be used when doing a graphLookup on a ProjectDoc.
+   */
+  subtask_hierarchy?: Array<TaskDoc>;
 }
 
 /**

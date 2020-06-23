@@ -3,6 +3,8 @@ const router = express.Router();
 import mongoose from 'mongoose';
 import projectsRouter from './projects';
 import usersRouter from './users';
+import swaggerUI from 'swagger-ui-express';
+import swaggerSpec from '../swagger';
 import tasksRouter from './tasks';
 
 /**
@@ -12,13 +14,15 @@ import tasksRouter from './tasks';
  * @returns {Router} the Router for the `/api` endpoint
  */
 function createApiRouter(db: typeof mongoose): Router {
-  router.get('/', (req, res) => {
-    res.send('Please use an endpoint');
-  });
-
   router.use('/projects', projectsRouter(db));
   router.use('/users', usersRouter(db));
   router.use('/tasks', tasksRouter(db));
+
+  /**
+   * Setup the swagger front end for the API. This needs to be specified last
+   * so that it doesn't get in the way of the other paths.
+   */
+  router.use('/', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
   return router;
 }
 
