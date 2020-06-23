@@ -170,6 +170,21 @@ const definition = {
           note: {
             type: 'string',
           },
+          priority: {
+            type: 'number',
+          },
+          startDate: {
+            type: 'string',
+            nullable: true,
+            description:
+              'A Date string that represents when this project should be started',
+          },
+          dueDate: {
+            type: 'string',
+            nullable: true,
+            description:
+              'A Date string that represents when this project is due',
+          },
         },
         example: {
           title: 'Fix the fence',
@@ -184,6 +199,21 @@ const definition = {
           },
           note: {
             type: 'string',
+          },
+          priority: {
+            type: 'number',
+          },
+          startDate: {
+            type: 'string',
+            nullable: true,
+            description:
+              'A Date string that represents when this project should be started',
+          },
+          dueDate: {
+            type: 'string',
+            nullable: true,
+            description:
+              'A Date string that represents when this project is due',
           },
           dateCreated: {
             type: 'object',
@@ -223,10 +253,25 @@ const definition = {
           note: {
             type: 'string',
           },
+          priority: {
+            type: 'number',
+          },
+          startDate: {
+            type: 'string',
+            nullable: true,
+            description:
+              'A Date string that represents when this task should be started',
+          },
+          dueDate: {
+            type: 'string',
+            nullable: true,
+            description: 'A Date string that represents when this task is due',
+          },
         },
         example: {
           title: 'Get geared up for next battle',
           note: 'Should get:\n- Helment\n- New Sword\n- New Shield',
+          priority: 2,
         },
       },
       taskObjectBasis: {
@@ -238,10 +283,24 @@ const definition = {
           note: {
             type: 'string',
           },
+          priority: {
+            type: 'number',
+          },
           dateCreated: {
             type: 'object',
             description:
               'A Date object representing the date this task was created.',
+          },
+          startDate: {
+            type: 'string',
+            nullable: true,
+            description:
+              'A Date string that represents when this task should be started',
+          },
+          dueDate: {
+            type: 'string',
+            nullable: true,
+            description: 'A Date string that represents when this task is due',
           },
         },
       },

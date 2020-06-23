@@ -6,10 +6,17 @@
 /**
  * The basic type for a document from MongoDB.
  */
-type Document = {
+interface Document extends IndexableProperties {
   _id: string;
   __v: number;
-};
+}
+
+/**
+ *
+ */
+interface IndexableProperties {
+  [key: string]: unknown;
+}
 
 /* User Types */
 
@@ -39,6 +46,39 @@ export type AllUserData = {
   tasks: TaskObjects;
 };
 
+/* Task Types */
+
+export interface Task extends Document {
+  subtasks: Array<string>;
+  dateCreated: Date;
+  startDate: Date | null;
+  dueDate: Date | null;
+  note: string;
+  title: string;
+  priority: number;
+}
+
+export type TaskObjects = {
+  [id: string]: Task;
+};
+
+export function tasksAreEqual(task1: Task, task2: Task): boolean {
+  let equal = true;
+  Object.keys(task1).forEach(key => {
+    if (
+      key !== '__v' &&
+      key !== 'subtasks' &&
+      key !== 'startDate' &&
+      key !== 'dueDate'
+    ) {
+      if (task1[key] !== task2[key]) {
+        equal = false;
+      }
+    }
+  });
+  return equal;
+}
+
 /* Project Types */
 
 export type Project = Task;
@@ -47,15 +87,9 @@ export type ProjectObjects = {
   [id: string]: Project;
 };
 
-/* Task Types */
-
-export interface Task extends Document {
-  subtasks: Array<string>;
-  dateCreated: Date;
-  note: string;
-  title: string;
+export function projectsAreEqual(
+  project1: Project,
+  project2: Project
+): boolean {
+  return tasksAreEqual(project1, project2);
 }
-
-export type TaskObjects = {
-  [id: string]: Task;
-};

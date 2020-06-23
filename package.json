@@ -6,7 +6,7 @@
     "doc": "docs"
   },
   "scripts": {
-    "deploy": "git push --force heroku master"
+    "deploy": "git push --force heroku HEAD:master"
   },
   "repository": {
     "type": "git",

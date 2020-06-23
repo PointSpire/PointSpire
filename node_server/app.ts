@@ -16,6 +16,7 @@ dotenv.config();
 import indexRouter from './src/main/routes/index';
 import apiRouter from './src/main/routes/api';
 import authRouter from './src/main/routes/auth';
+import logoutRouter from './src/main/routes/logout';
 
 /**
  * @fires started when the server is finished setting up and connected to
@@ -89,6 +90,7 @@ function setupRoutes(db: typeof mongoose): void {
   app.use('/', indexRouter);
   app.use('/api', apiRouter(db));
   app.use('/auth', authRouter(db));
+  app.use('/logout', logoutRouter());
 }
 
 /**
