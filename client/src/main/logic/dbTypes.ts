@@ -50,6 +50,7 @@ export type AllUserData = {
 
 export interface Task extends Document {
   subtasks: Array<string>;
+  prereqTasks: Array<string>;
   dateCreated: Date;
   startDate: Date | null;
   dueDate: Date | null;

@@ -246,7 +246,8 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
     }
   }
 
-  handleOpenPrereqTaskDialog() {
+  handleOpenPrereqTaskDialog(e: React.MouseEvent<HTMLElement>) {
+    console.log(e.currentTarget.id);
     this.setState(prevState => {
       return {
         openPrereqTasks: !prevState.openPrereqTasks,
@@ -307,7 +308,7 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
   }
 
   render() {
-    const { task, classes } = this.props;
+    const { tasks, task, classes } = this.props;
     const { title, note, priority, openPrereqTasks } = this.state;
     const {
       handleTitleChange,
@@ -381,7 +382,12 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
               openPrereqTaskDialog={handleOpenPrereqTaskDialog}
             />
           </Grid>
-          <PrereqTaskDialog parentTask={task} openDialog={openPrereqTasks} />
+          <PrereqTaskDialog
+            tasks={tasks}
+            parentTask={task}
+            openDialog={openPrereqTasks}
+            closeDialog={handleOpenPrereqTaskDialog}
+          />
           {generateSubTaskCollapse()}
         </Grid>
       </ListItem>

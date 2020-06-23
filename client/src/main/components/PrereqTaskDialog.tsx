@@ -1,34 +1,38 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Dialog,
   DialogContent,
-  DialogContentText,
   DialogTitle,
+  DialogActions,
+  Typography,
+  Button,
 } from '@material-ui/core';
-import { Task } from '../logic/dbTypes';
+import { Task, TaskObjects } from '../logic/dbTypes';
+import { OpenPrereqTaskFunction } from './TaskRow';
+import PrereqTaskManager from './PrereqTaskManager';
 
 export interface PrereqTaskDialogProps {
+  tasks: TaskObjects;
   parentTask: Task;
   openDialog: boolean;
+  closeDialog: OpenPrereqTaskFunction;
 }
 
 const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
-  const { openDialog, parentTask } = props;
-  const { title } = parentTask;
-  const [isOpen, setOpen] = useState<boolean>(openDialog);
-
-  const handleClose = () => {
-    setOpen(false);
-  };
+  const { tasks, openDialog, closeDialog, parentTask } = props;
 
   return (
-    <Dialog open={isOpen} onClose={handleClose}>
+    <Dialog open={openDialog} onClose={closeDialog}>
       <DialogTitle>Prerequisite Tasks Menu</DialogTitle>
       <DialogContent>
-        <DialogContentText>
-          {`Control what tasks are required to complete ${title}.`}
-        </DialogContentText>
+        <PrereqTaskManager parentTask={parentTask} allTasks={tasks} />
       </DialogContent>
+      <DialogActions>
+        <Typography>{tasks[parentTask._id].note}</Typography>
+        <Button id="save-prereq-tasks" variant="text" onClick={closeDialog}>
+          Save
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 };
