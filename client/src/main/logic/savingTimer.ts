@@ -45,6 +45,8 @@ export default function scheduleCallback(
   key: string,
   callback: Function
 ): void {
+  // eslint-disable-next-line
+  console.log('Triggered scheduleCallback');
   callbacks[key] = callback;
   clearTimeout(currentTimerId);
   currentTimerId = setTimeout(runAllCallbacks, timeToWait);

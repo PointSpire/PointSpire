@@ -22,6 +22,7 @@ import { Project, TaskObjects, Task } from '../logic/dbTypes';
 import TaskRow from './TaskRow';
 import { SetTaskFunction, SetTasksFunction, SetProjectFunction } from '../App';
 import { postNewTask, deleteTask, patchProject } from '../logic/fetchMethods';
+import scheduleCallback from '../logic/savingTimer';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -46,28 +47,6 @@ function styles(theme: Theme) {
       padding: theme.spacing(2),
     },
   });
-}
-
-/**
- * Saves the project to the server and logs to the console what happened.
- *
- * @param {Project} project the updated Project
- */
-function saveProject(project: Project): void {
-  patchProject(project)
-    .then(result => {
-      if (result) {
-        // eslint-disable-next-line
-        console.log('Project was successfully saved to the server');
-      } else {
-        // eslint-disable-next-line
-        console.log('Project was not saved to the server. There was an error.');
-      }
-    })
-    .catch(err => {
-      // eslint-disable-next-line
-      console.error(err);
-    });
 }
 
 export interface ProjectRowProps extends WithStyles<typeof styles> {
@@ -149,7 +128,33 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
       project.startDate = null;
     }
     setProject(project);
-    saveProject(project);
+    scheduleCallback('ProjectRow.saveProject', () => {
+      this.saveProject();
+    });
+  }
+
+  /**
+   * Saves the project in state to the server and logs to the console what
+   * happened.
+   */
+  saveProject(): void {
+    const { project } = this.props;
+    patchProject(project)
+      .then(result => {
+        if (result) {
+          // eslint-disable-next-line
+          console.log('Project was successfully saved to the server');
+        } else {
+          // eslint-disable-next-line
+          console.log(
+            'Project was not saved to the server. There was an error.'
+          );
+        }
+      })
+      .catch(err => {
+        // eslint-disable-next-line
+        console.error(err);
+      });
   }
 
   handleDueDateChange(newDate: MaterialUiPickersDate): void {
@@ -161,7 +166,7 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
       project.dueDate = null;
     }
     setProject(project);
-    saveProject(project);
+    this.saveProject();
   }
 
   /**
@@ -175,7 +180,7 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
     project.note = note;
     project.priority = priority;
     setProject(project);
-    saveProject(project);
+    this.saveProject();
   }
 
   /**
@@ -280,7 +285,6 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
               <DatePicker
                 variant="dialog"
                 clearable
-                onBlur={handleLoseFocus}
                 label="Start Date"
                 value={project.startDate}
                 onChange={handleStartDateChange}
@@ -291,7 +295,6 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
                 variant="dialog"
                 label="Due Date"
                 value={project.dueDate}
-                onBlur={handleLoseFocus}
                 clearable
                 onChange={handleDueDateChange}
               />
