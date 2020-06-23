@@ -24,6 +24,7 @@ import {
 } from '../logic/fetchMethods';
 import TaskMenu from './TaskMenu';
 import { DeleteSubTaskFunction } from './ProjectRow';
+import PrereqTaskDialog from './PrereqTaskDialog';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -89,6 +90,8 @@ type TaskRowState = {
   subTasksOpen: boolean;
 
   priority: number;
+
+  openPrereqTasks: boolean;
 };
 
 class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
@@ -102,6 +105,7 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
       note: task.note,
       subTasksOpen: false,
       priority: task.priority,
+      openPrereqTasks: false,
     };
 
     this.handleNoteChange = this.handleNoteChange.bind(this);
@@ -118,6 +122,9 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
     this.handleDueDateChange = this.handleDueDateChange.bind(this);
     this.handleStartDateChange = this.handleStartDateChange.bind(this);
     this.handlePriorityChange = this.handlePriorityChange.bind(this);
+    this.handleOpenPrereqTaskDialog = this.handleOpenPrereqTaskDialog.bind(
+      this
+    );
   }
 
   setSubTasksOpen(open: boolean) {
@@ -239,6 +246,14 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
     }
   }
 
+  handleOpenPrereqTaskDialog() {
+    this.setState(prevState => {
+      return {
+        openPrereqTasks: !prevState.openPrereqTasks,
+      };
+    });
+  }
+
   /**
    * Generates the task expander button only if this task has subtasks.
    */
@@ -293,7 +308,7 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
 
   render() {
     const { task, classes } = this.props;
-    const { title, note, priority } = this.state;
+    const { title, note, priority, openPrereqTasks } = this.state;
     const {
       handleTitleChange,
       handleLoseFocus,
@@ -305,6 +320,7 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
       handleDueDateChange,
       handlePriorityChange,
       handleStartDateChange,
+      handleOpenPrereqTaskDialog,
     } = this;
     return (
       <ListItem key={task._id} className={classes.root}>
@@ -359,8 +375,13 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
             />
           </Grid>
           <Grid item>
-            <TaskMenu addSubTask={addSubTask} deleteTask={deleteTask} />
+            <TaskMenu
+              addSubTask={addSubTask}
+              deleteTask={deleteTask}
+              openPrereqTaskDialog={handleOpenPrereqTaskDialog}
+            />
           </Grid>
+          <PrereqTaskDialog parentTask={task} openDialog={openPrereqTasks} />
           {generateSubTaskCollapse()}
         </Grid>
       </ListItem>
@@ -373,3 +394,5 @@ export default withStyles(styles, { withTheme: true })(TaskRow);
 export type DeleteTaskFunction = typeof TaskRow.prototype.deleteTask;
 
 export type AddSubTaskFunction = typeof TaskRow.prototype.addSubTask;
+
+export type OpenPrereqTaskFunction = typeof TaskRow.prototype.handleOpenPrereqTaskDialog;

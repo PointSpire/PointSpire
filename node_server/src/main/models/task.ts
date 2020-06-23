@@ -22,6 +22,13 @@ const taskSchema = new Schema({
    * on any input values.
    */
   priority: require('mongoose-int32'),
+  prereqtasks: [
+    {
+      type: ObjectId,
+      ref: 'Task',
+      default: new Array<typeof ObjectId>(),
+    },
+  ],
   subtasks: [
     {
       type: ObjectId,
