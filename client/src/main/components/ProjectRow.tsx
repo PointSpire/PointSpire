@@ -86,6 +86,7 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
     this.handleTitleChange = this.handleTitleChange.bind(this);
     this.handleStartDateChange = this.handleStartDateChange.bind(this);
     this.handleDueDateChange = this.handleDueDateChange.bind(this);
+    this.saveProject = this.saveProject.bind(this);
   }
 
   setOpen(open: boolean): void {
@@ -121,6 +122,7 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
 
   handleStartDateChange(newDate: MaterialUiPickersDate): void {
     const { setProject, project } = this.props;
+    const { saveProject } = this;
 
     if (newDate) {
       project.startDate = newDate.toDate();
@@ -128,9 +130,8 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
       project.startDate = null;
     }
     setProject(project);
-    scheduleCallback('ProjectRow.saveProject', () => {
-      this.saveProject();
-    });
+
+    scheduleCallback('ProjectRow.saveProject', saveProject);
   }
 
   /**
@@ -159,6 +160,7 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
 
   handleDueDateChange(newDate: MaterialUiPickersDate): void {
     const { setProject, project } = this.props;
+    const { saveProject } = this;
 
     if (newDate) {
       project.dueDate = newDate.toDate();
@@ -166,7 +168,7 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
       project.dueDate = null;
     }
     setProject(project);
-    this.saveProject();
+    scheduleCallback('ProjectRow.saveProject', saveProject);
   }
 
   /**
@@ -176,11 +178,12 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
   handleLoseFocus(): void {
     const { setProject, project } = this.props;
     const { title, note, priority } = this.state;
+    const { saveProject } = this;
     project.title = title;
     project.note = note;
     project.priority = priority;
     setProject(project);
-    this.saveProject();
+    scheduleCallback('ProjectRow.saveProject', saveProject);
   }
 
   /**
