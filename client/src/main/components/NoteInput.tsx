@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { TextField } from '@material-ui/core';
 import { resetTimer } from '../logic/savingTimer';
 
-export type NoteProps = {
+export type NoteInputProps = {
   saveNote: (note: string) => void;
   note: string;
   label: string;
 };
 
-function Note(props: NoteProps): JSX.Element {
+function NoteInput(props: NoteInputProps): JSX.Element {
   const { note: initialNote, label } = props;
   const [note, setNote] = useState(initialNote);
 
@@ -23,7 +23,6 @@ function Note(props: NoteProps): JSX.Element {
   return (
     <TextField
       multiline
-      id="note"
       label={label}
       value={note}
       onChange={handleNoteChange}
@@ -33,4 +32,4 @@ function Note(props: NoteProps): JSX.Element {
   );
 }
 
-export default Note;
+export default NoteInput;

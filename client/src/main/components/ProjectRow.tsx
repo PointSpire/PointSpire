@@ -21,8 +21,9 @@ import TaskRow from './TaskRow';
 import { SetTaskFunction, SetTasksFunction, SetProjectFunction } from '../App';
 import { postNewTask, deleteTask, patchProject } from '../logic/fetchMethods';
 import scheduleCallback, { resetTimer } from '../logic/savingTimer';
-import Note from './Note';
+import NoteInput from './NoteInput';
 import DateInput from './DateInput';
+import SimpleTextInput from './SimpleTextInput';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -78,16 +79,11 @@ const ProjectRow = React.memo((props: ProjectRowProps) => {
 
   const [open, setOpen] = useState(false);
   const [priority, setPriority] = useState(project.priority);
-  const [title, setTitle] = useState(project.title);
 
   // Reset the timer whenever a change is made
   useEffect(() => {
     resetTimer();
   });
-
-  function handleTitleChange(event: React.ChangeEvent<HTMLInputElement>): void {
-    setTitle(event.target.value);
-  }
 
   function handlePriorityChange(
     event: React.ChangeEvent<HTMLInputElement>
@@ -135,21 +131,20 @@ const ProjectRow = React.memo((props: ProjectRowProps) => {
     scheduleCallback('ProjectRow.saveProject', saveProject);
   }
 
-  function saveNote(note: string): void {
-    project.note = note;
-    setProject(project);
-    scheduleCallback('ProjectRow.saveProject', saveProject);
-  }
-
   /**
-   * Handles losing focus on an input element. This will save the project to the
-   * applications state and on the server.
+   * Generates a function which can be used to modify the specified `property`
+   * of the project and schedule it to be saved on the server.
+   *
+   * @param property the property to modify on the project state
+   * @returns {(newText: string) => void} the function which can be used to
+   * save the specified `property` as long as the property is a string type
    */
-  function handleLoseFocus(): void {
-    project.title = title;
-    project.priority = priority;
-    setProject(project);
-    scheduleCallback('ProjectRow.saveProject', saveProject);
+  function saveText(property: string) {
+    return (newText: string): void => {
+      project[property] = newText;
+      setProject(project);
+      scheduleCallback('ProjectRow.saveProject', saveProject);
+    };
   }
 
   /**
@@ -212,11 +207,10 @@ const ProjectRow = React.memo((props: ProjectRowProps) => {
             </IconButton>
           </Grid>
           <Grid item>
-            <TextField
-              onChange={handleTitleChange}
+            <SimpleTextInput
               label="Project Title"
-              value={title}
-              onBlur={handleLoseFocus}
+              value={project.title}
+              saveValue={saveText('title')}
             />
           </Grid>
           <Grid item>
@@ -224,7 +218,6 @@ const ProjectRow = React.memo((props: ProjectRowProps) => {
               onChange={handlePriorityChange}
               label="Priority"
               value={priority}
-              onBlur={handleLoseFocus}
             />
           </Grid>
           <Grid item>
@@ -252,8 +245,8 @@ const ProjectRow = React.memo((props: ProjectRowProps) => {
             </Tooltip>
           </Grid>
           <Grid item className={classes.root}>
-            <Note
-              saveNote={saveNote}
+            <NoteInput
+              saveNote={saveText('note')}
               note={project.note}
               label="Project Note"
             />
