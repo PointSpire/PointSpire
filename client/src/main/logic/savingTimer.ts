@@ -50,7 +50,8 @@ export function resetTimer(): void {
  * @param {string} key the key of the callback. This is used to identify and
  * overwrite a certain callback if it is scheduled multiple times. That way
  * only the latest callback is ran after the specified amount of time. This
- * key should be unique in the application.
+ * key should be unique in the application. For example
+ * `${project._id}.methodName`.
  * @param {Function} callback the function to be ran after the specified
  * amount of time since the last time `scheduleCallback` was called globally
  */
