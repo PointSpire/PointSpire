@@ -95,19 +95,19 @@ const ProjectRow = (props: ProjectRowProps) => {
   function saveDueDate(newDate: Date | null): void {
     project.dueDate = newDate;
     setProject(project);
-    scheduleCallback('ProjectRow.saveProject', saveProject);
+    scheduleCallback(`${project._id}.saveProject`, saveProject);
   }
 
   function saveStartDate(newDate: Date | null): void {
     project.dueDate = newDate;
     setProject(project);
-    scheduleCallback('ProjectRow.saveProject', saveProject);
+    scheduleCallback(`${project._id}.saveProject`, saveProject);
   }
 
   function savePriority(newPriority: number): void {
     project.priority = newPriority;
     setProject(project);
-    scheduleCallback('ProjectRow.saveProject', saveProject);
+    scheduleCallback(`${project._id}.saveProject`, saveProject);
   }
 
   /**
@@ -122,7 +122,7 @@ const ProjectRow = (props: ProjectRowProps) => {
     return (newText: string): void => {
       project[property] = newText;
       setProject(project);
-      scheduleCallback('ProjectRow.saveProject', saveProject);
+      scheduleCallback(`${project._id}.saveProject`, saveProject);
     };
   }
 
