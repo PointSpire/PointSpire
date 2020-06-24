@@ -243,7 +243,7 @@ const ProjectRow = (props: ProjectRowProps) => {
                   setTask={setTask}
                   task={tasks[taskId]}
                   tasks={tasks}
-                  deleteSubTask={deleteSubTask}
+                  deleteTask={deleteSubTask}
                 />
               ))}
             </List>

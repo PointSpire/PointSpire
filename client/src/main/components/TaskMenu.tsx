@@ -1,11 +1,10 @@
 import React from 'react';
 import { IconButton, Menu, MenuItem } from '@material-ui/core';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
-import { DeleteTaskFunction, AddSubTaskFunction } from './TaskRow';
 
 export type TaskMenuProps = {
-  deleteTask: DeleteTaskFunction;
-  addSubTask: AddSubTaskFunction;
+  deleteTask: () => void;
+  addSubTask: (title: string) => Promise<void>;
 };
 
 export interface TaskMenuState {
