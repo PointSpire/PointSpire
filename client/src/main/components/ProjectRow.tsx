@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   IconButton,
   WithStyles,
@@ -9,7 +9,6 @@ import {
   Grid,
   List,
   ListItem,
-  TextField,
   Card,
   Tooltip,
 } from '@material-ui/core';
@@ -20,10 +19,11 @@ import { Project, TaskObjects, Task } from '../logic/dbTypes';
 import TaskRow from './TaskRow';
 import { SetTaskFunction, SetTasksFunction, SetProjectFunction } from '../App';
 import { postNewTask, deleteTask, patchProject } from '../logic/fetchMethods';
-import scheduleCallback, { resetTimer } from '../logic/savingTimer';
+import scheduleCallback from '../logic/savingTimer';
 import NoteInput from './NoteInput';
 import DateInput from './DateInput';
 import SimpleTextInput from './SimpleTextInput';
+import PriorityInput from './PriorityInput';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -64,37 +64,10 @@ export interface ProjectRowState {
   title: string;
 }
 
-function shouldProjectRowSkipUpdate(
-  oldProps: ProjectRowProps,
-  newProps: ProjectRowProps
-): boolean {
-  if (oldProps.project === newProps.project) {
-    return true;
-  }
-  return false;
-}
-
-const ProjectRow = React.memo((props: ProjectRowProps) => {
+const ProjectRow = (props: ProjectRowProps) => {
   const { project, classes, tasks, setTask, setTasks, setProject } = props;
 
   const [open, setOpen] = useState(false);
-  const [priority, setPriority] = useState(project.priority);
-
-  // Reset the timer whenever a change is made
-  useEffect(() => {
-    resetTimer();
-  });
-
-  function handlePriorityChange(
-    event: React.ChangeEvent<HTMLInputElement>
-  ): void {
-    // Check to make sure they typed an int
-    if (event.target.value.length === 0) {
-      setPriority(0);
-    } else if (!Number.isNaN(Number.parseInt(event.target.value, 10))) {
-      setPriority(Number.parseInt(event.target.value, 10));
-    }
-  }
 
   /**
    * Saves the project in state to the server and logs to the console what
@@ -131,15 +104,21 @@ const ProjectRow = React.memo((props: ProjectRowProps) => {
     scheduleCallback('ProjectRow.saveProject', saveProject);
   }
 
+  function savePriority(newPriority: number): void {
+    project.priority = newPriority;
+    setProject(project);
+    scheduleCallback('ProjectRow.saveProject', saveProject);
+  }
+
   /**
    * Generates a function which can be used to modify the specified `property`
    * of the project and schedule it to be saved on the server.
    *
-   * @param property the property to modify on the project state
+   * @param {'note' | 'title'} property the property to modify on the project state
    * @returns {(newText: string) => void} the function which can be used to
    * save the specified `property` as long as the property is a string type
    */
-  function saveText(property: string) {
+  function saveText(property: 'note' | 'title') {
     return (newText: string): void => {
       project[property] = newText;
       setProject(project);
@@ -214,10 +193,9 @@ const ProjectRow = React.memo((props: ProjectRowProps) => {
             />
           </Grid>
           <Grid item>
-            <TextField
-              onChange={handlePriorityChange}
-              label="Priority"
-              value={priority}
+            <PriorityInput
+              savePriority={savePriority}
+              priority={project.priority}
             />
           </Grid>
           <Grid item>
@@ -274,6 +252,6 @@ const ProjectRow = React.memo((props: ProjectRowProps) => {
       </Card>
     </ListItem>
   );
-}, shouldProjectRowSkipUpdate);
+};
 
 export default withStyles(styles, { withTheme: true })(ProjectRow);
