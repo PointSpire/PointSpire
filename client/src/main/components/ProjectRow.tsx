@@ -13,17 +13,16 @@ import {
   Card,
   Tooltip,
 } from '@material-ui/core';
-import { DatePicker } from '@material-ui/pickers';
 import UpIcon from '@material-ui/icons/ArrowUpward';
 import DownIcon from '@material-ui/icons/ArrowDownward';
 import AddListIcon from '@material-ui/icons/PlaylistAdd';
-import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import { Project, TaskObjects, Task } from '../logic/dbTypes';
 import TaskRow from './TaskRow';
 import { SetTaskFunction, SetTasksFunction, SetProjectFunction } from '../App';
 import { postNewTask, deleteTask, patchProject } from '../logic/fetchMethods';
 import scheduleCallback, { resetTimer } from '../logic/savingTimer';
 import Note from './Note';
+import DateInput from './DateInput';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -124,24 +123,15 @@ const ProjectRow = React.memo((props: ProjectRowProps) => {
       });
   }
 
-  function handleDueDateChange(newDate: MaterialUiPickersDate): void {
-    if (newDate) {
-      project.dueDate = newDate.toDate();
-    } else {
-      project.dueDate = null;
-    }
+  function saveDueDate(newDate: Date | null): void {
+    project.dueDate = newDate;
     setProject(project);
     scheduleCallback('ProjectRow.saveProject', saveProject);
   }
 
-  function handleStartDateChange(newDate: MaterialUiPickersDate): void {
-    if (newDate) {
-      project.startDate = newDate.toDate();
-    } else {
-      project.startDate = null;
-    }
+  function saveStartDate(newDate: Date | null): void {
+    project.dueDate = newDate;
     setProject(project);
-
     scheduleCallback('ProjectRow.saveProject', saveProject);
   }
 
@@ -238,21 +228,17 @@ const ProjectRow = React.memo((props: ProjectRowProps) => {
             />
           </Grid>
           <Grid item>
-            <DatePicker
-              variant="dialog"
-              clearable
+            <DateInput
               label="Start Date"
-              value={project.startDate}
-              onChange={handleStartDateChange}
+              date={project.startDate}
+              saveDate={saveStartDate}
             />
           </Grid>
           <Grid item>
-            <DatePicker
-              variant="dialog"
+            <DateInput
               label="Due Date"
-              value={project.dueDate}
-              clearable
-              onChange={handleDueDateChange}
+              date={project.dueDate}
+              saveDate={saveDueDate}
             />
           </Grid>
           <Grid item>

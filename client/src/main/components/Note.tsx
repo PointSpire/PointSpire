@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { TextField } from '@material-ui/core';
+import { resetTimer } from '../logic/savingTimer';
 
 export type NoteProps = {
   saveNote: (note: string) => void;
@@ -13,6 +14,7 @@ function Note(props: NoteProps): JSX.Element {
 
   function handleNoteChange(event: React.ChangeEvent<HTMLInputElement>): void {
     setNote(event.target.value);
+    resetTimer();
   }
 
   function handleLoseFocus(): void {
