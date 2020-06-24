@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   IconButton,
   WithStyles,
@@ -23,6 +23,7 @@ import TaskRow from './TaskRow';
 import { SetTaskFunction, SetTasksFunction, SetProjectFunction } from '../App';
 import { postNewTask, deleteTask, patchProject } from '../logic/fetchMethods';
 import scheduleCallback, { resetTimer } from '../logic/savingTimer';
+import Note from './Note';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -61,89 +62,50 @@ export interface ProjectRowState {
   open: boolean;
   priority: number;
   title: string;
-  note: string;
 }
 
-class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
-  constructor(props: ProjectRowProps) {
-    super(props);
-
-    const { project } = this.props;
-    this.state = {
-      open: false,
-      priority: project.priority,
-      title: project.title,
-      note: project.note,
-    };
-
-    this.addSubTask = this.addSubTask.bind(this);
-    this.setOpen = this.setOpen.bind(this);
-    this.handleAddNewTaskClick = this.handleAddNewTaskClick.bind(this);
-    this.deleteSubTask = this.deleteSubTask.bind(this);
-    this.handleLoseFocus = this.handleLoseFocus.bind(this);
-    this.handleNoteChange = this.handleNoteChange.bind(this);
-    this.handlePriorityChange = this.handlePriorityChange.bind(this);
-    this.handleTitleChange = this.handleTitleChange.bind(this);
-    this.handleStartDateChange = this.handleStartDateChange.bind(this);
-    this.handleDueDateChange = this.handleDueDateChange.bind(this);
-    this.saveProject = this.saveProject.bind(this);
+function shouldProjectRowSkipUpdate(
+  oldProps: ProjectRowProps,
+  newProps: ProjectRowProps
+): boolean {
+  if (oldProps.project === newProps.project) {
+    return true;
   }
+  return false;
+}
 
-  componentDidUpdate() {
+const ProjectRow = React.memo((props: ProjectRowProps) => {
+  const { project, classes, tasks, setTask, setTasks, setProject } = props;
+
+  const [open, setOpen] = useState(false);
+  const [priority, setPriority] = useState(project.priority);
+  const [title, setTitle] = useState(project.title);
+
+  // Reset the timer whenever a change is made
+  useEffect(() => {
     resetTimer();
+  });
+
+  function handleTitleChange(event: React.ChangeEvent<HTMLInputElement>): void {
+    setTitle(event.target.value);
   }
 
-  setOpen(open: boolean): void {
-    this.setState({
-      open,
-    });
-  }
-
-  handleTitleChange(event: React.ChangeEvent<HTMLInputElement>): void {
-    this.setState({
-      title: event.target.value,
-    });
-  }
-
-  handlePriorityChange(event: React.ChangeEvent<HTMLInputElement>): void {
+  function handlePriorityChange(
+    event: React.ChangeEvent<HTMLInputElement>
+  ): void {
     // Check to make sure they typed an int
     if (event.target.value.length === 0) {
-      this.setState({
-        priority: 0,
-      });
+      setPriority(0);
     } else if (!Number.isNaN(Number.parseInt(event.target.value, 10))) {
-      this.setState({
-        priority: Number.parseInt(event.target.value, 10),
-      });
+      setPriority(Number.parseInt(event.target.value, 10));
     }
-  }
-
-  handleNoteChange(event: React.ChangeEvent<HTMLInputElement>): void {
-    this.setState({
-      note: event.target.value,
-    });
-  }
-
-  handleStartDateChange(newDate: MaterialUiPickersDate): void {
-    const { setProject, project } = this.props;
-    const { saveProject } = this;
-
-    if (newDate) {
-      project.startDate = newDate.toDate();
-    } else {
-      project.startDate = null;
-    }
-    setProject(project);
-
-    scheduleCallback('ProjectRow.saveProject', saveProject);
   }
 
   /**
    * Saves the project in state to the server and logs to the console what
    * happened.
    */
-  saveProject(): void {
-    const { project } = this.props;
+  function saveProject(): void {
     patchProject(project)
       .then(result => {
         if (result) {
@@ -162,10 +124,7 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
       });
   }
 
-  handleDueDateChange(newDate: MaterialUiPickersDate): void {
-    const { setProject, project } = this.props;
-    const { saveProject } = this;
-
+  function handleDueDateChange(newDate: MaterialUiPickersDate): void {
     if (newDate) {
       project.dueDate = newDate.toDate();
     } else {
@@ -175,16 +134,29 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
     scheduleCallback('ProjectRow.saveProject', saveProject);
   }
 
+  function handleStartDateChange(newDate: MaterialUiPickersDate): void {
+    if (newDate) {
+      project.startDate = newDate.toDate();
+    } else {
+      project.startDate = null;
+    }
+    setProject(project);
+
+    scheduleCallback('ProjectRow.saveProject', saveProject);
+  }
+
+  function saveNote(note: string): void {
+    project.note = note;
+    setProject(project);
+    scheduleCallback('ProjectRow.saveProject', saveProject);
+  }
+
   /**
    * Handles losing focus on an input element. This will save the project to the
    * applications state and on the server.
    */
-  handleLoseFocus(): void {
-    const { setProject, project } = this.props;
-    const { title, note, priority } = this.state;
-    const { saveProject } = this;
+  function handleLoseFocus(): void {
     project.title = title;
-    project.note = note;
     project.priority = priority;
     setProject(project);
     scheduleCallback('ProjectRow.saveProject', saveProject);
@@ -193,13 +165,11 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
   /**
    * Adds a new task to this project on the server and in state.
    *
-   * @param {string} title the title of the new task
+   * @param {string} newTitle the title of the new task
    */
-  async addSubTask(title: string): Promise<void> {
-    const { setTasks, tasks, project, setProject } = this.props;
-
+  async function addSubTask(newTitle: string): Promise<void> {
     // Make the request for the new task
-    const newTask = await postNewTask('project', project._id, title);
+    const newTask = await postNewTask('project', project._id, newTitle);
 
     // Add the new task to the task objects
     tasks[newTask._id] = newTask;
@@ -215,9 +185,7 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
    *
    * @param {Task} task the task to delete
    */
-  async deleteSubTask(task: Task): Promise<void> {
-    const { setTasks, tasks, project, setProject } = this.props;
-
+  async function deleteSubTask(task: Task): Promise<void> {
     // Delete the task from state first
     delete tasks[task._id];
     setTasks(tasks);
@@ -228,131 +196,105 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
     await deleteTask(task);
   }
 
-  handleAddNewTaskClick(): void {
-    this.addSubTask('Untitled').catch(err => {
+  function handleAddNewTaskClick(): void {
+    addSubTask('Untitled').catch(err => {
       // eslint-disable-next-line
       console.error(err);
     });
 
     /* TODO: Try to get the transition to run when it opens. Right now it
     doesn't. */
-    this.setOpen(true);
+    setOpen(true);
   }
 
-  render(): JSX.Element {
-    const { classes, project, tasks, setTask, setTasks } = this.props;
-    const { open, title, note, priority } = this.state;
-    const {
-      setOpen,
-      handleAddNewTaskClick,
-      deleteSubTask,
-      handleNoteChange,
-      handlePriorityChange,
-      handleTitleChange,
-      handleLoseFocus,
-      handleDueDateChange,
-      handleStartDateChange,
-    } = this;
-    return (
-      <ListItem className={classes.root} key={project._id}>
-        <Card variant="outlined" className={`${classes.card} ${classes.root}`}>
-          <Grid
-            container
-            spacing={1}
-            justify="space-between"
-            alignItems="center"
-          >
-            <Grid item>
-              <IconButton
-                aria-label="project-expander"
-                onClick={() => {
-                  setOpen(!open);
-                }}
-              >
-                {open ? <UpIcon /> : <DownIcon />}
-              </IconButton>
-            </Grid>
-            <Grid item>
-              <TextField
-                onChange={handleTitleChange}
-                label="Project Title"
-                value={title}
-                onBlur={handleLoseFocus}
-              />
-            </Grid>
-            <Grid item>
-              <TextField
-                onChange={handlePriorityChange}
-                label="Priority"
-                value={priority}
-                onBlur={handleLoseFocus}
-              />
-            </Grid>
-            <Grid item>
-              <DatePicker
-                variant="dialog"
-                clearable
-                label="Start Date"
-                value={project.startDate}
-                onChange={handleStartDateChange}
-              />
-            </Grid>
-            <Grid item>
-              <DatePicker
-                variant="dialog"
-                label="Due Date"
-                value={project.dueDate}
-                clearable
-                onChange={handleDueDateChange}
-              />
-            </Grid>
-            <Grid item>
-              <Tooltip title="Add Subtask">
-                <IconButton
-                  aria-label="new-project-task-button"
-                  onClick={handleAddNewTaskClick}
-                >
-                  <AddListIcon fontSize="large" />
-                </IconButton>
-              </Tooltip>
-            </Grid>
-            <Grid item className={classes.root}>
-              <TextField
-                multiline
-                id="note"
-                label="Project Note"
-                value={note}
-                onChange={handleNoteChange}
-                fullWidth
-                onBlur={handleLoseFocus}
-              />
-            </Grid>
-            <Collapse
-              in={open}
-              timeout="auto"
-              className={classes.root}
-              component={List}
+  return (
+    <ListItem className={classes.root} key={project._id}>
+      <Card variant="outlined" className={`${classes.card} ${classes.root}`}>
+        <Grid container spacing={1} justify="space-between" alignItems="center">
+          <Grid item>
+            <IconButton
+              aria-label="project-expander"
+              onClick={() => {
+                setOpen(!open);
+              }}
             >
-              <List>
-                {project.subtasks.map(taskId => (
-                  <TaskRow
-                    key={taskId}
-                    setTasks={setTasks}
-                    setTask={setTask}
-                    task={tasks[taskId]}
-                    tasks={tasks}
-                    deleteSubTask={deleteSubTask}
-                  />
-                ))}
-              </List>
-            </Collapse>
+              {open ? <UpIcon /> : <DownIcon />}
+            </IconButton>
           </Grid>
-        </Card>
-      </ListItem>
-    );
-  }
-}
+          <Grid item>
+            <TextField
+              onChange={handleTitleChange}
+              label="Project Title"
+              value={title}
+              onBlur={handleLoseFocus}
+            />
+          </Grid>
+          <Grid item>
+            <TextField
+              onChange={handlePriorityChange}
+              label="Priority"
+              value={priority}
+              onBlur={handleLoseFocus}
+            />
+          </Grid>
+          <Grid item>
+            <DatePicker
+              variant="dialog"
+              clearable
+              label="Start Date"
+              value={project.startDate}
+              onChange={handleStartDateChange}
+            />
+          </Grid>
+          <Grid item>
+            <DatePicker
+              variant="dialog"
+              label="Due Date"
+              value={project.dueDate}
+              clearable
+              onChange={handleDueDateChange}
+            />
+          </Grid>
+          <Grid item>
+            <Tooltip title="Add Subtask">
+              <IconButton
+                aria-label="new-project-task-button"
+                onClick={handleAddNewTaskClick}
+              >
+                <AddListIcon fontSize="large" />
+              </IconButton>
+            </Tooltip>
+          </Grid>
+          <Grid item className={classes.root}>
+            <Note
+              saveNote={saveNote}
+              note={project.note}
+              label="Project Note"
+            />
+          </Grid>
+          <Collapse
+            in={open}
+            timeout="auto"
+            className={classes.root}
+            component={List}
+          >
+            <List>
+              {project.subtasks.map(taskId => (
+                <TaskRow
+                  key={taskId}
+                  setTasks={setTasks}
+                  setTask={setTask}
+                  task={tasks[taskId]}
+                  tasks={tasks}
+                  deleteSubTask={deleteSubTask}
+                />
+              ))}
+            </List>
+          </Collapse>
+        </Grid>
+      </Card>
+    </ListItem>
+  );
+}, shouldProjectRowSkipUpdate);
 
 export default withStyles(styles, { withTheme: true })(ProjectRow);
-
-export type DeleteSubTaskFunction = typeof ProjectRow.prototype.deleteSubTask;

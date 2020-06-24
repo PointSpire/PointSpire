@@ -23,7 +23,6 @@ import {
   postNewTask,
 } from '../logic/fetchMethods';
 import TaskMenu from './TaskMenu';
-import { DeleteSubTaskFunction } from './ProjectRow';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -42,7 +41,7 @@ export interface TaskRowProps extends WithStyles<typeof styles> {
   tasks: TaskObjects;
   setTask: SetTaskFunction;
   setTasks: SetTasksFunction;
-  deleteSubTask: DeleteSubTaskFunction;
+  deleteSubTask: (task: Task) => Promise<void>;
 }
 
 /**
