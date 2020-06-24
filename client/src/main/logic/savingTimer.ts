@@ -30,9 +30,22 @@ function runAllCallbacks() {
 }
 
 /**
+ * Resets the timer before the callbacks are ran. This is good to run after
+ * a render occurs on components to make sure the callbacks don't run while
+ * the user is interacting with the page.
+ */
+export function resetTimer(): void {
+  clearTimeout(currentTimerId);
+  currentTimerId = setTimeout(runAllCallbacks, timeToWait);
+}
+
+/**
  * Schedules the given callback to be ran after a certain number of seconds
  * have passed since this function has been called globally. This is an ideal
  * place to schedule API saving calls.
+ *
+ * To just reset the timer, like in a `useEffect` or lifecycle function in a
+ * component, you can simply use the `resetTimer` function in this file.
  *
  * @param {string} key the key of the callback. This is used to identify and
  * overwrite a certain callback if it is scheduled multiple times. That way
@@ -45,9 +58,6 @@ export default function scheduleCallback(
   key: string,
   callback: Function
 ): void {
-  // eslint-disable-next-line
-  console.log('Triggered scheduleCallback');
   callbacks[key] = callback;
-  clearTimeout(currentTimerId);
-  currentTimerId = setTimeout(runAllCallbacks, timeToWait);
+  resetTimer();
 }

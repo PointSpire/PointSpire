@@ -22,7 +22,7 @@ import { Project, TaskObjects, Task } from '../logic/dbTypes';
 import TaskRow from './TaskRow';
 import { SetTaskFunction, SetTasksFunction, SetProjectFunction } from '../App';
 import { postNewTask, deleteTask, patchProject } from '../logic/fetchMethods';
-import scheduleCallback from '../logic/savingTimer';
+import scheduleCallback, { resetTimer } from '../logic/savingTimer';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -87,6 +87,10 @@ class ProjectRow extends React.Component<ProjectRowProps, ProjectRowState> {
     this.handleStartDateChange = this.handleStartDateChange.bind(this);
     this.handleDueDateChange = this.handleDueDateChange.bind(this);
     this.saveProject = this.saveProject.bind(this);
+  }
+
+  componentDidUpdate() {
+    resetTimer();
   }
 
   setOpen(open: boolean): void {
