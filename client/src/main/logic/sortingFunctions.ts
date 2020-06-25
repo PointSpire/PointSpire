@@ -23,6 +23,16 @@ export function dueDateSortDescending(task1: Task, task2: Task): number {
   return moment(task1.dueDate).diff(task2.dueDate);
 }
 
+/**
+ * Sorts tasks by the startDate.
+ *
+ * @param {Task} task1 the first task
+ * @param {Task} task2 the second task
+ */
+export function startDateSortDescending(task1: Task, task2: Task): number {
+  return moment(task1.startDate).diff(task2.startDate);
+}
+
 export interface SortingFunctions {
   [key: string]: (task1: Task, task2: Task) => number;
 }
@@ -30,6 +40,7 @@ export interface SortingFunctions {
 const sortingFunctions: SortingFunctions = {
   Priority: prioritySortDescending,
   'Due Date': dueDateSortDescending,
+  'Start Date': startDateSortDescending,
 };
 
 export default sortingFunctions;

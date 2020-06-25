@@ -26,7 +26,11 @@ function SortInput(props: SortInputProps): JSX.Element {
       <InputLabel id="sort-label">Sort By</InputLabel>
       <Select labelId="sort-label" value={sortBy} onChange={handleChange}>
         {Object.keys(sortingFunctions).map(sortType => {
-          return <MenuItem value={sortType}>{sortType}</MenuItem>;
+          return (
+            <MenuItem key={sortType} value={sortType}>
+              {sortType}
+            </MenuItem>
+          );
         })}
       </Select>
     </FormControl>

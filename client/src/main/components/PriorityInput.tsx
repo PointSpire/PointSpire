@@ -9,26 +9,47 @@ export type PriorityInputProps = {
 
 function PriorityInput(props: PriorityInputProps): JSX.Element {
   const { priority: initialPriority, savePriority } = props;
-  const [priority, setPriority] = useState(initialPriority);
+  let priority: string;
+  if (!initialPriority) {
+    priority = '0';
+  } else {
+    priority = initialPriority.toString();
+  }
+  const [input, setInput] = useState<string>(priority);
+  const [error, setError] = useState(false);
+  const [helperText, setHelperText] = useState('');
+
+  function validateInput(value: string): void {
+    if (value.length === 0) {
+      setError(true);
+      setHelperText('Please enter a priority number');
+    } else if (!Number.isNaN(Number.parseInt(value, 10))) {
+      setError(false);
+      setHelperText('');
+    } else {
+      setError(true);
+      setHelperText('Please enter a non-decimal integer');
+    }
+  }
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>): void {
-    // Check to make sure they typed an int
-    if (event.target.value.length === 0) {
-      setPriority(0);
-    } else if (!Number.isNaN(Number.parseInt(event.target.value, 10))) {
-      setPriority(Number.parseInt(event.target.value, 10));
-    }
+    setInput(event.target.value);
+    validateInput(event.target.value);
     resetTimer();
   }
 
   function handleLoseFocus(): void {
-    savePriority(priority);
+    if (!error) {
+      savePriority(Number.parseInt(input, 10));
+    }
   }
 
   return (
     <TextField
       label="Priority"
-      value={priority}
+      error={error}
+      helperText={helperText}
+      value={input}
       onChange={handleChange}
       onBlur={handleLoseFocus}
     />
