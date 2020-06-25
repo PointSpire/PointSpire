@@ -93,7 +93,7 @@ const ProjectRow = (props: ProjectRowProps) => {
   }
 
   function saveStartDate(newDate: Date | null): void {
-    project.dueDate = newDate;
+    project.startDate = newDate;
     setProject(project);
     scheduleCallback(`${project._id}.saveProject`, saveProject);
   }
