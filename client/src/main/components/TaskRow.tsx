@@ -125,6 +125,7 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
     this.handleOpenPrereqTaskDialog = this.handleOpenPrereqTaskDialog.bind(
       this
     );
+    this.handlePrereqTasksChange = this.handlePrereqTasksChange.bind(this);
   }
 
   setSubTasksOpen(open: boolean) {
@@ -246,6 +247,15 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
     }
   }
 
+  handlePrereqTasksChange(taskIds: string[]) {
+    const { task } = this.props;
+    const newTask = task;
+    newTask.prereqTasks = taskIds;
+    console.log(newTask);
+    // setTask(newTask);
+    // saveTask(newTask);
+  }
+
   handleOpenPrereqTaskDialog(e: React.MouseEvent<HTMLElement>) {
     console.log(e.currentTarget.id);
     this.setState(prevState => {
@@ -322,6 +332,7 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
       handlePriorityChange,
       handleStartDateChange,
       handleOpenPrereqTaskDialog,
+      handlePrereqTasksChange,
     } = this;
     return (
       <ListItem key={task._id} className={classes.root}>
@@ -387,6 +398,7 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
             parentTask={task}
             openDialog={openPrereqTasks}
             closeDialog={handleOpenPrereqTaskDialog}
+            handlePrereqTaskChange={handlePrereqTasksChange}
           />
           {generateSubTaskCollapse()}
         </Grid>

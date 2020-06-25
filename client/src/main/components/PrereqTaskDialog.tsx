@@ -15,16 +15,27 @@ export interface PrereqTaskDialogProps {
   parentTask: Task;
   openDialog: boolean;
   closeDialog: OpenPrereqTaskFunction;
+  handlePrereqTaskChange: (taskIds: string[]) => void;
 }
 
 const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
-  const { tasks, openDialog, closeDialog, parentTask } = props;
+  const {
+    tasks,
+    openDialog,
+    parentTask,
+    closeDialog,
+    handlePrereqTaskChange,
+  } = props;
 
   return (
     <Dialog open={openDialog} onClose={closeDialog}>
       <DialogTitle>Prerequisite Tasks Menu</DialogTitle>
       <DialogContent>
-        <PrereqTaskManager parentTask={parentTask} allTasks={tasks} />
+        <PrereqTaskManager
+          parentTask={parentTask}
+          allTasks={tasks}
+          handlePrereqTaskChange={handlePrereqTaskChange}
+        />
       </DialogContent>
       <DialogActions>
         <Button id="save-prereq-tasks" variant="text" onClick={closeDialog}>
