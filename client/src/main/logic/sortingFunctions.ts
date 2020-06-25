@@ -1,3 +1,4 @@
+import moment from 'moment';
 import { Task } from './dbTypes';
 
 /**
@@ -8,9 +9,27 @@ import { Task } from './dbTypes';
  * @param {Task} task1 the first task
  * @param {Task} task2 the second task
  */
-export default function prioritySortDescending(
-  task1: Task,
-  task2: Task
-): number {
+export function prioritySortDescending(task1: Task, task2: Task): number {
   return task1.priority - task2.priority;
 }
+
+/**
+ * Sorts tasks by the dueDate.
+ *
+ * @param {Task} task1 the first task
+ * @param {Task} task2 the second task
+ */
+export function dueDateSortDescending(task1: Task, task2: Task): number {
+  return moment(task1.dueDate).diff(task2.dueDate);
+}
+
+export interface SortingFunctions {
+  [key: string]: (task1: Task, task2: Task) => number;
+}
+
+const sortingFunctions: SortingFunctions = {
+  Priority: prioritySortDescending,
+  'Due Date': dueDateSortDescending,
+};
+
+export default sortingFunctions;

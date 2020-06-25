@@ -12,7 +12,7 @@ interface Document extends IndexableProperties {
 }
 
 /**
- *
+ * Can be used to make it so that an object is indexable.
  */
 interface IndexableProperties {
   [key: string]: unknown;

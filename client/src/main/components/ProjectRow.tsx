@@ -58,12 +58,6 @@ export interface ProjectRowProps extends WithStyles<typeof styles> {
   setProject: SetProjectFunction;
 }
 
-export interface ProjectRowState {
-  open: boolean;
-  priority: number;
-  title: string;
-}
-
 const ProjectRow = (props: ProjectRowProps) => {
   const { project, classes, tasks, setTask, setTasks, setProject } = props;
 
