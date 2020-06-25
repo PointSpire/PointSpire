@@ -33,14 +33,29 @@ export function startDateSortDescending(task1: Task, task2: Task): number {
   return moment(task1.startDate).diff(task2.startDate);
 }
 
+/**
+ * Sorts tasks by the title.
+ *
+ * @param {Task} task1 the first task
+ * @param {Task} task2 the second task
+ */
+export function titleSortDescending(task1: Task, task2: Task): number {
+  return task1.title.localeCompare(task2.title);
+}
+
 export interface SortingFunctions {
   [key: string]: (task1: Task, task2: Task) => number;
 }
 
+/**
+ * Used to specify the different sorting options for the user. The key is
+ * user-facing.
+ */
 const sortingFunctions: SortingFunctions = {
   Priority: prioritySortDescending,
   'Due Date': dueDateSortDescending,
   'Start Date': startDateSortDescending,
+  Title: titleSortDescending,
 };
 
 export default sortingFunctions;
