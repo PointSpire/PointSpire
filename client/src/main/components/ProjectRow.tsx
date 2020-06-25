@@ -22,7 +22,8 @@ import NoteInput from './NoteInput';
 import DateInput from './DateInput';
 import SimpleTextInput from './SimpleTextInput';
 import PriorityInput from './PriorityInput';
-import TaskMenu from './TaskMenu';
+import TaskMenu from './TaskMenu/TaskMenu';
+import sortingFunctions from '../logic/sortingFunctions';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -70,6 +71,7 @@ const ProjectRow = (props: ProjectRowProps) => {
   } = props;
 
   const [open, setOpen] = useState(false);
+  const [sortBy, setSortBy] = useState('Priority');
 
   /**
    * Saves the project in state to the server and logs to the console what
@@ -204,7 +206,12 @@ const ProjectRow = (props: ProjectRowProps) => {
             />
           </Grid>
           <Grid item>
-            <TaskMenu deleteTask={deleteThisProject} addSubTask={addSubTask} />
+            <TaskMenu
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+              deleteTask={deleteThisProject}
+              addSubTask={addSubTask}
+            />
           </Grid>
           <Grid item className={classes.root}>
             <NoteInput
@@ -220,16 +227,19 @@ const ProjectRow = (props: ProjectRowProps) => {
             component={List}
           >
             <List>
-              {project.subtasks.map(taskId => (
-                <TaskRow
-                  key={taskId}
-                  setTasks={setTasks}
-                  setTask={setTask}
-                  task={tasks[taskId]}
-                  tasks={tasks}
-                  deleteTask={deleteSubTask}
-                />
-              ))}
+              {Object.values(tasks)
+                .filter(task => project.subtasks.includes(task._id))
+                .sort(sortingFunctions[sortBy])
+                .map(task => (
+                  <TaskRow
+                    key={task._id}
+                    setTasks={setTasks}
+                    setTask={setTask}
+                    task={task}
+                    tasks={tasks}
+                    deleteTask={deleteSubTask}
+                  />
+                ))}
             </List>
           </Collapse>
         </Grid>
