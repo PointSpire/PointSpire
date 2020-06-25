@@ -15,7 +15,10 @@ import {
   SetTaskFunction,
   SetTasksFunction,
 } from '../App';
-import { postNewProject } from '../logic/fetchMethods';
+import {
+  postNewProject,
+  deleteProject as deleteProjectOnServer,
+} from '../logic/fetchMethods';
 import sortingFunctions from '../logic/sortingFunctions';
 import SortInput from './SortInput';
 
@@ -82,6 +85,25 @@ function ProjectTable(props: ProjectTableProps) {
   }
 
   /**
+   * Generates a function that will delete the specified project in state and
+   * on the server.
+   *
+   * @param {Project} projectToDelete the project to delete
+   */
+  function deleteProject(projectToDelete: Project) {
+    return async () => {
+      // Delete the project from state first
+      delete projects[projectToDelete._id];
+      setProjects(projects);
+      user.projects.splice(user.projects.indexOf(projectToDelete._id), 1);
+      setUser(user);
+
+      // Make the request to delete the project
+      await deleteProjectOnServer(projectToDelete);
+    };
+  }
+
+  /**
    * Adds a project to the server, and to state. This can be passed down to
    * child components.
    *
@@ -104,6 +126,7 @@ function ProjectTable(props: ProjectTableProps) {
         .map(projectDoc => {
           return (
             <ProjectRow
+              deleteThisProject={deleteProject(projectDoc)}
               key={projectDoc._id}
               setTasks={setTasks}
               setProject={setProject}

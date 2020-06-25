@@ -10,11 +10,9 @@ import {
   List,
   ListItem,
   Card,
-  Tooltip,
 } from '@material-ui/core';
 import UpIcon from '@material-ui/icons/ArrowUpward';
 import DownIcon from '@material-ui/icons/ArrowDownward';
-import AddListIcon from '@material-ui/icons/PlaylistAdd';
 import { Project, TaskObjects, Task } from '../logic/dbTypes';
 import TaskRow from './TaskRow';
 import { SetTaskFunction, SetTasksFunction, SetProjectFunction } from '../App';
@@ -24,6 +22,7 @@ import NoteInput from './NoteInput';
 import DateInput from './DateInput';
 import SimpleTextInput from './SimpleTextInput';
 import PriorityInput from './PriorityInput';
+import TaskMenu from './TaskMenu';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -56,10 +55,19 @@ export interface ProjectRowProps extends WithStyles<typeof styles> {
   setTask: SetTaskFunction;
   setTasks: SetTasksFunction;
   setProject: SetProjectFunction;
+  deleteThisProject: () => Promise<void>;
 }
 
 const ProjectRow = (props: ProjectRowProps) => {
-  const { project, classes, tasks, setTask, setTasks, setProject } = props;
+  const {
+    project,
+    classes,
+    tasks,
+    setTask,
+    setTasks,
+    setProject,
+    deleteThisProject,
+  } = props;
 
   const [open, setOpen] = useState(false);
 
@@ -154,17 +162,6 @@ const ProjectRow = (props: ProjectRowProps) => {
     await deleteTask(task);
   }
 
-  function handleAddNewTaskClick(): void {
-    addSubTask('Untitled').catch(err => {
-      // eslint-disable-next-line
-      console.error(err);
-    });
-
-    /* TODO: Try to get the transition to run when it opens. Right now it
-    doesn't. */
-    setOpen(true);
-  }
-
   return (
     <ListItem className={classes.root} key={project._id}>
       <Card variant="outlined" className={`${classes.card} ${classes.root}`}>
@@ -207,14 +204,7 @@ const ProjectRow = (props: ProjectRowProps) => {
             />
           </Grid>
           <Grid item>
-            <Tooltip title="Add Subtask">
-              <IconButton
-                aria-label="new-project-task-button"
-                onClick={handleAddNewTaskClick}
-              >
-                <AddListIcon fontSize="large" />
-              </IconButton>
-            </Tooltip>
+            <TaskMenu deleteTask={deleteThisProject} addSubTask={addSubTask} />
           </Grid>
           <Grid item className={classes.root}>
             <NoteInput
