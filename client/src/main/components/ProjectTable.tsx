@@ -96,7 +96,9 @@ function ProjectTable(props: ProjectTableProps) {
 
   return (
     <List>
-      <SortInput sortBy={sortBy} setSortBy={setSortBy} />
+      <ListItem>
+        <SortInput sortBy={sortBy} setSortBy={setSortBy} />
+      </ListItem>
       {Object.values(projects)
         .sort(sortingFunctions[sortBy])
         .map(projectDoc => {
