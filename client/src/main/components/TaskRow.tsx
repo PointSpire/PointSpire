@@ -92,6 +92,8 @@ type TaskRowState = {
   priority: number;
 
   openPrereqTasks: boolean;
+
+  prereqTasks: string[];
 };
 
 class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
@@ -106,6 +108,7 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
       subTasksOpen: false,
       priority: task.priority,
       openPrereqTasks: false,
+      prereqTasks: task.prereqTasks,
     };
 
     this.handleNoteChange = this.handleNoteChange.bind(this);
@@ -138,10 +141,13 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
    */
   handleLoseFocus(): void {
     const { setTask, task } = this.props;
-    const { title, note, priority } = this.state;
+    const { title, note, priority, prereqTasks } = this.state;
     task.title = title;
     task.note = note;
     task.priority = priority;
+    if (task.prereqTasks) {
+      task.prereqTasks = prereqTasks;
+    }
     setTask(task);
     saveTask(task);
   }
@@ -247,22 +253,37 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
     }
   }
 
-  handlePrereqTasksChange(taskIds: string[]) {
-    const { task } = this.props;
-    const newTask = task;
-    newTask.prereqTasks = taskIds;
-    console.log(newTask);
-    // setTask(newTask);
-    // saveTask(newTask);
+  handlePrereqTasksChange(taskId: string) {
+    const { prereqTasks } = this.state;
+    if (prereqTasks) {
+      const index = prereqTasks.indexOf(taskId);
+      if (index !== -1) {
+        const newTasks = prereqTasks;
+        newTasks.splice(index, 1);
+        this.setState({
+          prereqTasks: newTasks,
+        });
+      } else {
+        const newTasks = prereqTasks;
+        newTasks.push(taskId);
+        this.setState({
+          prereqTasks: newTasks,
+        });
+      }
+    }
   }
 
   handleOpenPrereqTaskDialog(e: React.MouseEvent<HTMLElement>) {
-    console.log(e.currentTarget.id);
+    const { handleLoseFocus } = this;
     this.setState(prevState => {
       return {
         openPrereqTasks: !prevState.openPrereqTasks,
       };
     });
+
+    if (e.currentTarget.id === 'save-prereq-tasks') {
+      handleLoseFocus();
+    }
   }
 
   /**
@@ -319,7 +340,7 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
 
   render() {
     const { tasks, task, classes } = this.props;
-    const { title, note, priority, openPrereqTasks } = this.state;
+    const { title, note, priority, openPrereqTasks, prereqTasks } = this.state;
     const {
       handleTitleChange,
       handleLoseFocus,
@@ -397,6 +418,7 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
             tasks={tasks}
             parentTask={task}
             openDialog={openPrereqTasks}
+            prereqTasks={prereqTasks}
             closeDialog={handleOpenPrereqTaskDialog}
             handlePrereqTaskChange={handlePrereqTasksChange}
           />

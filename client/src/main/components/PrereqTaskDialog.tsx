@@ -14,8 +14,9 @@ export interface PrereqTaskDialogProps {
   tasks: TaskObjects;
   parentTask: Task;
   openDialog: boolean;
+  prereqTasks: string[];
   closeDialog: OpenPrereqTaskFunction;
-  handlePrereqTaskChange: (taskIds: string[]) => void;
+  handlePrereqTaskChange: (taskId: string) => void;
 }
 
 const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
@@ -23,6 +24,7 @@ const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
     tasks,
     openDialog,
     parentTask,
+    prereqTasks,
     closeDialog,
     handlePrereqTaskChange,
   } = props;
@@ -33,11 +35,15 @@ const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
       <DialogContent>
         <PrereqTaskManager
           parentTask={parentTask}
+          prereqTasks={prereqTasks}
           allTasks={tasks}
           handlePrereqTaskChange={handlePrereqTaskChange}
         />
       </DialogContent>
       <DialogActions>
+        <Button id="cancel-prereq-tasks" variant="text" onClick={closeDialog}>
+          Cancel
+        </Button>
         <Button id="save-prereq-tasks" variant="text" onClick={closeDialog}>
           Save
         </Button>

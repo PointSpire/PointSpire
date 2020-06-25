@@ -192,6 +192,9 @@ class App extends React.Component<AppProps, AppState> {
    * the app
    */
   setTasks(updatedTasks: TaskObjects): void {
+    const { tasks } = this.state;
+    // eslint-disable-next-line
+    console.log(tasks);
     this.setState({
       tasks: updatedTasks,
     });
