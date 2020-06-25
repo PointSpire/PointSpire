@@ -62,14 +62,6 @@ class ProjectTable extends React.Component<
     this.addProject = this.addProject.bind(this);
   }
 
-  /*
-  private handleTaskInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({
-      newTaskTitle: e.target.value,
-    });
-  };
-  */
-
   /**
    * Adds the project to the user state and the project objects state.
    *

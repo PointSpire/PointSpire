@@ -4,7 +4,6 @@ import {
   DialogContent,
   DialogTitle,
   DialogActions,
-  Typography,
   Button,
 } from '@material-ui/core';
 import { Task, TaskObjects } from '../logic/dbTypes';
@@ -28,7 +27,6 @@ const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
         <PrereqTaskManager parentTask={parentTask} allTasks={tasks} />
       </DialogContent>
       <DialogActions>
-        <Typography>{tasks[parentTask._id].note}</Typography>
         <Button id="save-prereq-tasks" variant="text" onClick={closeDialog}>
           Save
         </Button>
