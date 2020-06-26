@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Grid,
   Divider,
@@ -8,108 +8,153 @@ import {
   Paper,
   List,
   ListItem,
+  createStyles,
+  withStyles,
+  Theme,
+  WithStyles,
 } from '@material-ui/core';
-import { Search as SearchIcon } from '@material-ui/icons';
+import { Search as SearchIcon, Clear as ClearIcon } from '@material-ui/icons';
 import { Task, TaskObjects } from '../logic/dbTypes';
-// import PrereqTask from './PrereqTask';
+import {
+  HandlePrereqTaskChangeFunction,
+  HandleSearchClickFunction,
+  HandleSearchClearFunction,
+} from './TaskRow';
 
-export interface PrereqTaskManagerProps {
+function styles(theme: Theme) {
+  return createStyles({
+    root: {
+      backgroundColor: theme.palette.background.default,
+    },
+    paperList: {
+      padding: theme.spacing(2.3),
+      borderColor: theme.palette.primary.dark,
+      borderWidth: '4px',
+    },
+    paperSearchBar: {
+      backgroundColor: theme.palette.primary.light,
+    },
+  });
+}
+
+export interface PrereqTaskManagerProps extends WithStyles<typeof styles> {
   parentTask: Task;
   allTasks: TaskObjects;
   prereqTasks: string[];
-  handlePrereqTaskChange: (taskIds: string) => void;
+  searchTaskResults: string[];
+  isSearch: boolean;
+  handlePrereqTaskChange: HandlePrereqTaskChangeFunction;
+  handleSearchClick: HandleSearchClickFunction;
+  handleSearchClear: HandleSearchClearFunction;
 }
 
+/**
+ * Controlls the display and selection of prerequisite tasks.
+ * Now that it works, im goin to work on gettin the code cleaned
+ * up and more efficient.
+ */
 const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
-  const { parentTask, allTasks, prereqTasks, handlePrereqTaskChange } = props;
-  const allTaskIds = Object.keys(allTasks);
+  const {
+    classes,
+    parentTask,
+    allTasks,
+    prereqTasks,
+    searchTaskResults,
+    isSearch,
+    handlePrereqTaskChange,
+    handleSearchClick,
+    handleSearchClear,
+  } = props;
+  const [searchText, setSearchText] = useState<string>('');
+  const allTaskIds = isSearch ? searchTaskResults : Object.keys(allTasks);
 
-  // OLD - only for reference
-  // const handlePrereqTaskClick = (taskId: string) => {
-  //   const taskIndex = selectedTasks.indexOf(taskId);
-  //   if (taskIndex !== -1) {
-  //     const newSelectedTasks = selectedTasks;
-  //     newSelectedTasks.splice(taskIndex, 1);
-  //     setSelectedtasks(newSelectedTasks);
-  //   } else {
-  //     const newSelectedTasks = selectedTasks;
-  //     newSelectedTasks.push(taskId);
-  //     setSelectedtasks(newSelectedTasks);
-  //   }
-  // };
-
-  // const handleRemovePrereqTaskClick = (taskId: string) => {
-  //   if (selectedTasks.includes(taskId)) {
-  //     const taskIndex = selectedTasks.indexOf(taskId);
-  //     const newSelectedTasks = selectedTasks;
-  //     newSelectedTasks.splice(taskIndex, 1);
-  //     setSelectedtasks(newSelectedTasks);
-  //   }
-  // };
-
-  // const handleAddPrereqClick = () => {
-  // };
-
-  const generateMainTaskList = (tasklist: string[]) => {
-    return tasklist.map(t => {
-      return (
-        <Grid item key={`all-task-${t}`}>
-          <List dense component="div" role="list">
-            <ListItem button onClick={() => handlePrereqTaskChange(t)}>
-              <Typography>{allTasks[t].title}</Typography>
-            </ListItem>
-          </List>
-        </Grid>
-      );
-    });
+  const handleKeyDownEvent = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearchClick(searchText);
+    }
   };
 
-  const generatePrereqTaskList = (taskIds: string[]) => {
-    return taskIds && taskIds.length > 0 ? (
-      taskIds.map(t => {
+  /**
+   * Renderes the list of tasks given.
+   * @param tasklist Array of task IDs
+   * @param {boolean} isMain True: allTaskIds, False: prereqTasks
+   */
+  const generateTaskList = (tasklist: string[], isMain: boolean) => {
+    return tasklist && tasklist.length > 0 ? (
+      tasklist.map(t => {
         return (
-          <Grid item key={`prereq-task-${t}`}>
+          <Grid item key={`all-task-${t}`}>
             <List dense component="div" role="list">
-              <ListItem button onClick={() => handlePrereqTaskChange(t)}>
-                <Typography>{allTasks[t]?.title}</Typography>
-              </ListItem>
+              <Paper className={classes?.paperList}>
+                {isMain ? (
+                  <ListItem button onClick={() => handlePrereqTaskChange(t)}>
+                    <Typography>{allTasks[t]?.title}</Typography>
+                  </ListItem>
+                ) : (
+                  <ListItem button onClick={() => handlePrereqTaskChange(t)}>
+                    <Typography>{allTasks[t]?.title}</Typography>
+                  </ListItem>
+                )}
+              </Paper>
             </List>
           </Grid>
         );
       })
     ) : (
       <Grid item>
-        <Typography>No Prerequisite Tasks</Typography>
+        <Typography>No Tasks found.</Typography>
       </Grid>
     );
   };
 
   return (
-    <div>
+    <div className={classes.root}>
       <Grid container direction="column">
-        <Typography>{parentTask.title}</Typography>
         <Grid item>
           <Paper>
-            <InputBase placeholder="Search Tasks" />
-            <IconButton>
-              <SearchIcon />
-            </IconButton>
+            <Typography align="center">{`Current Task: ${parentTask.title}`}</Typography>
+            <Paper className={classes.paperSearchBar}>
+              <InputBase
+                placeholder="Search Tasks"
+                value={searchText}
+                onKeyDown={handleKeyDownEvent}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  setSearchText(e.target.value);
+                }}
+              />
+              {isSearch || searchText.length > 0 ? (
+                <IconButton
+                  onClick={() => {
+                    setSearchText('');
+                    handleSearchClear();
+                  }}
+                >
+                  <ClearIcon />
+                </IconButton>
+              ) : (
+                ''
+              )}
+              <IconButton onClick={() => handleSearchClick(searchText)}>
+                <SearchIcon />
+              </IconButton>
+            </Paper>
           </Paper>
         </Grid>
         {allTasks ? (
-          generateMainTaskList(allTaskIds)
+          generateTaskList(allTaskIds, true)
         ) : (
           <Typography>You have nothing to do! Wow.</Typography>
         )}
         <Divider orientation="horizontal" />
+        <Typography align="center">Current Prerequisite Tasks</Typography>
         {prereqTasks && prereqTasks.length > 0 ? (
-          generatePrereqTaskList(prereqTasks)
+          generateTaskList(prereqTasks, false)
         ) : (
-          <Typography>No Prerequisite Tasks</Typography>
+          <Typography align="center">No Prerequisite Tasks</Typography>
         )}
       </Grid>
     </div>
   );
 };
 
-export default PrereqTaskManager;
+export default withStyles(styles, { withTheme: true })(PrereqTaskManager);

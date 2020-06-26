@@ -14,3 +14,13 @@ export default function prioritySortDescending(
 ): number {
   return task1.priority - task2.priority;
 }
+
+export function searchByNameDescending(
+  searchTerm: string,
+  tasks: Task[]
+): string[] {
+  const matches = tasks.filter(task =>
+    task.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  return matches.map(task => task._id);
+}

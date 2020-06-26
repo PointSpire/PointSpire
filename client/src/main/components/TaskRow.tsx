@@ -25,6 +25,7 @@ import {
 import TaskMenu from './TaskMenu';
 import { DeleteSubTaskFunction } from './ProjectRow';
 import PrereqTaskDialog from './PrereqTaskDialog';
+import { searchByNameDescending } from '../logic/sortingFunctions';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -91,16 +92,36 @@ type TaskRowState = {
 
   priority: number;
 
+  /**
+   * Determines when the prerequisite task menu is opened.
+   */
   openPrereqTasks: boolean;
 
+  /**
+   * The prerequisite task Ids from the current task.
+   */
   prereqTasks: string[];
+
+  /**
+   * The results from a user prerequisite search.
+   */
+  searchTaskResults: string[];
+
+  /**
+   * Sets whether the search box is active or not.
+   * Controlls what tasks are displaied in the prereq task
+   * menu.
+   * If false: All tasks are displayed.
+   * If true: Search results only.
+   */
+  isSearch: boolean;
 };
 
 class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
   constructor(props: TaskRowProps) {
     super(props);
 
-    const { task } = props;
+    const { task, tasks } = props;
 
     this.state = {
       title: task.title,
@@ -109,6 +130,8 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
       priority: task.priority,
       openPrereqTasks: false,
       prereqTasks: task.prereqTasks,
+      searchTaskResults: Object.keys(tasks),
+      isSearch: false,
     };
 
     this.handleNoteChange = this.handleNoteChange.bind(this);
@@ -129,6 +152,8 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
       this
     );
     this.handlePrereqTasksChange = this.handlePrereqTasksChange.bind(this);
+    this.handleSearchPrereqClick = this.handleSearchPrereqClick.bind(this);
+    this.handleSearchClear = this.handleSearchClear.bind(this);
   }
 
   setSubTasksOpen(open: boolean) {
@@ -253,7 +278,14 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
     }
   }
 
-  handlePrereqTasksChange(taskId: string) {
+  /**
+   * finds the task selected and either removes or adds it to the
+   * prereqTask state.
+   * When a task is clicked in the Prereq menu, the selected task is sent
+   * to this function.
+   * @param {string} taskId Task selected by the user.
+   */
+  handlePrereqTasksChange(taskId: string): void {
     const { prereqTasks } = this.state;
     if (prereqTasks) {
       const index = prereqTasks.indexOf(taskId);
@@ -273,11 +305,41 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
     }
   }
 
+  /**
+   * Gets all tasks, gets the IDs and sends it to the sortingFunctions file.
+   * @param searchTerm The search string entered into the prereq search box.
+   */
+  handleSearchPrereqClick(searchTerm: string): void {
+    const { tasks } = this.props;
+    const allTasks = Object.values(tasks);
+    const filteredTasks = searchByNameDescending(searchTerm, allTasks);
+    this.setState({
+      searchTaskResults: filteredTasks,
+      isSearch: true,
+    });
+  }
+
+  /**
+   * Clears the search box, resets the diplayed tasks to ALL and hides the
+   * clear search button.
+   */
+  handleSearchClear() {
+    this.setState({
+      isSearch: false,
+    });
+  }
+
+  /**
+   * Determines wether the closing element is the save button. If so, saves
+   * the Task to the server.
+   * @param e Event args. Used for the closing element id only.
+   */
   handleOpenPrereqTaskDialog(e: React.MouseEvent<HTMLElement>) {
     const { handleLoseFocus } = this;
     this.setState(prevState => {
       return {
         openPrereqTasks: !prevState.openPrereqTasks,
+        isSearch: false,
       };
     });
 
@@ -340,7 +402,15 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
 
   render() {
     const { tasks, task, classes } = this.props;
-    const { title, note, priority, openPrereqTasks, prereqTasks } = this.state;
+    const {
+      title,
+      note,
+      priority,
+      openPrereqTasks,
+      prereqTasks,
+      searchTaskResults,
+      isSearch,
+    } = this.state;
     const {
       handleTitleChange,
       handleLoseFocus,
@@ -353,6 +423,8 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
       handlePriorityChange,
       handleStartDateChange,
       handleOpenPrereqTaskDialog,
+      handleSearchPrereqClick,
+      handleSearchClear,
       handlePrereqTasksChange,
     } = this;
     return (
@@ -419,8 +491,12 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
             parentTask={task}
             openDialog={openPrereqTasks}
             prereqTasks={prereqTasks}
+            isSearch={isSearch}
             closeDialog={handleOpenPrereqTaskDialog}
             handlePrereqTaskChange={handlePrereqTasksChange}
+            handleSearchClick={handleSearchPrereqClick}
+            handleSearchClear={handleSearchClear}
+            searchTaskResults={searchTaskResults}
           />
           {generateSubTaskCollapse()}
         </Grid>
@@ -436,3 +512,9 @@ export type DeleteTaskFunction = typeof TaskRow.prototype.deleteTask;
 export type AddSubTaskFunction = typeof TaskRow.prototype.addSubTask;
 
 export type OpenPrereqTaskFunction = typeof TaskRow.prototype.handleOpenPrereqTaskDialog;
+
+export type HandlePrereqTaskChangeFunction = typeof TaskRow.prototype.handlePrereqTasksChange;
+
+export type HandleSearchClickFunction = typeof TaskRow.prototype.handleSearchPrereqClick;
+
+export type HandleSearchClearFunction = typeof TaskRow.prototype.handleSearchClear;

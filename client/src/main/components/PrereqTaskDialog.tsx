@@ -7,16 +7,25 @@ import {
   Button,
 } from '@material-ui/core';
 import { Task, TaskObjects } from '../logic/dbTypes';
-import { OpenPrereqTaskFunction } from './TaskRow';
 import PrereqTaskManager from './PrereqTaskManager';
+import {
+  OpenPrereqTaskFunction,
+  HandlePrereqTaskChangeFunction,
+  HandleSearchClickFunction,
+  HandleSearchClearFunction,
+} from './TaskRow';
 
 export interface PrereqTaskDialogProps {
   tasks: TaskObjects;
   parentTask: Task;
   openDialog: boolean;
   prereqTasks: string[];
+  searchTaskResults: string[];
+  isSearch: boolean;
   closeDialog: OpenPrereqTaskFunction;
-  handlePrereqTaskChange: (taskId: string) => void;
+  handleSearchClick: HandleSearchClickFunction;
+  handlePrereqTaskChange: HandlePrereqTaskChangeFunction;
+  handleSearchClear: HandleSearchClearFunction;
 }
 
 const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
@@ -25,8 +34,12 @@ const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
     openDialog,
     parentTask,
     prereqTasks,
+    searchTaskResults,
+    isSearch,
     closeDialog,
+    handleSearchClick,
     handlePrereqTaskChange,
+    handleSearchClear,
   } = props;
 
   return (
@@ -37,7 +50,11 @@ const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
           parentTask={parentTask}
           prereqTasks={prereqTasks}
           allTasks={tasks}
+          searchTaskResults={searchTaskResults}
+          isSearch={isSearch}
+          handleSearchClick={handleSearchClick}
           handlePrereqTaskChange={handlePrereqTaskChange}
+          handleSearchClear={handleSearchClear}
         />
       </DialogContent>
       <DialogActions>

@@ -32,8 +32,17 @@ const theme = createMuiTheme({
     error: {
       main: '#ff8aa5',
     },
+    warning: {
+      main: '#5d99c6',
+    },
     contrastThreshold: 3,
     tonalOffset: 0.2,
+  },
+  typography: {
+    fontSize: 16,
+  },
+  shape: {
+    borderRadius: 6,
   },
 });
 
