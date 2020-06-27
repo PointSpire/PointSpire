@@ -6,10 +6,11 @@ export type SimpleTextInputProps = {
   saveValue: (value: string) => void;
   value: string;
   label: string;
+  className?: string;
 };
 
 function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
-  const { value: initialValue, label } = props;
+  const { value: initialValue, label, className } = props;
   const [value, setValue] = useState(initialValue);
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>): void {
@@ -23,6 +24,7 @@ function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
 
   return (
     <TextField
+      className={className}
       size="small"
       fullWidth
       label={label}

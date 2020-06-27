@@ -161,7 +161,7 @@ function TaskRow(props: TaskRowProps): JSX.Element {
         event.preventDefault();
       }}
       label={
-        <Card variant="outlined" className={`${classes.card} ${classes.root}`}>
+        <Card className={`${classes.card} ${classes.root}`} raised>
           <Grid container justify="flex-start" alignItems="center">
             <Grid
               container

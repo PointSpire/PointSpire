@@ -24,28 +24,18 @@ function styles(theme: Theme) {
   return createStyles({
     root: {
       flexGrow: 1,
-      backgroundColor: theme.palette.background.paper,
     },
     treeItem: {
       marginTop: theme.spacing(1),
+      marginRight: theme.spacing(1),
     },
     nested: {
       paddingLeft: theme.spacing(4),
       borderColor: theme.palette.secondary.main,
       width: '100%',
     },
-    iconButton: {
-      backgroundColor: theme.palette.secondary.main,
-      '&:hover': {
-        backgroundColor: theme.palette.secondary.light,
-      },
-    },
-    iconButtonHover: {
-      backgroundColor: theme.palette.primary.main,
-    },
     card: {
       padding: theme.spacing(1),
-      backgroundColor: theme.palette.background.paper,
     },
   });
 }
@@ -171,7 +161,7 @@ const ProjectRow = (props: ProjectRowProps) => {
         event.preventDefault();
       }}
       label={
-        <Card variant="outlined" className={`${classes.card} ${classes.root}`}>
+        <Card className={`${classes.card} ${classes.root}`} raised>
           <Grid container justify="flex-start" alignItems="center">
             <Grid
               container
