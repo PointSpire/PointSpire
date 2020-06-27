@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button, List, ListItem } from '@material-ui/core/';
 import {
   Theme,
@@ -15,8 +15,12 @@ import {
   SetTaskFunction,
   SetTasksFunction,
 } from '../App';
-import { postNewProject } from '../logic/fetchMethods';
-import prioritySortDescending from '../logic/sortingFunctions';
+import {
+  postNewProject,
+  deleteProject as deleteProjectOnServer,
+} from '../logic/fetchMethods';
+import sortingFunctions from '../logic/sortingFunctions';
+import SortInput from './SortInput';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */
@@ -52,23 +56,20 @@ export interface ProjectTableProps extends WithStyles<typeof styles> {
 
 export type ProjectTableState = unknown;
 
-class ProjectTable extends React.Component<
-  ProjectTableProps,
-  ProjectTableState
-> {
-  constructor(props: ProjectTableProps) {
-    super(props);
+function ProjectTable(props: ProjectTableProps) {
+  const {
+    projects,
+    tasks,
+    user,
+    setProjects,
+    setProject,
+    setUser,
+    setTask,
+    setTasks,
+    classes,
+  } = props;
 
-    this.addProject = this.addProject.bind(this);
-  }
-
-  /*
-  private handleTaskInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({
-      newTaskTitle: e.target.value,
-    });
-  };
-  */
+  const [sortBy, setSortBy] = useState('Priority');
 
   /**
    * Adds the project to the user state and the project objects state.
@@ -76,12 +77,30 @@ class ProjectTable extends React.Component<
    * @private
    * @param {Project} newProject the new project to add to state
    */
-  private addProjectToState(newProject: Project): void {
-    const { setProjects, projects, user, setUser } = this.props;
+  function addProjectToState(newProject: Project): void {
     projects[newProject._id] = newProject;
     user.projects.push(newProject._id);
     setProjects(projects);
     setUser(user);
+  }
+
+  /**
+   * Generates a function that will delete the specified project in state and
+   * on the server.
+   *
+   * @param {Project} projectToDelete the project to delete
+   */
+  function deleteProject(projectToDelete: Project) {
+    return async () => {
+      // Delete the project from state first
+      delete projects[projectToDelete._id];
+      setProjects(projects);
+      user.projects.splice(user.projects.indexOf(projectToDelete._id), 1);
+      setUser(user);
+
+      // Make the request to delete the project
+      await deleteProjectOnServer(projectToDelete);
+    };
   }
 
   /**
@@ -90,53 +109,45 @@ class ProjectTable extends React.Component<
    *
    * @param {string} projectTitle the title of the new project
    */
-  async addProject(): Promise<void> {
-    const { user } = this.props;
+  async function addProject(): Promise<void> {
     const newProject = await postNewProject(user._id, 'Untitled');
 
     // Save the project to state
-    this.addProjectToState(newProject);
+    addProjectToState(newProject);
   }
 
-  render() {
-    const {
-      classes,
-      projects,
-      tasks,
-      setTask,
-      setProject,
-      setTasks,
-    } = this.props;
-    const { addProject } = this;
-    return (
-      <List>
-        {Object.values(projects)
-          .sort(prioritySortDescending)
-          .map(projectDoc => {
-            return (
-              <ProjectRow
-                key={projectDoc._id}
-                setTasks={setTasks}
-                setProject={setProject}
-                project={projectDoc}
-                tasks={tasks}
-                setTask={setTask}
-              />
-            );
-          })}
-        <ListItem>
-          <Button
-            className={classes.label}
-            variant="outlined"
-            fullWidth
-            onClick={addProject}
-          >
-            Add Project
-          </Button>
-        </ListItem>
-      </List>
-    );
-  }
+  return (
+    <List>
+      <ListItem>
+        <SortInput sortBy={sortBy} setSortBy={setSortBy} />
+      </ListItem>
+      {Object.values(projects)
+        .sort(sortingFunctions[sortBy])
+        .map(projectDoc => {
+          return (
+            <ProjectRow
+              deleteThisProject={deleteProject(projectDoc)}
+              key={projectDoc._id}
+              setTasks={setTasks}
+              setProject={setProject}
+              project={projectDoc}
+              tasks={tasks}
+              setTask={setTask}
+            />
+          );
+        })}
+      <ListItem>
+        <Button
+          className={classes.label}
+          variant="outlined"
+          fullWidth
+          onClick={addProject}
+        >
+          Add Project
+        </Button>
+      </ListItem>
+    </List>
+  );
 }
 
 export default withStyles(styles, { withTheme: true })(ProjectTable);

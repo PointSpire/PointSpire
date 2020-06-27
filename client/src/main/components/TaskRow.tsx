@@ -16,13 +16,14 @@ import {
   deleteTask as deleteTaskOnServer,
   postNewTask,
 } from '../logic/fetchMethods';
-import TaskMenu from './TaskMenu';
+import TaskMenu from './TaskMenu/TaskMenu';
 import NoteInput from './NoteInput';
 import DateInput from './DateInput';
 import SimpleTextInput from './SimpleTextInput';
 import PriorityInput from './PriorityInput';
 import scheduleCallback from '../logic/savingTimer';
 import TaskExpanderButton from './TaskExpanderButton';
+import sortingFunctions from '../logic/sortingFunctions';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -47,6 +48,7 @@ export interface TaskRowProps extends WithStyles<typeof styles> {
 function TaskRow(props: TaskRowProps): JSX.Element {
   const { task, setTasks, tasks, setTask, deleteTask, classes } = props;
   const [open, setOpen] = useState(false);
+  const [sortBy, setSortBy] = useState('Priority');
 
   /**
    * Saves this task to the server and logs to the console what happened.
@@ -178,7 +180,12 @@ function TaskRow(props: TaskRowProps): JSX.Element {
           />
         </Grid>
         <Grid item>
-          <TaskMenu addSubTask={addSubTask} deleteTask={deleteThisTask} />
+          <TaskMenu
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            addSubTask={addSubTask}
+            deleteTask={deleteThisTask}
+          />
         </Grid>
         <Grid item className={classes.root}>
           <NoteInput
@@ -190,17 +197,20 @@ function TaskRow(props: TaskRowProps): JSX.Element {
         {task.subtasks.length !== 0 ? (
           <Collapse in={open} timeout="auto" className={classes.root}>
             <List>
-              {task.subtasks.map(taskId => (
-                <TaskRow
-                  key={taskId}
-                  deleteTask={deleteSubTask}
-                  setTasks={setTasks}
-                  setTask={setTask}
-                  classes={classes}
-                  task={tasks[taskId]}
-                  tasks={tasks}
-                />
-              ))}
+              {Object.values(tasks)
+                .filter(currentTask => task.subtasks.includes(currentTask._id))
+                .sort(sortingFunctions[sortBy])
+                .map(currentTask => (
+                  <TaskRow
+                    key={currentTask._id}
+                    classes={classes}
+                    setTasks={setTasks}
+                    setTask={setTask}
+                    task={currentTask}
+                    tasks={tasks}
+                    deleteTask={deleteSubTask}
+                  />
+                ))}
             </List>
           </Collapse>
         ) : (

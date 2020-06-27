@@ -10,11 +10,9 @@ import {
   List,
   ListItem,
   Card,
-  Tooltip,
 } from '@material-ui/core';
 import UpIcon from '@material-ui/icons/ArrowUpward';
 import DownIcon from '@material-ui/icons/ArrowDownward';
-import AddListIcon from '@material-ui/icons/PlaylistAdd';
 import { Project, TaskObjects, Task } from '../logic/dbTypes';
 import TaskRow from './TaskRow';
 import { SetTaskFunction, SetTasksFunction, SetProjectFunction } from '../App';
@@ -24,6 +22,8 @@ import NoteInput from './NoteInput';
 import DateInput from './DateInput';
 import SimpleTextInput from './SimpleTextInput';
 import PriorityInput from './PriorityInput';
+import TaskMenu from './TaskMenu/TaskMenu';
+import sortingFunctions from '../logic/sortingFunctions';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -56,18 +56,22 @@ export interface ProjectRowProps extends WithStyles<typeof styles> {
   setTask: SetTaskFunction;
   setTasks: SetTasksFunction;
   setProject: SetProjectFunction;
-}
-
-export interface ProjectRowState {
-  open: boolean;
-  priority: number;
-  title: string;
+  deleteThisProject: () => Promise<void>;
 }
 
 const ProjectRow = (props: ProjectRowProps) => {
-  const { project, classes, tasks, setTask, setTasks, setProject } = props;
+  const {
+    project,
+    classes,
+    tasks,
+    setTask,
+    setTasks,
+    setProject,
+    deleteThisProject,
+  } = props;
 
   const [open, setOpen] = useState(false);
+  const [sortBy, setSortBy] = useState('Priority');
 
   /**
    * Saves the project in state to the server and logs to the console what
@@ -99,7 +103,7 @@ const ProjectRow = (props: ProjectRowProps) => {
   }
 
   function saveStartDate(newDate: Date | null): void {
-    project.dueDate = newDate;
+    project.startDate = newDate;
     setProject(project);
     scheduleCallback(`${project._id}.saveProject`, saveProject);
   }
@@ -160,17 +164,6 @@ const ProjectRow = (props: ProjectRowProps) => {
     await deleteTask(task);
   }
 
-  function handleAddNewTaskClick(): void {
-    addSubTask('Untitled').catch(err => {
-      // eslint-disable-next-line
-      console.error(err);
-    });
-
-    /* TODO: Try to get the transition to run when it opens. Right now it
-    doesn't. */
-    setOpen(true);
-  }
-
   return (
     <ListItem className={classes.root} key={project._id}>
       <Card variant="outlined" className={`${classes.card} ${classes.root}`}>
@@ -213,14 +206,12 @@ const ProjectRow = (props: ProjectRowProps) => {
             />
           </Grid>
           <Grid item>
-            <Tooltip title="Add Subtask">
-              <IconButton
-                aria-label="new-project-task-button"
-                onClick={handleAddNewTaskClick}
-              >
-                <AddListIcon fontSize="large" />
-              </IconButton>
-            </Tooltip>
+            <TaskMenu
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+              deleteTask={deleteThisProject}
+              addSubTask={addSubTask}
+            />
           </Grid>
           <Grid item className={classes.root}>
             <NoteInput
@@ -236,16 +227,19 @@ const ProjectRow = (props: ProjectRowProps) => {
             component={List}
           >
             <List>
-              {project.subtasks.map(taskId => (
-                <TaskRow
-                  key={taskId}
-                  setTasks={setTasks}
-                  setTask={setTask}
-                  task={tasks[taskId]}
-                  tasks={tasks}
-                  deleteTask={deleteSubTask}
-                />
-              ))}
+              {Object.values(tasks)
+                .filter(task => project.subtasks.includes(task._id))
+                .sort(sortingFunctions[sortBy])
+                .map(task => (
+                  <TaskRow
+                    key={task._id}
+                    setTasks={setTasks}
+                    setTask={setTask}
+                    task={task}
+                    tasks={tasks}
+                    deleteTask={deleteSubTask}
+                  />
+                ))}
             </List>
           </Collapse>
         </Grid>
