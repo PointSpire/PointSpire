@@ -20,7 +20,10 @@ const projectSchema = new Schema({
     type: Date,
     default: null,
   },
-  priority: require('mongoose-int32'),
+  priority: {
+    type: require('mongoose-int32'),
+    default: 0,
+  },
   dateCreated: { type: Date, default: Date.now },
   subtasks: [{ type: ObjectId, ref: 'Task', default: [] }],
 });
