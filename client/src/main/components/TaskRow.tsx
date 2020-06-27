@@ -4,11 +4,10 @@ import {
   createStyles,
   Theme,
   withStyles,
-  ListItem,
-  List,
-  Collapse,
   Grid,
+  Card,
 } from '@material-ui/core';
+import { TreeItem } from '@material-ui/lab';
 import { Task, TaskObjects } from '../logic/dbTypes';
 import { SetTaskFunction, SetTasksFunction } from '../App';
 import {
@@ -22,17 +21,23 @@ import DateInput from './DateInput';
 import SimpleTextInput from './SimpleTextInput';
 import PriorityInput from './PriorityInput';
 import scheduleCallback from '../logic/savingTimer';
-import TaskExpanderButton from './TaskExpanderButton';
 import sortingFunctions from '../logic/sortingFunctions';
 
 function styles(theme: Theme) {
   return createStyles({
     root: {
-      width: '100%',
+      flexGrow: 1,
       backgroundColor: theme.palette.background.paper,
     },
     nested: {
       paddingLeft: theme.spacing(4),
+    },
+    card: {
+      padding: theme.spacing(1),
+      backgroundColor: theme.palette.background.paper,
+    },
+    treeItem: {
+      marginTop: theme.spacing(1),
     },
   });
 }
@@ -47,7 +52,6 @@ export interface TaskRowProps extends WithStyles<typeof styles> {
 
 function TaskRow(props: TaskRowProps): JSX.Element {
   const { task, setTasks, tasks, setTask, deleteTask, classes } = props;
-  const [open, setOpen] = useState(false);
   const [sortBy, setSortBy] = useState('Priority');
 
   /**
@@ -87,8 +91,6 @@ function TaskRow(props: TaskRowProps): JSX.Element {
     // Add the new task to the project
     task.subtasks.push(newTask._id);
     setTask(task);
-
-    setOpen(true);
   }
 
   /**
@@ -152,72 +154,84 @@ function TaskRow(props: TaskRowProps): JSX.Element {
   }
 
   return (
-    <ListItem key={task._id} className={classes.root}>
-      <Grid container spacing={4} justify="space-between" alignItems="center">
-        <TaskExpanderButton parent={task} open={open} setOpen={setOpen} />
-        <Grid item>
-          <SimpleTextInput
-            value={task.title}
-            saveValue={saveText('title')}
-            label="Title"
+    <TreeItem
+      className={`${classes.root} ${classes.treeItem}`}
+      nodeId={task._id}
+      onLabelClick={event => {
+        event.preventDefault();
+      }}
+      label={
+        <Card variant="outlined" className={`${classes.card} ${classes.root}`}>
+          <Grid container justify="flex-start" alignItems="center">
+            <Grid
+              container
+              spacing={2}
+              wrap="nowrap"
+              alignItems="center"
+              justify="flex-start"
+            >
+              <Grid item className={classes.root}>
+                <SimpleTextInput
+                  value={task.title}
+                  saveValue={saveText('title')}
+                  label="Title"
+                />
+              </Grid>
+              <Grid item>
+                <PriorityInput
+                  savePriority={savePriority}
+                  priority={task.priority}
+                />
+              </Grid>
+              <Grid item>
+                <DateInput
+                  saveDate={saveStartDate}
+                  date={task.startDate}
+                  label="Start Date"
+                />
+              </Grid>
+              <Grid item>
+                <DateInput
+                  saveDate={saveDueDate}
+                  date={task.dueDate}
+                  label="Due Date"
+                />
+              </Grid>
+              <Grid item>
+                <TaskMenu
+                  sortBy={sortBy}
+                  setSortBy={setSortBy}
+                  addSubTask={addSubTask}
+                  deleteTask={deleteThisTask}
+                />
+              </Grid>
+            </Grid>
+            <Grid item className={classes.root}>
+              <NoteInput
+                saveNote={saveText('note')}
+                note={task.note}
+                label="Task Note"
+              />
+            </Grid>
+          </Grid>
+        </Card>
+      }
+    >
+      {Object.values(tasks)
+        .filter(currentTask => task.subtasks.includes(currentTask._id))
+        .sort(sortingFunctions[sortBy])
+        .map(currentTask => (
+          <TaskRow
+            key={currentTask._id}
+            classes={classes}
+            setTasks={setTasks}
+            setTask={setTask}
+            task={currentTask}
+            tasks={tasks}
+            deleteTask={deleteSubTask}
           />
-        </Grid>
-        <Grid item>
-          <PriorityInput savePriority={savePriority} priority={task.priority} />
-        </Grid>
-        <Grid item>
-          <DateInput
-            saveDate={saveStartDate}
-            date={task.startDate}
-            label="Start Date"
-          />
-        </Grid>
-        <Grid item>
-          <DateInput
-            saveDate={saveDueDate}
-            date={task.dueDate}
-            label="Due Date"
-          />
-        </Grid>
-        <Grid item>
-          <TaskMenu
-            sortBy={sortBy}
-            setSortBy={setSortBy}
-            addSubTask={addSubTask}
-            deleteTask={deleteThisTask}
-          />
-        </Grid>
-        <Grid item className={classes.root}>
-          <NoteInput
-            saveNote={saveText('note')}
-            note={task.note}
-            label="Task Note"
-          />
-        </Grid>
-        {task.subtasks.length !== 0 ? (
-          <Collapse in={open} timeout="auto" className={classes.root}>
-            <List>
-              {Object.values(tasks)
-                .filter(currentTask => task.subtasks.includes(currentTask._id))
-                .sort(sortingFunctions[sortBy])
-                .map(currentTask => (
-                  <TaskRow
-                    key={currentTask._id}
-                    classes={classes}
-                    setTasks={setTasks}
-                    setTask={setTask}
-                    task={currentTask}
-                    tasks={tasks}
-                    deleteTask={deleteSubTask}
-                  />
-                ))}
-            </List>
-          </Collapse>
-        ) : (
-          <></>
-        )}
-      </Grid>
-    </ListItem>
+        ))}
+    </TreeItem>
   );
 }
 

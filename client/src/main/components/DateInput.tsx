@@ -30,6 +30,7 @@ function DateInput(props: DateInputProps): JSX.Element {
 
   return (
     <DatePicker
+      size="small"
       variant="dialog"
       label={label}
       value={date}

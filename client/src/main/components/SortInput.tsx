@@ -5,6 +5,7 @@ import sortingFunctions from '../logic/sortingFunctions';
 export type SortInputProps = {
   setSortBy: (sortBy: string) => void;
   sortBy: string;
+  className: string;
 };
 
 /**
@@ -15,25 +16,27 @@ export type SortInputProps = {
  * @param {SortInputProps} props the props for the component
  */
 function SortInput(props: SortInputProps): JSX.Element {
-  const { setSortBy, sortBy } = props;
+  const { setSortBy, sortBy, className } = props;
 
   function handleChange(event: React.ChangeEvent<{ value: unknown }>): void {
     setSortBy(event.target.value as string);
   }
 
   return (
-    <FormControl>
-      <InputLabel id="sort-label">Sort By</InputLabel>
-      <Select labelId="sort-label" value={sortBy} onChange={handleChange}>
-        {Object.keys(sortingFunctions).map(sortType => {
-          return (
-            <MenuItem key={sortType} value={sortType}>
-              {sortType}
-            </MenuItem>
-          );
-        })}
-      </Select>
-    </FormControl>
+    <div className={className}>
+      <FormControl>
+        <InputLabel id="sort-label">Sort By</InputLabel>
+        <Select labelId="sort-label" value={sortBy} onChange={handleChange}>
+          {Object.keys(sortingFunctions).map(sortType => {
+            return (
+              <MenuItem key={sortType} value={sortType}>
+                {sortType}
+              </MenuItem>
+            );
+          })}
+        </Select>
+      </FormControl>
+    </div>
   );
 }
 

@@ -7,6 +7,8 @@ import {
   withStyles,
   WithStyles,
 } from '@material-ui/core/styles';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import { ProjectObjects, TaskObjects, Project, User } from '../logic/dbTypes';
 import ProjectRow from './ProjectRow';
 import {
@@ -29,9 +31,8 @@ ejecting from create-react-app */
 function styles(theme: Theme) {
   return createStyles({
     root: {
-      width: '100%',
-      backgroundColor: theme.palette.background.paper,
       alignItems: 'center',
+      flexGrow: 1,
     },
     projectItem: {
       paddingLeft: theme.spacing(4),
@@ -40,6 +41,13 @@ function styles(theme: Theme) {
     },
     label: {
       alignSelf: 'center',
+      margin: theme.spacing(1),
+    },
+    sortInput: {
+      display: 'flex',
+      marginTop: theme.spacing(1),
+      marginBottom: theme.spacing(1),
+      marginLeft: theme.spacing(3),
     },
   });
 }
@@ -119,8 +127,17 @@ function ProjectTable(props: ProjectTableProps) {
 
   return (
     <>
-      <SortInput sortBy={sortBy} setSortBy={setSortBy} />
-      <TreeView>
+      <SortInput
+        className={classes.sortInput}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+      />
+      <TreeView
+        defaultCollapseIcon={<ExpandMoreIcon />}
+        defaultExpandIcon={<ChevronRightIcon />}
+        className={classes.root}
+        disableSelection
+      >
         {Object.values(projects)
           .sort(sortingFunctions[sortBy])
           .map(projectDoc => {
@@ -137,12 +154,7 @@ function ProjectTable(props: ProjectTableProps) {
             );
           })}
       </TreeView>
-      <Button
-        className={classes.label}
-        variant="outlined"
-        fullWidth
-        onClick={addProject}
-      >
+      <Button className={classes.label} variant="outlined" onClick={addProject}>
         Add Project
       </Button>
     </>

@@ -22,6 +22,7 @@ function NoteInput(props: NoteInputProps): JSX.Element {
   }
   return (
     <TextField
+      size="small"
       multiline
       label={label}
       value={note}
