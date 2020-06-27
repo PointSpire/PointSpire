@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Button, List, ListItem } from '@material-ui/core/';
+import { Button } from '@material-ui/core/';
+import { TreeView } from '@material-ui/lab';
 import {
   Theme,
   createStyles,
@@ -117,36 +118,34 @@ function ProjectTable(props: ProjectTableProps) {
   }
 
   return (
-    <List>
-      <ListItem>
-        <SortInput sortBy={sortBy} setSortBy={setSortBy} />
-      </ListItem>
-      {Object.values(projects)
-        .sort(sortingFunctions[sortBy])
-        .map(projectDoc => {
-          return (
-            <ProjectRow
-              deleteThisProject={deleteProject(projectDoc)}
-              key={projectDoc._id}
-              setTasks={setTasks}
-              setProject={setProject}
-              project={projectDoc}
-              tasks={tasks}
-              setTask={setTask}
-            />
-          );
-        })}
-      <ListItem>
-        <Button
-          className={classes.label}
-          variant="outlined"
-          fullWidth
-          onClick={addProject}
-        >
-          Add Project
-        </Button>
-      </ListItem>
-    </List>
+    <>
+      <SortInput sortBy={sortBy} setSortBy={setSortBy} />
+      <TreeView>
+        {Object.values(projects)
+          .sort(sortingFunctions[sortBy])
+          .map(projectDoc => {
+            return (
+              <ProjectRow
+                deleteThisProject={deleteProject(projectDoc)}
+                key={projectDoc._id}
+                setTasks={setTasks}
+                setProject={setProject}
+                project={projectDoc}
+                tasks={tasks}
+                setTask={setTask}
+              />
+            );
+          })}
+      </TreeView>
+      <Button
+        className={classes.label}
+        variant="outlined"
+        fullWidth
+        onClick={addProject}
+      >
+        Add Project
+      </Button>
+    </>
   );
 }
 

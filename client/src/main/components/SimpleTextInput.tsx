@@ -23,6 +23,7 @@ function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
 
   return (
     <TextField
+      fullWidth
       label={label}
       value={value}
       onChange={handleChange}

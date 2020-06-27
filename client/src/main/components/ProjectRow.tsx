@@ -8,9 +8,9 @@ import {
   Collapse,
   Grid,
   List,
-  ListItem,
   Card,
 } from '@material-ui/core';
+import { TreeItem } from '@material-ui/lab';
 import UpIcon from '@material-ui/icons/ArrowUpward';
 import DownIcon from '@material-ui/icons/ArrowDownward';
 import { Project, TaskObjects, Task } from '../logic/dbTypes';
@@ -34,6 +34,7 @@ function styles(theme: Theme) {
     nested: {
       paddingLeft: theme.spacing(4),
       borderColor: theme.palette.secondary.main,
+      width: '100%',
     },
     iconButton: {
       backgroundColor: theme.palette.secondary.main,
@@ -45,7 +46,7 @@ function styles(theme: Theme) {
       backgroundColor: theme.palette.primary.main,
     },
     card: {
-      padding: theme.spacing(2),
+      padding: theme.spacing(1),
     },
   });
 }
@@ -165,54 +166,63 @@ const ProjectRow = (props: ProjectRowProps) => {
   }
 
   return (
-    <ListItem className={classes.root} key={project._id}>
+    <TreeItem className={classes.root} nodeId={project._id}>
       <Card variant="outlined" className={`${classes.card} ${classes.root}`}>
-        <Grid container spacing={1} justify="space-between" alignItems="center">
-          <Grid item>
-            <IconButton
-              aria-label="project-expander"
-              onClick={() => {
-                setOpen(!open);
-              }}
-            >
-              {open ? <UpIcon /> : <DownIcon />}
-            </IconButton>
+        <Grid container spacing={1} justify="flex-start" alignItems="center">
+          <Grid
+            container
+            spacing={2}
+            wrap="nowrap"
+            alignItems="center"
+            justify="flex-start"
+          >
+            <Grid item>
+              <IconButton
+                aria-label="project-expander"
+                onClick={() => {
+                  setOpen(!open);
+                }}
+              >
+                {open ? <UpIcon /> : <DownIcon />}
+              </IconButton>
+            </Grid>
+            <Grid item className={classes.root}>
+              <SimpleTextInput
+                label="Project Title"
+                value={project.title}
+                saveValue={saveText('title')}
+              />
+            </Grid>
+            <Grid item>
+              <PriorityInput
+                savePriority={savePriority}
+                priority={project.priority}
+              />
+            </Grid>
+            <Grid item>
+              <DateInput
+                label="Start Date"
+                date={project.startDate}
+                saveDate={saveStartDate}
+              />
+            </Grid>
+            <Grid item>
+              <DateInput
+                label="Due Date"
+                date={project.dueDate}
+                saveDate={saveDueDate}
+              />
+            </Grid>
+            <Grid item>
+              <TaskMenu
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                deleteTask={deleteThisProject}
+                addSubTask={addSubTask}
+              />
+            </Grid>
           </Grid>
-          <Grid item>
-            <SimpleTextInput
-              label="Project Title"
-              value={project.title}
-              saveValue={saveText('title')}
-            />
-          </Grid>
-          <Grid item>
-            <PriorityInput
-              savePriority={savePriority}
-              priority={project.priority}
-            />
-          </Grid>
-          <Grid item>
-            <DateInput
-              label="Start Date"
-              date={project.startDate}
-              saveDate={saveStartDate}
-            />
-          </Grid>
-          <Grid item>
-            <DateInput
-              label="Due Date"
-              date={project.dueDate}
-              saveDate={saveDueDate}
-            />
-          </Grid>
-          <Grid item>
-            <TaskMenu
-              sortBy={sortBy}
-              setSortBy={setSortBy}
-              deleteTask={deleteThisProject}
-              addSubTask={addSubTask}
-            />
-          </Grid>
+
           <Grid item className={classes.root}>
             <NoteInput
               saveNote={saveText('note')}
@@ -220,31 +230,31 @@ const ProjectRow = (props: ProjectRowProps) => {
               label="Project Note"
             />
           </Grid>
-          <Collapse
-            in={open}
-            timeout="auto"
-            className={classes.root}
-            component={List}
-          >
-            <List>
-              {Object.values(tasks)
-                .filter(task => project.subtasks.includes(task._id))
-                .sort(sortingFunctions[sortBy])
-                .map(task => (
-                  <TaskRow
-                    key={task._id}
-                    setTasks={setTasks}
-                    setTask={setTask}
-                    task={task}
-                    tasks={tasks}
-                    deleteTask={deleteSubTask}
-                  />
-                ))}
-            </List>
-          </Collapse>
         </Grid>
       </Card>
-    </ListItem>
+      <Collapse
+        in={open}
+        timeout="auto"
+        className={classes.nested}
+        component={List}
+      >
+        <List>
+          {Object.values(tasks)
+            .filter(task => project.subtasks.includes(task._id))
+            .sort(sortingFunctions[sortBy])
+            .map(task => (
+              <TaskRow
+                key={task._id}
+                setTasks={setTasks}
+                setTask={setTask}
+                task={task}
+                tasks={tasks}
+                deleteTask={deleteSubTask}
+              />
+            ))}
+        </List>
+      </Collapse>
+    </TreeItem>
   );
 };
 
