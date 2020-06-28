@@ -10,8 +10,8 @@ export type SimpleTextInputProps = {
 };
 
 function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
-  const { value: initialValue, label, className } = props;
-  const [value, setValue] = useState(initialValue);
+  const { value: propValue, label, className, saveValue } = props;
+  const [value, setValue] = useState(propValue);
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>): void {
     setValue(event.target.value);
@@ -19,7 +19,9 @@ function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
   }
 
   function handleLoseFocus(): void {
-    props.saveValue(value);
+    if (propValue !== value) {
+      saveValue(value);
+    }
   }
 
   return (

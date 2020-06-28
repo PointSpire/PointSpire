@@ -170,7 +170,7 @@ const ProjectRow = (props: ProjectRowProps) => {
               alignItems="center"
               justify="flex-start"
             >
-              <Grid item className={classes.root}>
+              <Grid item className={classes.root} key={`${project._id}.title`}>
                 <SimpleTextInput
                   label="Project Title"
                   value={project.title}
@@ -208,7 +208,7 @@ const ProjectRow = (props: ProjectRowProps) => {
               </Grid>
             </Grid>
 
-            <Grid item className={classes.root}>
+            <Grid item className={classes.root} key={`${project._id}.note`}>
               <NoteInput
                 saveNote={saveText('note')}
                 note={project.note}

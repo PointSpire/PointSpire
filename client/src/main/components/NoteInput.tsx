@@ -18,7 +18,9 @@ function NoteInput(props: NoteInputProps): JSX.Element {
   }
 
   function handleLoseFocus(): void {
-    props.saveNote(note);
+    if (note !== initialNote) {
+      props.saveNote(note);
+    }
   }
   return (
     <TextField
