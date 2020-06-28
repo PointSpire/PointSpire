@@ -19,9 +19,9 @@ import TaskMenu from './TaskMenu/TaskMenu';
 import NoteInput from './NoteInput';
 import DateInput from './DateInput';
 import SimpleTextInput from './SimpleTextInput';
-import PriorityInput from './PriorityInput';
 import scheduleCallback from '../logic/savingTimer';
 import sortingFunctions from '../logic/sortingFunctions';
+import PriorityButton from './PriorityButton/PriorityButton';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -178,9 +178,10 @@ function TaskRow(props: TaskRowProps): JSX.Element {
                 />
               </Grid>
               <Grid item>
-                <PriorityInput
+                <PriorityButton
                   savePriority={savePriority}
                   priority={task.priority}
+                  projectOrTaskTitle={task.title}
                 />
               </Grid>
               <Grid item>

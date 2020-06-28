@@ -16,9 +16,9 @@ import scheduleCallback from '../logic/savingTimer';
 import NoteInput from './NoteInput';
 import DateInput from './DateInput';
 import SimpleTextInput from './SimpleTextInput';
-import PriorityInput from './PriorityInput';
 import TaskMenu from './TaskMenu/TaskMenu';
 import sortingFunctions from '../logic/sortingFunctions';
+import PriorityButton from './PriorityButton/PriorityButton';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -178,9 +178,10 @@ const ProjectRow = (props: ProjectRowProps) => {
                 />
               </Grid>
               <Grid item>
-                <PriorityInput
+                <PriorityButton
                   savePriority={savePriority}
                   priority={project.priority}
+                  projectOrTaskTitle={project.title}
                 />
               </Grid>
               <Grid item>
