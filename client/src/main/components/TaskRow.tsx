@@ -6,8 +6,8 @@ import {
   withStyles,
   Grid,
   Card,
+  Collapse,
 } from '@material-ui/core';
-import { TreeItem } from '@material-ui/lab';
 import { Task, TaskObjects } from '../logic/dbTypes';
 import { SetTaskFunction, SetTasksFunction } from '../App';
 import {
@@ -22,22 +22,28 @@ import SimpleTextInput from './SimpleTextInput';
 import scheduleCallback from '../logic/savingTimer';
 import sortingFunctions from '../logic/sortingFunctions';
 import PriorityButton from './PriorityButton/PriorityButton';
+import TaskExpanderButton from './TaskExpanderButton';
 
 function styles(theme: Theme) {
   return createStyles({
     root: {
-      flexGrow: 1,
-      backgroundColor: theme.palette.background.paper,
+      display: 'flex',
+      width: '100%',
+      flexDirection: 'row',
+      alignItems: 'center',
     },
-    nested: {
-      paddingLeft: theme.spacing(4),
+    flexGrow: {
+      flexGrow: 1,
     },
     card: {
+      flexGrow: 1,
       padding: theme.spacing(1),
-      backgroundColor: theme.palette.background.paper,
-    },
-    treeItem: {
       marginTop: theme.spacing(1),
+      marginRight: theme.spacing(1),
+      marginLeft: theme.spacing(1),
+    },
+    nested: {
+      marginLeft: theme.spacing(2),
     },
   });
 }
@@ -53,6 +59,7 @@ export interface TaskRowProps extends WithStyles<typeof styles> {
 function TaskRow(props: TaskRowProps): JSX.Element {
   const { task, setTasks, tasks, setTask, deleteTask, classes } = props;
   const [sortBy, setSortBy] = useState('Priority');
+  const [subTasksOpen, setSubTasksOpen] = useState(false);
 
   /**
    * Saves this task to the server and logs to the console what happened.
@@ -154,13 +161,13 @@ function TaskRow(props: TaskRowProps): JSX.Element {
   }
 
   return (
-    <TreeItem
-      className={`${classes.root} ${classes.treeItem}`}
-      nodeId={task._id}
-      onLabelClick={event => {
-        event.preventDefault();
-      }}
-      label={
+    <>
+      <div className={classes.root}>
+        <TaskExpanderButton
+          open={subTasksOpen}
+          setOpen={setSubTasksOpen}
+          parent={task}
+        />
         <Card className={`${classes.card} ${classes.root}`} raised>
           <Grid container justify="flex-start" alignItems="center">
             <Grid
@@ -216,23 +223,26 @@ function TaskRow(props: TaskRowProps): JSX.Element {
             </Grid>
           </Grid>
         </Card>
-      }
-    >
-      {Object.values(tasks)
-        .filter(currentTask => task.subtasks.includes(currentTask._id))
-        .sort(sortingFunctions[sortBy])
-        .map(currentTask => (
-          <TaskRow
-            key={currentTask._id}
-            classes={classes}
-            setTasks={setTasks}
-            setTask={setTask}
-            task={currentTask}
-            tasks={tasks}
-            deleteTask={deleteSubTask}
-          />
-        ))}
-    </TreeItem>
+      </div>
+      <div className={classes.nested}>
+        <Collapse in={subTasksOpen} timeout="auto" className={classes.flexGrow}>
+          {Object.values(tasks)
+            .filter(currentTask => task.subtasks.includes(currentTask._id))
+            .sort(sortingFunctions[sortBy])
+            .map(currentTask => (
+              <TaskRow
+                key={currentTask._id}
+                classes={classes}
+                setTasks={setTasks}
+                setTask={setTask}
+                task={currentTask}
+                tasks={tasks}
+                deleteTask={deleteSubTask}
+              />
+            ))}
+        </Collapse>
+      </div>
+    </>
   );
 }
 

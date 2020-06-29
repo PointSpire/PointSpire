@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
 import { Button } from '@material-ui/core/';
-import { TreeView } from '@material-ui/lab';
 import {
   Theme,
   createStyles,
   withStyles,
   WithStyles,
 } from '@material-ui/core/styles';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import { ProjectObjects, TaskObjects, Project, User } from '../logic/dbTypes';
 import ProjectRow from './ProjectRow';
 import {
@@ -132,12 +129,7 @@ function ProjectTable(props: ProjectTableProps) {
         sortBy={sortBy}
         setSortBy={setSortBy}
       />
-      <TreeView
-        defaultCollapseIcon={<ExpandMoreIcon />}
-        defaultExpandIcon={<ChevronRightIcon />}
-        className={classes.root}
-        disableSelection
-      >
+      <div className={classes.root}>
         {Object.values(projects)
           .sort(sortingFunctions[sortBy])
           .map(projectDoc => {
@@ -153,7 +145,7 @@ function ProjectTable(props: ProjectTableProps) {
               />
             );
           })}
-      </TreeView>
+      </div>
       <Button className={classes.label} variant="outlined" onClick={addProject}>
         Add Project
       </Button>

@@ -6,8 +6,8 @@ import {
   withStyles,
   Grid,
   Card,
+  Collapse,
 } from '@material-ui/core';
-import { TreeItem } from '@material-ui/lab';
 import { Project, TaskObjects, Task } from '../logic/dbTypes';
 import TaskRow from './TaskRow';
 import { SetTaskFunction, SetTasksFunction, SetProjectFunction } from '../App';
@@ -19,23 +19,28 @@ import SimpleTextInput from './SimpleTextInput';
 import TaskMenu from './TaskMenu/TaskMenu';
 import sortingFunctions from '../logic/sortingFunctions';
 import PriorityButton from './PriorityButton/PriorityButton';
+import TaskExpanderButton from './TaskExpanderButton';
 
 function styles(theme: Theme) {
   return createStyles({
     root: {
+      display: 'flex',
+      width: '100%',
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    flexGrow: {
       flexGrow: 1,
     },
-    treeItem: {
+    card: {
+      flexGrow: 1,
+      padding: theme.spacing(1),
       marginTop: theme.spacing(1),
       marginRight: theme.spacing(1),
+      marginLeft: theme.spacing(1),
     },
     nested: {
-      paddingLeft: theme.spacing(4),
-      borderColor: theme.palette.secondary.main,
-      width: '100%',
-    },
-    card: {
-      padding: theme.spacing(1),
+      marginLeft: theme.spacing(2),
     },
   });
 }
@@ -61,6 +66,7 @@ const ProjectRow = (props: ProjectRowProps) => {
   } = props;
 
   const [sortBy, setSortBy] = useState('Priority');
+  const [subTasksOpen, setSubTasksOpen] = useState(false);
 
   /**
    * Saves the project in state to the server and logs to the console what
@@ -154,14 +160,14 @@ const ProjectRow = (props: ProjectRowProps) => {
   }
 
   return (
-    <TreeItem
-      className={`${classes.root} ${classes.treeItem}`}
-      nodeId={project._id}
-      onLabelClick={event => {
-        event.preventDefault();
-      }}
-      label={
-        <Card className={`${classes.card} ${classes.root}`} raised>
+    <>
+      <div className={classes.root}>
+        <TaskExpanderButton
+          open={subTasksOpen}
+          setOpen={setSubTasksOpen}
+          parent={project}
+        />
+        <Card className={`${classes.card}`} raised key={project._id}>
           <Grid container justify="flex-start" alignItems="center">
             <Grid
               container
@@ -170,7 +176,11 @@ const ProjectRow = (props: ProjectRowProps) => {
               alignItems="center"
               justify="flex-start"
             >
-              <Grid item className={classes.root} key={`${project._id}.title`}>
+              <Grid
+                item
+                className={classes.flexGrow}
+                key={`${project._id}.title`}
+              >
                 <SimpleTextInput
                   label="Project Title"
                   value={project.title}
@@ -208,7 +218,7 @@ const ProjectRow = (props: ProjectRowProps) => {
               </Grid>
             </Grid>
 
-            <Grid item className={classes.root} key={`${project._id}.note`}>
+            <Grid item className={classes.flexGrow} key={`${project._id}.note`}>
               <NoteInput
                 saveNote={saveText('note')}
                 note={project.note}
@@ -217,22 +227,25 @@ const ProjectRow = (props: ProjectRowProps) => {
             </Grid>
           </Grid>
         </Card>
-      }
-    >
-      {Object.values(tasks)
-        .filter(task => project.subtasks.includes(task._id))
-        .sort(sortingFunctions[sortBy])
-        .map(task => (
-          <TaskRow
-            key={task._id}
-            setTasks={setTasks}
-            setTask={setTask}
-            task={task}
-            tasks={tasks}
-            deleteTask={deleteSubTask}
-          />
-        ))}
-    </TreeItem>
+      </div>
+      <div className={classes.nested}>
+        <Collapse in={subTasksOpen} timeout="auto" className={classes.flexGrow}>
+          {Object.values(tasks)
+            .filter(task => project.subtasks.includes(task._id))
+            .sort(sortingFunctions[sortBy])
+            .map(task => (
+              <TaskRow
+                key={task._id}
+                setTasks={setTasks}
+                setTask={setTask}
+                task={task}
+                tasks={tasks}
+                deleteTask={deleteSubTask}
+              />
+            ))}
+        </Collapse>
+      </div>
+    </>
   );
 };
 
