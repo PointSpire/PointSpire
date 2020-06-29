@@ -45,7 +45,7 @@ export default function PriorityDialog(
       aria-labelledby="priority-dialog-title"
     >
       <DialogTitle id="priority-dialog-title">
-        {`Set priority for ${projectOrTaskTitle}`}
+        {`Set priority for "${projectOrTaskTitle}"`}
       </DialogTitle>
       <DialogContent>
         <PriorityInput savePriority={savePriority} priority={priority} />

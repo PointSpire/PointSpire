@@ -56,6 +56,7 @@ function PriorityInput(props: PriorityInputProps): JSX.Element {
 
   return (
     <TextField
+      autoFocus
       size="small"
       label="Priority"
       error={error}
