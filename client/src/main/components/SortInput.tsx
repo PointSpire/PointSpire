@@ -11,7 +11,7 @@ export type SortInputProps = {
 /**
  * Represents a sorting input dropdown which uses the sorting types available
  * in the `sortingFunctions` file. This could potentially be changed to a
- * native sorting list.
+ * native dropdown.
  *
  * @param {SortInputProps} props the props for the component
  */

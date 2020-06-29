@@ -8,6 +8,11 @@ export type DateInputProps = {
   label: string;
 };
 
+/**
+ * The generalized component for a date input.
+ *
+ * @param {DateInputProps} props the props
+ */
 function DateInput(props: DateInputProps): JSX.Element {
   const { date: propDate, saveDate, label } = props;
   const [date, setDate] = useState<Date | null>(propDate);

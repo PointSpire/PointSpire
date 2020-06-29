@@ -54,6 +54,11 @@ export interface ProjectRowProps extends WithStyles<typeof styles> {
   deleteThisProject: () => Promise<void>;
 }
 
+/**
+ * Represents a row for a Project in the UI.
+ *
+ * @param {ProjectRowProps} props the props
+ */
 const ProjectRow = (props: ProjectRowProps) => {
   const {
     project,

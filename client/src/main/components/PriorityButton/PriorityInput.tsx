@@ -7,6 +7,12 @@ export type PriorityInputProps = {
   priority: number;
 };
 
+/**
+ * Represents the textual input for a priority. This handles validation on the
+ * input.
+ *
+ * @param {PriorityInputProps} props the props
+ */
 function PriorityInput(props: PriorityInputProps): JSX.Element {
   const { priority: initialPriority, savePriority } = props;
   let priority: string;

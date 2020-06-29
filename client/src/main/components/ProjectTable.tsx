@@ -62,6 +62,12 @@ export interface ProjectTableProps extends WithStyles<typeof styles> {
 
 export type ProjectTableState = unknown;
 
+/**
+ * Represents the complete table of projects in the UI, as well as modification
+ * components such as sorting and project addition buttons.
+ *
+ * @param {ProjectTableProps} props the props
+ */
 function ProjectTable(props: ProjectTableProps) {
   const {
     projects,

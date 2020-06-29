@@ -56,6 +56,12 @@ export interface TaskRowProps extends WithStyles<typeof styles> {
   deleteTask: (task: Task) => Promise<void>;
 }
 
+/**
+ * Represents a row for a task, which is under a project or another task in
+ * the UI.
+ *
+ * @param {TaskRowProps} props the props
+ */
 function TaskRow(props: TaskRowProps): JSX.Element {
   const { task, setTasks, tasks, setTask, deleteTask, classes } = props;
   const [sortBy, setSortBy] = useState('Priority');
