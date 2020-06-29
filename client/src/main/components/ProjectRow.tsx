@@ -176,11 +176,7 @@ const ProjectRow = (props: ProjectRowProps) => {
               alignItems="center"
               justify="flex-start"
             >
-              <Grid
-                item
-                className={classes.flexGrow}
-                key={`${project._id}.title`}
-              >
+              <Grid item className={classes.root} key={`${project._id}.title`}>
                 <SimpleTextInput
                   label="Project Title"
                   value={project.title}
