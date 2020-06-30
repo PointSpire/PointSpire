@@ -15,11 +15,6 @@ import {
 } from '@material-ui/core';
 import { Search as SearchIcon, Clear as ClearIcon } from '@material-ui/icons';
 import { Task, TaskObjects } from '../logic/dbTypes';
-import {
-  HandlePrereqTaskChangeFunction,
-  HandleSearchClickFunction,
-  HandleSearchClearFunction,
-} from './TaskRow';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -43,9 +38,9 @@ export interface PrereqTaskManagerProps extends WithStyles<typeof styles> {
   prereqTasks: string[];
   searchTaskResults: string[];
   isSearch: boolean;
-  handlePrereqTaskChange: HandlePrereqTaskChangeFunction;
-  handleSearchClick: HandleSearchClickFunction;
-  handleSearchClear: HandleSearchClearFunction;
+  handlePrereqTaskChange: (taskId: string) => void;
+  handleSearchClick: (searchTerm: string) => void;
+  handleSearchClear: () => void;
 }
 
 /**

@@ -8,12 +8,6 @@ import {
 } from '@material-ui/core';
 import { Task, TaskObjects } from '../logic/dbTypes';
 import PrereqTaskManager from './PrereqTaskManager';
-import {
-  OpenPrereqTaskFunction,
-  HandlePrereqTaskChangeFunction,
-  HandleSearchClickFunction,
-  HandleSearchClearFunction,
-} from './TaskRow';
 
 export interface PrereqTaskDialogProps {
   tasks: TaskObjects;
@@ -22,10 +16,10 @@ export interface PrereqTaskDialogProps {
   prereqTasks: string[];
   searchTaskResults: string[];
   isSearch: boolean;
-  closeDialog: OpenPrereqTaskFunction;
-  handleSearchClick: HandleSearchClickFunction;
-  handlePrereqTaskChange: HandlePrereqTaskChangeFunction;
-  handleSearchClear: HandleSearchClearFunction;
+  closeDialog: (e: React.MouseEvent<HTMLElement>) => void;
+  handleSearchClick: (searchTerm: string) => void;
+  handlePrereqTaskChange: (taskId: string) => void;
+  handleSearchClear: () => void;
 }
 
 const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {

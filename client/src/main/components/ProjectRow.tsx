@@ -20,7 +20,6 @@ import AddListIcon from '@material-ui/icons/PlaylistAdd';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import { Project, TaskObjects, Task } from '../logic/dbTypes';
 import TaskRow from './TaskRow';
-import { SetTaskFunction, SetTasksFunction, SetProjectFunction } from '../App';
 import { postNewTask, deleteTask, patchProject } from '../logic/fetchMethods';
 
 function styles(theme: Theme) {
@@ -73,9 +72,9 @@ function saveProject(project: Project): void {
 export interface ProjectRowProps extends WithStyles<typeof styles> {
   project: Project;
   tasks: TaskObjects;
-  setTask: SetTaskFunction;
-  setTasks: SetTasksFunction;
-  setProject: SetProjectFunction;
+  setTask: (updatedTask: Task) => void;
+  setTasks: (updatedTasks: TaskObjects) => void;
+  setProject: (updatedProject: Project) => void;
 }
 
 export interface ProjectRowState {
