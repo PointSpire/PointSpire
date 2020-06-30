@@ -8,9 +8,11 @@ export interface PrereqTaskListProps {
   handlePrereqTaskChange: (e: MouseEvent<HTMLElement>) => void;
 }
 
-export default function PrereqTaskList(
-  props: PrereqTaskListProps
-): JSX.Element {
+/**
+ * Displays the prerequisite tasks as a list of buttons.
+ * @param {PrereqTaskListProps} props PrereqTaskList properties.
+ */
+const PrereqTaskList = (props: PrereqTaskListProps): JSX.Element => {
   const { taskList, tasks, handlePrereqTaskChange } = props;
   return (
     <Grid item>
@@ -27,4 +29,6 @@ export default function PrereqTaskList(
       })}
     </Grid>
   );
-}
+};
+
+export default PrereqTaskList;

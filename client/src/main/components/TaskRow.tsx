@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, MouseEvent } from 'react';
 import {
   WithStyles,
   createStyles,
@@ -37,6 +37,12 @@ function styles(theme: Theme) {
   });
 }
 
+/**
+ * The id used for the prerequisite save button.
+ * Only here so we can change it if needed and wont break the save functionality.
+ */
+const savePrereqId = 'save-prereq-tasks';
+
 export interface TaskRowProps extends WithStyles<typeof styles> {
   task: Task;
   tasks: TaskObjects;
@@ -48,21 +54,7 @@ export interface TaskRowProps extends WithStyles<typeof styles> {
 function TaskRow(props: TaskRowProps): JSX.Element {
   const { task, setTasks, tasks, setTask, deleteTask, classes } = props;
   const [open, setOpen] = useState(false);
-  const [openPrereqTasks, setOpenPrereqTasks] = useState<boolean>(false);
-
-  // /**
-  //  * Handles losing focus on an input element. This will save the task to the
-  //  * applications state.
-  //  */
-  // handleLoseFocus(): void {
-  //   const { setTask, task } = this.props;
-  //   const { title, note, priority } = this.state;
-  //   task.title = title;
-  //   task.note = note;
-  //   task.priority = priority;
-  //   setTask(task);
-  //   saveTask(task);
-  // }
+  const [openPrereqs, setOpenPrereq] = useState<boolean>(false);
 
   function saveTask(): void {
     patchTask(task)
@@ -80,12 +72,6 @@ function TaskRow(props: TaskRowProps): JSX.Element {
       console.error(err);
       });
   }
-
-  const handlePrereqTaskChange = (prereqTasks: string[]): void => {
-    task.prereqTasks = prereqTasks;
-    setTask(task);
-    saveTask();
-  };
 
   /**
    * Adds a new sub task to this task on the server and in state. This also
@@ -137,19 +123,31 @@ function TaskRow(props: TaskRowProps): JSX.Element {
   }
 
   /**
+   * Saves the new prerequisite tasks to the server when the user clicks
+   * the save button.
+   * @param {string[]} prereqTasks The new array of prerequisite tasks to save.
+   */
+  const savePrereqTasks = (prereqTasks: string[]): void => {
+    task.prereqTasks = prereqTasks;
+    setTask(task);
+    saveTask();
+  };
+
+  /**
    * Determines wether the closing element is the save button. If so, saves
    * the Task to the server.
-   * @param e Event args. Used for the closing element id only.
+   * @param {MouseEvent<HTMLElement>} e Event args. Used for the closing element id only.
    */
   const handleOpenPrereqTaskDialog = (
-    e: React.MouseEvent<HTMLElement>,
+    e: MouseEvent<HTMLElement>,
     prereqTasks: string[] | null
   ) => {
-    setOpenPrereqTasks(!openPrereqTasks);
+    setOpenPrereq(!openPrereqs);
 
-    if (e.currentTarget.id === 'save-prereq-tasks') {
+    // save button id check
+    if (e.currentTarget.id === savePrereqId) {
       if (prereqTasks) {
-        handlePrereqTaskChange(prereqTasks);
+        savePrereqTasks(prereqTasks);
       }
     }
   };
@@ -230,9 +228,10 @@ function TaskRow(props: TaskRowProps): JSX.Element {
           />
         </Grid>
         <PrereqTaskDialog
+          savePrereqId={savePrereqId}
           tasks={tasks}
           parentTask={task}
-          openDialog={openPrereqTasks}
+          openDialog={openPrereqs}
           closeDialog={handleOpenPrereqTaskDialog}
         />
         {task.subtasks.length !== 0 ? (

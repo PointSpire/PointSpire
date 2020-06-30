@@ -9,18 +9,22 @@ import { Task, TaskObjects } from '../logic/dbTypes';
 import PrereqTaskManager from './PrereqTaskManager';
 
 export interface PrereqTaskDialogProps {
+  savePrereqId: string;
   tasks: TaskObjects;
   parentTask: Task;
   openDialog: boolean;
-  // prereqTasks: string[];
   closeDialog: (
     e: React.MouseEvent<HTMLElement>,
     prereqTasks: string[] | null
   ) => void;
 }
 
+/**
+ * Handles opening the prerequisite tasks in a dialog box.
+ * @param {PrereqTaskDialogProps} props PrereqTaskDialog properties.
+ */
 const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
-  const { tasks, openDialog, parentTask, closeDialog } = props;
+  const { tasks, openDialog, parentTask, savePrereqId, closeDialog } = props;
 
   return (
     <Dialog
@@ -30,8 +34,8 @@ const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
       <DialogTitle>Prerequisite Tasks Menu</DialogTitle>
       <DialogContent>
         <PrereqTaskManager
+          savePrereqId={savePrereqId}
           parentTask={parentTask}
-          // prereqTasks={prereqTasks}
           allTasks={tasks}
           closeDialog={closeDialog}
         />

@@ -1,4 +1,4 @@
-import React, { useState, MouseEvent } from 'react';
+import React, { useState, MouseEvent, KeyboardEvent } from 'react';
 import {
   Grid,
   Divider,
@@ -34,6 +34,7 @@ function styles(theme: Theme) {
 }
 
 export interface PrereqTaskManagerProps extends WithStyles<typeof styles> {
+  savePrereqId: string;
   parentTask: Task;
   allTasks: TaskObjects;
   closeDialog: (
@@ -48,13 +49,17 @@ export interface PrereqTaskManagerProps extends WithStyles<typeof styles> {
  * up and more efficient.
  */
 const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
-  const { classes, parentTask, allTasks, closeDialog } = props;
+  const { classes, parentTask, allTasks, savePrereqId, closeDialog } = props;
   const [currentPrereqTasks, setCurrentPrereqTasks] = useState<string[]>(
     parentTask.prereqTasks
   );
   const [searchText, setSearchText] = useState<string>('');
   const [searchOn, setSearch] = useState<boolean>(false);
   const [searchResults, setSearchResults] = useState<string[]>([]);
+
+  /**
+   * Selected ids to display from allTasks.
+   */
   const allTaskIds = searchOn ? searchResults : Object.keys(allTasks);
 
   /**
@@ -62,7 +67,7 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
    * prereqTask state.
    * When a task is clicked in the Prereq menu, the selected task is sent
    * to this function.
-   * @param {string} taskId Task selected by the user.
+   * @param {MouseEvent<HTMLElement>} e Task selected by the user.
    */
   const handlePrereqTasksChange = (e: MouseEvent<HTMLElement>): void => {
     const { id: taskId } = e.currentTarget;
@@ -94,7 +99,11 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
     setSearch(true);
   };
 
-  const handleKeyDownEvent = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  /**
+   * triggeres the search if the enter key is pressed.
+   * @param {KeyboardEvent<HTMLInputElement>} e Key press event args.
+   */
+  const handleKeyDownEvent = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleSearchPrereqClick();
     }
@@ -154,15 +163,11 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
           <Typography align="center">No Prerequisite Tasks</Typography>
         )}
       </Grid>
-      <Button
-        id="cancel-prereq-tasks"
-        variant="text"
-        onClick={e => closeDialog(e, null)}
-      >
+      <Button variant="text" onClick={e => closeDialog(e, null)}>
         Cancel
       </Button>
       <Button
-        id="save-prereq-tasks"
+        id={savePrereqId}
         variant="text"
         onClick={e => closeDialog(e, currentPrereqTasks)}
       >
