@@ -25,7 +25,7 @@ import {
 import TaskMenu from './TaskMenu';
 import { DeleteSubTaskFunction } from './ProjectRow';
 import PrereqTaskDialog from './PrereqTaskDialog';
-import { searchByNameDescending } from '../logic/sortingFunctions';
+// import { searchByNameDescending } from '../logic/sortingFunctions';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -102,26 +102,26 @@ type TaskRowState = {
    */
   prereqTasks: string[];
 
-  /**
-   * The results from a user prerequisite search.
-   */
-  searchTaskResults: string[];
+  // /**
+  //  * The results from a user prerequisite search.
+  //  */
+  // searchTaskResults: string[];
 
-  /**
-   * Sets whether the search box is active or not.
-   * Controlls what tasks are displaied in the prereq task
-   * menu.
-   * If false: All tasks are displayed.
-   * If true: Search results only.
-   */
-  isSearch: boolean;
+  // /**
+  //  * Sets whether the search box is active or not.
+  //  * Controlls what tasks are displaied in the prereq task
+  //  * menu.
+  //  * If false: All tasks are displayed.
+  //  * If true: Search results only.
+  //  */
+  // isSearch: boolean;
 };
 
 class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
   constructor(props: TaskRowProps) {
     super(props);
 
-    const { task, tasks } = props;
+    const { task } = props;
 
     this.state = {
       title: task.title,
@@ -130,8 +130,8 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
       priority: task.priority,
       openPrereqTasks: false,
       prereqTasks: task.prereqTasks,
-      searchTaskResults: Object.keys(tasks),
-      isSearch: false,
+      // searchTaskResults: Object.keys(tasks),
+      // isSearch: false,
     };
 
     this.handleNoteChange = this.handleNoteChange.bind(this);
@@ -152,8 +152,8 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
       this
     );
     this.handlePrereqTasksChange = this.handlePrereqTasksChange.bind(this);
-    this.handleSearchPrereqClick = this.handleSearchPrereqClick.bind(this);
-    this.handleSearchClear = this.handleSearchClear.bind(this);
+    // this.handleSearchPrereqClick = this.handleSearchPrereqClick.bind(this);
+    // this.handleSearchClear = this.handleSearchClear.bind(this);
   }
 
   setSubTasksOpen(open: boolean) {
@@ -305,29 +305,29 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
     }
   }
 
-  /**
-   * Gets all tasks, gets the IDs and sends it to the sortingFunctions file.
-   * @param searchTerm The search string entered into the prereq search box.
-   */
-  handleSearchPrereqClick(searchTerm: string): void {
-    const { tasks } = this.props;
-    const allTasks = Object.values(tasks);
-    const filteredTasks = searchByNameDescending(searchTerm, allTasks);
-    this.setState({
-      searchTaskResults: filteredTasks,
-      isSearch: true,
-    });
-  }
+  // /**
+  //  * Gets all tasks, gets the IDs and sends it to the sortingFunctions file.
+  //  * @param searchTerm The search string entered into the prereq search box.
+  //  */
+  // handleSearchPrereqClick(searchTerm: string): void {
+  //   const { tasks } = this.props;
+  //   const allTasks = Object.values(tasks);
+  //   const filteredTasks = searchByNameDescending(searchTerm, allTasks);
+  //   this.setState({
+  //     searchTaskResults: filteredTasks,
+  //     isSearch: true,
+  //   });
+  // }
 
-  /**
-   * Clears the search box, resets the diplayed tasks to ALL and hides the
-   * clear search button.
-   */
-  handleSearchClear() {
-    this.setState({
-      isSearch: false,
-    });
-  }
+  // /**
+  //  * Clears the search box, resets the diplayed tasks to ALL and hides the
+  //  * clear search button.
+  //  */
+  // handleSearchClear() {
+  //   this.setState({
+  //     isSearch: false,
+  //   });
+  // }
 
   /**
    * Determines wether the closing element is the save button. If so, saves
@@ -339,7 +339,7 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
     this.setState(prevState => {
       return {
         openPrereqTasks: !prevState.openPrereqTasks,
-        isSearch: false,
+        // isSearch: false,
       };
     });
 
@@ -408,8 +408,8 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
       priority,
       openPrereqTasks,
       prereqTasks,
-      searchTaskResults,
-      isSearch,
+      // searchTaskResults,
+      // isSearch,
     } = this.state;
     const {
       handleTitleChange,
@@ -423,8 +423,8 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
       handlePriorityChange,
       handleStartDateChange,
       handleOpenPrereqTaskDialog,
-      handleSearchPrereqClick,
-      handleSearchClear,
+      // handleSearchPrereqClick,
+      // handleSearchClear,
       handlePrereqTasksChange,
     } = this;
     return (
@@ -491,12 +491,12 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
             parentTask={task}
             openDialog={openPrereqTasks}
             prereqTasks={prereqTasks}
-            isSearch={isSearch}
+            // isSearch={isSearch}
             closeDialog={handleOpenPrereqTaskDialog}
             handlePrereqTaskChange={handlePrereqTasksChange}
-            handleSearchClick={handleSearchPrereqClick}
-            handleSearchClear={handleSearchClear}
-            searchTaskResults={searchTaskResults}
+            // handleSearchClick={handleSearchPrereqClick}
+            // handleSearchClear={handleSearchClear}
+            // searchTaskResults={searchTaskResults}
           />
           {generateSubTaskCollapse()}
         </Grid>
@@ -515,6 +515,6 @@ export type OpenPrereqTaskFunction = typeof TaskRow.prototype.handleOpenPrereqTa
 
 export type HandlePrereqTaskChangeFunction = typeof TaskRow.prototype.handlePrereqTasksChange;
 
-export type HandleSearchClickFunction = typeof TaskRow.prototype.handleSearchPrereqClick;
+// export type HandleSearchClickFunction = typeof TaskRow.prototype.handleSearchPrereqClick;
 
-export type HandleSearchClearFunction = typeof TaskRow.prototype.handleSearchClear;
+// export type HandleSearchClearFunction = typeof TaskRow.prototype.handleSearchClear;

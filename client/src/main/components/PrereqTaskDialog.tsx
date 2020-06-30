@@ -14,12 +14,12 @@ export interface PrereqTaskDialogProps {
   parentTask: Task;
   openDialog: boolean;
   prereqTasks: string[];
-  searchTaskResults: string[];
-  isSearch: boolean;
+  // searchTaskResults: string[];
+  // isSearch: boolean;
   closeDialog: (e: React.MouseEvent<HTMLElement>) => void;
-  handleSearchClick: (searchTerm: string) => void;
+  // handleSearchClick: (searchTerm: string) => void;
   handlePrereqTaskChange: (taskId: string) => void;
-  handleSearchClear: () => void;
+  // handleSearchClear: () => void;
 }
 
 const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
@@ -28,12 +28,12 @@ const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
     openDialog,
     parentTask,
     prereqTasks,
-    searchTaskResults,
-    isSearch,
+    // searchTaskResults,
+    // isSearch,
     closeDialog,
-    handleSearchClick,
+    // handleSearchClick,
     handlePrereqTaskChange,
-    handleSearchClear,
+    // handleSearchClear,
   } = props;
 
   return (
@@ -44,11 +44,11 @@ const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
           parentTask={parentTask}
           prereqTasks={prereqTasks}
           allTasks={tasks}
-          searchTaskResults={searchTaskResults}
-          isSearch={isSearch}
-          handleSearchClick={handleSearchClick}
+          // searchTaskResults={searchTaskResults}
+          // isSearch={isSearch}
+          // handleSearchClick={handleSearchClick}
           handlePrereqTaskChange={handlePrereqTaskChange}
-          handleSearchClear={handleSearchClear}
+          // handleSearchClear={handleSearchClear}
         />
       </DialogContent>
       <DialogActions>

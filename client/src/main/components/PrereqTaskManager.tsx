@@ -14,6 +14,7 @@ import {
 import { Search as SearchIcon, Clear as ClearIcon } from '@material-ui/icons';
 import { Task, TaskObjects } from '../logic/dbTypes';
 import PrereqTaskList from './PrereqTaskList';
+import { searchByNameDescending } from '../logic/sortingFunctions';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -35,11 +36,11 @@ export interface PrereqTaskManagerProps extends WithStyles<typeof styles> {
   parentTask: Task;
   allTasks: TaskObjects;
   prereqTasks: string[];
-  searchTaskResults: string[];
-  isSearch: boolean;
+  // searchTaskResults: string[];
+  // isSearch: boolean;
   handlePrereqTaskChange: (taskId: string) => void;
-  handleSearchClick: (searchTerm: string) => void;
-  handleSearchClear: () => void;
+  // handleSearchClick: (searchTerm: string) => void;
+  // handleSearchClear: () => void;
 }
 
 /**
@@ -53,18 +54,42 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
     parentTask,
     allTasks,
     prereqTasks,
-    searchTaskResults,
-    isSearch,
+    // searchTaskResults,
+    // isSearch,
     handlePrereqTaskChange,
-    handleSearchClick,
-    handleSearchClear,
+    // handleSearchClick,
+    // handleSearchClear,
   } = props;
   const [searchText, setSearchText] = useState<string>('');
-  const allTaskIds = isSearch ? searchTaskResults : Object.keys(allTasks);
+  const [searchOn, setSearch] = useState<boolean>(false);
+  const [searchResults, setSearchResults] = useState<string[]>([]);
+  const allTaskIds = searchOn ? searchResults : Object.keys(allTasks);
+
+  /**
+   * Clears the search box, resets the diplayed tasks to ALL and hides the
+   * clear search button.
+   */
+  const handleSearchClear = () => {
+    setSearch(false);
+  };
+
+  /**
+   * Gets all tasks, gets the IDs and sends it to the sortingFunctions file.
+   * @param searchTerm The search string entered into the prereq search box.
+   */
+  const handleSearchPrereqClick = (): void => {
+    const allTaskValues = Object.values(allTasks);
+    setSearchResults(searchByNameDescending(searchText, allTaskValues));
+    setSearch(true);
+    // this.setState({
+    //   searchTaskResults: filteredTasks,
+    //   isSearch: true,
+    // });
+  };
 
   const handleKeyDownEvent = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      handleSearchClick(searchText);
+      handleSearchPrereqClick();
     }
   };
 
@@ -83,7 +108,7 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
                   setSearchText(e.target.value);
                 }}
               />
-              {isSearch || searchText.length > 0 ? (
+              {searchOn || searchText.length > 0 ? (
                 <IconButton
                   onClick={() => {
                     setSearchText('');
@@ -95,7 +120,7 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
               ) : (
                 ''
               )}
-              <IconButton onClick={() => handleSearchClick(searchText)}>
+              <IconButton onClick={handleSearchPrereqClick}>
                 <SearchIcon />
               </IconButton>
             </Paper>
