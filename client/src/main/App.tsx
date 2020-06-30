@@ -151,7 +151,8 @@ class App extends React.Component<AppProps, AppState> {
   }
 
   /**
-   * Closes the dialog / toast at the bottom of the screen.
+   * Updates the given project in the app's projects state.
+   * @param {Project} updatedProject the updated project
    */
   setProject(updatedProject: Project): void {
     const { projects } = this.state;

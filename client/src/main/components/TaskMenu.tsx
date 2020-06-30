@@ -1,11 +1,10 @@
 import React, { MouseEvent } from 'react';
 import { IconButton, Menu, MenuItem } from '@material-ui/core';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
-import { DeleteTaskFunction, AddSubTaskFunction } from './TaskRow';
 
 export type TaskMenuProps = {
-  deleteTask: DeleteTaskFunction;
-  addSubTask: AddSubTaskFunction;
+  deleteTask: () => void;
+  addSubTask: (title: string) => Promise<void>;
   openPrereqTaskDialog: (
     e: MouseEvent<HTMLElement>,
     prereqTasks: string[] | null
