@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, MouseEvent } from 'react';
 import {
   Grid,
   Divider,
@@ -10,6 +10,7 @@ import {
   withStyles,
   Theme,
   WithStyles,
+  Button,
 } from '@material-ui/core';
 import { Search as SearchIcon, Clear as ClearIcon } from '@material-ui/icons';
 import { Task, TaskObjects } from '../logic/dbTypes';
@@ -35,12 +36,10 @@ function styles(theme: Theme) {
 export interface PrereqTaskManagerProps extends WithStyles<typeof styles> {
   parentTask: Task;
   allTasks: TaskObjects;
-  prereqTasks: string[];
-  // searchTaskResults: string[];
-  // isSearch: boolean;
-  handlePrereqTaskChange: (taskId: string) => void;
-  // handleSearchClick: (searchTerm: string) => void;
-  // handleSearchClear: () => void;
+  closeDialog: (
+    e: MouseEvent<HTMLElement>,
+    prereqTasks: string[] | null
+  ) => void;
 }
 
 /**
@@ -49,21 +48,33 @@ export interface PrereqTaskManagerProps extends WithStyles<typeof styles> {
  * up and more efficient.
  */
 const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
-  const {
-    classes,
-    parentTask,
-    allTasks,
-    prereqTasks,
-    // searchTaskResults,
-    // isSearch,
-    handlePrereqTaskChange,
-    // handleSearchClick,
-    // handleSearchClear,
-  } = props;
+  const { classes, parentTask, allTasks, closeDialog } = props;
+  const [currentPrereqTasks, setCurrentPrereqTasks] = useState<string[]>(
+    parentTask.prereqTasks
+  );
   const [searchText, setSearchText] = useState<string>('');
   const [searchOn, setSearch] = useState<boolean>(false);
   const [searchResults, setSearchResults] = useState<string[]>([]);
   const allTaskIds = searchOn ? searchResults : Object.keys(allTasks);
+
+  /**
+   * finds the task selected and either removes or adds it to the
+   * prereqTask state.
+   * When a task is clicked in the Prereq menu, the selected task is sent
+   * to this function.
+   * @param {string} taskId Task selected by the user.
+   */
+  const handlePrereqTasksChange = (e: MouseEvent<HTMLElement>): void => {
+    const { id: taskId } = e.currentTarget;
+    if (currentPrereqTasks) {
+      if (currentPrereqTasks.includes(taskId)) {
+        setCurrentPrereqTasks(currentPrereqTasks.filter(id => id !== taskId));
+      } else {
+        const newPrereqs = [...currentPrereqTasks, taskId];
+        setCurrentPrereqTasks(newPrereqs);
+      }
+    }
+  };
 
   /**
    * Clears the search box, resets the diplayed tasks to ALL and hides the
@@ -81,10 +92,6 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
     const allTaskValues = Object.values(allTasks);
     setSearchResults(searchByNameDescending(searchText, allTaskValues));
     setSearch(true);
-    // this.setState({
-    //   searchTaskResults: filteredTasks,
-    //   isSearch: true,
-    // });
   };
 
   const handleKeyDownEvent = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -130,23 +137,37 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
           <PrereqTaskList
             taskList={allTaskIds}
             tasks={allTasks}
-            handlePrereqTaskChange={handlePrereqTaskChange}
+            handlePrereqTaskChange={handlePrereqTasksChange}
           />
         ) : (
           <Typography>You have nothing to do! Wow.</Typography>
         )}
         <Divider orientation="horizontal" />
         <Typography align="center">Current Prerequisite Tasks</Typography>
-        {prereqTasks && prereqTasks.length > 0 ? (
+        {currentPrereqTasks && currentPrereqTasks.length > 0 ? (
           <PrereqTaskList
-            taskList={prereqTasks}
+            taskList={currentPrereqTasks}
             tasks={allTasks}
-            handlePrereqTaskChange={handlePrereqTaskChange}
+            handlePrereqTaskChange={handlePrereqTasksChange}
           />
         ) : (
           <Typography align="center">No Prerequisite Tasks</Typography>
         )}
       </Grid>
+      <Button
+        id="cancel-prereq-tasks"
+        variant="text"
+        onClick={e => closeDialog(e, null)}
+      >
+        Cancel
+      </Button>
+      <Button
+        id="save-prereq-tasks"
+        variant="text"
+        onClick={e => closeDialog(e, currentPrereqTasks)}
+      >
+        Save
+      </Button>
     </div>
   );
 };

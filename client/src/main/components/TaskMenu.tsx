@@ -1,16 +1,15 @@
-import React from 'react';
+import React, { MouseEvent } from 'react';
 import { IconButton, Menu, MenuItem } from '@material-ui/core';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
-import {
-  DeleteTaskFunction,
-  AddSubTaskFunction,
-  OpenPrereqTaskFunction,
-} from './TaskRow';
+import { DeleteTaskFunction, AddSubTaskFunction } from './TaskRow';
 
 export type TaskMenuProps = {
   deleteTask: DeleteTaskFunction;
   addSubTask: AddSubTaskFunction;
-  openPrereqTaskDialog: OpenPrereqTaskFunction;
+  openPrereqTaskDialog: (
+    e: MouseEvent<HTMLElement>,
+    prereqTasks: string[] | null
+  ) => void;
 };
 
 export interface TaskMenuState {
@@ -78,7 +77,9 @@ class TaskMenu extends React.Component<TaskMenuProps, TaskMenuState> {
         >
           <MenuItem onClick={handleAddSubTask}>Add SubTask</MenuItem>
           <MenuItem onClick={handleDelete}>Delete</MenuItem>
-          <MenuItem onClick={openPrereqTaskDialog}>Prerequisites</MenuItem>
+          <MenuItem onClick={e => openPrereqTaskDialog(e, null)}>
+            Prerequisites
+          </MenuItem>
         </Menu>
       </div>
     );

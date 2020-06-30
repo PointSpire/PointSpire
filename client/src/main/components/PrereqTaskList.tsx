@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { MouseEvent } from 'react';
 import { Grid, List, Paper, ListItem, Typography } from '@material-ui/core';
 import { TaskObjects } from '../logic/dbTypes';
 
 export interface PrereqTaskListProps {
   taskList: string[];
   tasks: TaskObjects;
-  handlePrereqTaskChange: (taskId: string) => void;
+  handlePrereqTaskChange: (e: MouseEvent<HTMLElement>) => void;
 }
 
 export default function PrereqTaskList(
@@ -18,7 +18,7 @@ export default function PrereqTaskList(
         return (
           <List dense component="div" role="list" key={`prereq-task-list-${t}`}>
             <Paper>
-              <ListItem button onClick={() => handlePrereqTaskChange(t)}>
+              <ListItem id={t} button onClick={handlePrereqTaskChange}>
                 <Typography>{tasks[t]?.title}</Typography>
               </ListItem>
             </Paper>
