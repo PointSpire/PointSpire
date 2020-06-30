@@ -6,8 +6,6 @@ import {
   IconButton,
   InputBase,
   Paper,
-  List,
-  ListItem,
   createStyles,
   withStyles,
   Theme,
@@ -15,6 +13,7 @@ import {
 } from '@material-ui/core';
 import { Search as SearchIcon, Clear as ClearIcon } from '@material-ui/icons';
 import { Task, TaskObjects } from '../logic/dbTypes';
+import PrereqTaskList from './PrereqTaskList';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -69,39 +68,6 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
     }
   };
 
-  /**
-   * Renderes the list of tasks given.
-   * @param tasklist Array of task IDs
-   * @param {boolean} isMain True: allTaskIds, False: prereqTasks
-   */
-  const generateTaskList = (tasklist: string[], isMain: boolean) => {
-    return tasklist && tasklist.length > 0 ? (
-      tasklist.map(t => {
-        return (
-          <Grid item key={`all-task-${t}`}>
-            <List dense component="div" role="list">
-              <Paper className={classes?.paperList}>
-                {isMain ? (
-                  <ListItem button onClick={() => handlePrereqTaskChange(t)}>
-                    <Typography>{allTasks[t]?.title}</Typography>
-                  </ListItem>
-                ) : (
-                  <ListItem button onClick={() => handlePrereqTaskChange(t)}>
-                    <Typography>{allTasks[t]?.title}</Typography>
-                  </ListItem>
-                )}
-              </Paper>
-            </List>
-          </Grid>
-        );
-      })
-    ) : (
-      <Grid item>
-        <Typography>No Tasks found.</Typography>
-      </Grid>
-    );
-  };
-
   return (
     <div className={classes.root}>
       <Grid container direction="column">
@@ -136,14 +102,22 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
           </Paper>
         </Grid>
         {allTasks ? (
-          generateTaskList(allTaskIds, true)
+          <PrereqTaskList
+            taskList={allTaskIds}
+            tasks={allTasks}
+            handlePrereqTaskChange={handlePrereqTaskChange}
+          />
         ) : (
           <Typography>You have nothing to do! Wow.</Typography>
         )}
         <Divider orientation="horizontal" />
         <Typography align="center">Current Prerequisite Tasks</Typography>
         {prereqTasks && prereqTasks.length > 0 ? (
-          generateTaskList(prereqTasks, false)
+          <PrereqTaskList
+            taskList={prereqTasks}
+            tasks={allTasks}
+            handlePrereqTaskChange={handlePrereqTaskChange}
+          />
         ) : (
           <Typography align="center">No Prerequisite Tasks</Typography>
         )}

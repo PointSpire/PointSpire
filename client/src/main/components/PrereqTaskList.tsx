@@ -14,26 +14,17 @@ export default function PrereqTaskList(
   const { taskList, tasks, handlePrereqTaskChange } = props;
   return (
     <Grid item>
-      {taskList && taskList.length > 0 ? (
-        taskList.map(t => {
-          return (
-            <List
-              dense
-              component="div"
-              role="list"
-              key={`prereq-task-list-${t}`}
-            >
-              <Paper>
-                <ListItem button onClick={() => handlePrereqTaskChange(t)}>
-                  <Typography>{tasks[t]?.title}</Typography>
-                </ListItem>
-              </Paper>
-            </List>
-          );
-        })
-      ) : (
-        <Typography>No Tasks found.</Typography>
-      )}
+      {taskList.map(t => {
+        return (
+          <List dense component="div" role="list" key={`prereq-task-list-${t}`}>
+            <Paper>
+              <ListItem button onClick={() => handlePrereqTaskChange(t)}>
+                <Typography>{tasks[t]?.title}</Typography>
+              </ListItem>
+            </Paper>
+          </List>
+        );
+      })}
     </Grid>
   );
 }
