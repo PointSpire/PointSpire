@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, List, ListItem } from '@material-ui/core/';
+import { Button } from '@material-ui/core/';
 import {
   Theme,
   createStyles,
@@ -28,9 +28,8 @@ ejecting from create-react-app */
 function styles(theme: Theme) {
   return createStyles({
     root: {
-      width: '100%',
-      backgroundColor: theme.palette.background.paper,
       alignItems: 'center',
+      flexGrow: 1,
     },
     projectItem: {
       paddingLeft: theme.spacing(4),
@@ -39,6 +38,13 @@ function styles(theme: Theme) {
     },
     label: {
       alignSelf: 'center',
+      margin: theme.spacing(1),
+    },
+    sortInput: {
+      display: 'flex',
+      marginTop: theme.spacing(1),
+      marginBottom: theme.spacing(1),
+      marginLeft: theme.spacing(3),
     },
   });
 }
@@ -56,6 +62,12 @@ export interface ProjectTableProps extends WithStyles<typeof styles> {
 
 export type ProjectTableState = unknown;
 
+/**
+ * Represents the complete table of projects in the UI, as well as modification
+ * components such as sorting and project addition buttons.
+ *
+ * @param {ProjectTableProps} props the props
+ */
 function ProjectTable(props: ProjectTableProps) {
   const {
     projects,
@@ -117,36 +129,33 @@ function ProjectTable(props: ProjectTableProps) {
   }
 
   return (
-    <List>
-      <ListItem>
-        <SortInput sortBy={sortBy} setSortBy={setSortBy} />
-      </ListItem>
-      {Object.values(projects)
-        .sort(sortingFunctions[sortBy])
-        .map(projectDoc => {
-          return (
-            <ProjectRow
-              deleteThisProject={deleteProject(projectDoc)}
-              key={projectDoc._id}
-              setTasks={setTasks}
-              setProject={setProject}
-              project={projectDoc}
-              tasks={tasks}
-              setTask={setTask}
-            />
-          );
-        })}
-      <ListItem>
-        <Button
-          className={classes.label}
-          variant="outlined"
-          fullWidth
-          onClick={addProject}
-        >
-          Add Project
-        </Button>
-      </ListItem>
-    </List>
+    <>
+      <SortInput
+        className={classes.sortInput}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+      />
+      <div className={classes.root}>
+        {Object.values(projects)
+          .sort(sortingFunctions[sortBy])
+          .map(projectDoc => {
+            return (
+              <ProjectRow
+                deleteThisProject={deleteProject(projectDoc)}
+                key={projectDoc._id}
+                setTasks={setTasks}
+                setProject={setProject}
+                project={projectDoc}
+                tasks={tasks}
+                setTask={setTask}
+              />
+            );
+          })}
+      </div>
+      <Button className={classes.label} variant="outlined" onClick={addProject}>
+        Add Project
+      </Button>
+    </>
   );
 }
 

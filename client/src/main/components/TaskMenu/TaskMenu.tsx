@@ -10,6 +10,12 @@ export type TaskMenuProps = {
   setSortBy: (sortBy: string) => void;
 };
 
+/**
+ * The menu for a task OR a project. This is a generalized component even though
+ * it is called `TaskMenu`.
+ *
+ * @param {TaskMenuProps} props the props
+ */
 function TaskMenu(props: TaskMenuProps): JSX.Element {
   const { deleteTask, addSubTask, sortBy, setSortBy } = props;
 

@@ -12,21 +12,19 @@ export type TaskExpanderButtonProps = {
 
 function TaskExpanderButton(props: TaskExpanderButtonProps): JSX.Element {
   const { parent, setOpen, open } = props;
-  if (parent.subtasks.length !== 0) {
-    return (
-      <Grid item>
-        <IconButton
-          aria-label="subtask-expander"
-          onClick={() => {
-            setOpen(!open);
-          }}
-        >
-          {open ? <UpIcon /> : <DownIcon />}
-        </IconButton>
-      </Grid>
-    );
-  }
-  return <></>;
+  return (
+    <Grid item>
+      <IconButton
+        disabled={parent.subtasks.length === 0}
+        aria-label="subtask-expander"
+        onClick={() => {
+          setOpen(!open);
+        }}
+      >
+        {open ? <UpIcon /> : <DownIcon />}
+      </IconButton>
+    </Grid>
+  );
 }
 
 export default TaskExpanderButton;

@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
 import { TextField } from '@material-ui/core';
-import { resetTimer } from '../logic/savingTimer';
+import { resetTimer } from '../../logic/savingTimer';
 
 export type PriorityInputProps = {
   savePriority: (value: number) => void;
   priority: number;
 };
 
+/**
+ * Represents the textual input for a priority. This handles validation on the
+ * input.
+ *
+ * @param {PriorityInputProps} props the props
+ */
 function PriorityInput(props: PriorityInputProps): JSX.Element {
   const { priority: initialPriority, savePriority } = props;
   let priority: string;
@@ -38,20 +44,33 @@ function PriorityInput(props: PriorityInputProps): JSX.Element {
     resetTimer();
   }
 
-  function handleLoseFocus(): void {
+  function saveIfNoError(): void {
     if (!error) {
       savePriority(Number.parseInt(input, 10));
     }
   }
 
+  function handleLoseFocus(): void {
+    saveIfNoError();
+  }
+
+  function handleKeyUp(event: React.KeyboardEvent<HTMLDivElement>): void {
+    if (event.key === 'Enter') {
+      saveIfNoError();
+    }
+  }
+
   return (
     <TextField
+      autoFocus
+      size="small"
       label="Priority"
       error={error}
       helperText={helperText}
       value={input}
       onChange={handleChange}
       onBlur={handleLoseFocus}
+      onKeyUp={handleKeyUp}
     />
   );
 }
