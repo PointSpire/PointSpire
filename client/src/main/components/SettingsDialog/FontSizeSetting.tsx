@@ -4,12 +4,25 @@ import {
   InputLabel,
   FormControl,
   FormHelperText,
+  Typography,
+  createStyles,
+  withStyles,
+  WithStyles,
 } from '@material-ui/core';
 
-export type FontSizeSettingProps = {
+function styles() {
+  return createStyles({
+    root: {
+      display: 'flex',
+      flexDirection: 'column',
+    },
+  });
+}
+
+export interface FontSizeSettingProps extends WithStyles<typeof styles> {
   setFontSize: (fontSize: number) => void;
   fontSize: number;
-};
+}
 
 /**
  * Represents the textual input for a priority. This handles validation on the
@@ -18,7 +31,7 @@ export type FontSizeSettingProps = {
  * @param {FontSizeSettingProps} props the props
  */
 function FontSizeSetting(props: FontSizeSettingProps): JSX.Element {
-  const { setFontSize, fontSize } = props;
+  const { setFontSize, fontSize, classes } = props;
 
   const [input, setInput] = useState<string>(fontSize.toString());
   const [error, setError] = useState(false);
@@ -49,18 +62,21 @@ function FontSizeSetting(props: FontSizeSettingProps): JSX.Element {
   }
 
   return (
-    <FormControl error={error} size="small">
-      <InputLabel htmlFor="font-size-input">Font Size</InputLabel>
-      <Input
-        id="font-size-input"
-        aria-describedby="font-size-helper-text"
-        value={input}
-        onChange={handleChange}
-        onBlur={handleLoseFocus}
-      />
-      <FormHelperText id="font-size-helper-text">{helperText}</FormHelperText>
-    </FormControl>
+    <div className={classes.root}>
+      <Typography variant="body1">App Font Size</Typography>
+      <FormControl error={error} size="small">
+        <InputLabel htmlFor="font-size-input">Font Size</InputLabel>
+        <Input
+          id="font-size-input"
+          aria-describedby="font-size-helper-text"
+          value={input}
+          onChange={handleChange}
+          onBlur={handleLoseFocus}
+        />
+        <FormHelperText id="font-size-helper-text">{helperText}</FormHelperText>
+      </FormControl>
+    </div>
   );
 }
 
-export default FontSizeSetting;
+export default withStyles(styles, { withTheme: false })(FontSizeSetting);

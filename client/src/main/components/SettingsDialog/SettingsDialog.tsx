@@ -10,6 +10,8 @@ import {
   Checkbox,
   FormControlLabel,
   createMuiTheme,
+  List,
+  ListItem,
 } from '@material-ui/core';
 import { Theme } from '@material-ui/core/styles';
 import {
@@ -20,6 +22,7 @@ import {
 import { UserSettings } from '../../logic/dbTypes';
 import FontSizeSetting from './FontSizeSetting';
 import baseThemeOptions from '../../AppTheme';
+import { setCookie, ClientCookies } from '../../logic/clientCookies';
 
 type SettingsDialogProps = {
   open: boolean;
@@ -77,7 +80,7 @@ function SettingsDialog(props: SettingsDialogProps): JSX.Element {
 
   /**
    * Sets the font size for the application as long as the provided number is
-   * a positive integer.
+   * a positive integer. This also sets a cookie for the fontSize.
    *
    * @param {number} fontSize the new font size
    * @returns {boolean} true if successful and false if the font size value
@@ -85,6 +88,7 @@ function SettingsDialog(props: SettingsDialogProps): JSX.Element {
    */
   function setFontSize(fontSize: number): boolean {
     if (Number.isInteger(fontSize) && fontSize > 0) {
+      setCookie(ClientCookies.fontSize, fontSize.toString());
       const newTheme = Object.assign(baseThemeOptions, {
         typography: { fontSize },
       });
@@ -125,29 +129,36 @@ function SettingsDialog(props: SettingsDialogProps): JSX.Element {
         <Typography variant="h5" component="span">
           Display
         </Typography>
-        <FormGroup row={false}>
-          <FormControlLabel
-            label="Yellow and Green Tasks"
-            control={
-              <Checkbox
-                checked={settings.yellowGreenTasks}
-                color="primary"
-                name="yellowGreenTasks"
-                onChange={handleCheckboxChange}
+        <List>
+          <ListItem>
+            <FormGroup row={false}>
+              <FormControlLabel
+                label="Yellow and Green Tasks"
+                control={
+                  <Checkbox
+                    checked={settings.yellowGreenTasks}
+                    color="primary"
+                    name="yellowGreenTasks"
+                    onChange={handleCheckboxChange}
+                  />
+                }
               />
-            }
-          />
-          <Typography variant="caption" display="block" component="span">
-            Enabling this option makes it so tasks that have a pre-requisite are
-            yellow and tasks that can be worked on are green. If this option is
-            disabled, then tasks that have a pre-requisite are grayed out, and
-            tasks that can be worked on have a normal white background.
-          </Typography>
-          <FontSizeSetting
-            fontSize={appTheme.typography.fontSize}
-            setFontSize={setFontSize}
-          />
-        </FormGroup>
+              <Typography variant="caption" display="block" component="span">
+                Enabling this option makes it so tasks that have a pre-requisite
+                are yellow and tasks that can be worked on are green. If this
+                option is disabled, then tasks that have a pre-requisite are
+                grayed out, and tasks that can be worked on have a normal white
+                background.
+              </Typography>
+            </FormGroup>
+          </ListItem>
+          <ListItem>
+            <FontSizeSetting
+              fontSize={appTheme.typography.fontSize}
+              setFontSize={setFontSize}
+            />
+          </ListItem>
+        </List>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleSave} color="primary">
