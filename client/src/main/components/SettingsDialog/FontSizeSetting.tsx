@@ -25,7 +25,7 @@ export interface FontSizeSettingProps extends WithStyles<typeof styles> {
 }
 
 /**
- * Represents the textual input for a priority. This handles validation on the
+ * Represents the setting for the font size. This handles validation on the
  * input.
  *
  * @param {FontSizeSettingProps} props the props
