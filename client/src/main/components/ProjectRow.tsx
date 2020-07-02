@@ -7,10 +7,8 @@ import {
   Grid,
   Card,
   Collapse,
-  IconButton,
-  Tooltip,
 } from '@material-ui/core';
-import NotesIcon from '@material-ui/icons/Notes';
+
 import { Project, TaskObjects, Task } from '../logic/dbTypes';
 import TaskRow from './TaskRow';
 import { SetTaskFunction, SetTasksFunction, SetProjectFunction } from '../App';
@@ -23,6 +21,7 @@ import TaskMenu from './TaskMenu/TaskMenu';
 import sortingFunctions from '../logic/sortingFunctions';
 import PriorityButton from './PriorityButton/PriorityButton';
 import TaskExpanderButton from './TaskExpanderButton';
+import NoteButton from './NoteButton';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -186,16 +185,11 @@ const ProjectRow = (props: ProjectRowProps) => {
               justify="flex-start"
             >
               <Grid item>
-                <Tooltip title={noteOpen ? 'Close Note' : 'Open Note'}>
-                  <IconButton
-                    size="small"
-                    onClick={() => {
-                      setNoteOpen(!noteOpen);
-                    }}
-                  >
-                    <NotesIcon />
-                  </IconButton>
-                </Tooltip>
+                <NoteButton
+                  noteIsEmpty={!project.note || project.note.length === 0}
+                  setNoteOpen={setNoteOpen}
+                  noteOpen={noteOpen}
+                />
               </Grid>
               <Grid item className={classes.root} key={`${project._id}.title`}>
                 <SimpleTextInput
