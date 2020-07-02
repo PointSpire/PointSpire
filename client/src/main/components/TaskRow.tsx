@@ -7,7 +7,10 @@ import {
   Grid,
   Card,
   Collapse,
+  Tooltip,
+  IconButton,
 } from '@material-ui/core';
+import NotesIcon from '@material-ui/icons/Notes';
 import { Task, TaskObjects } from '../logic/dbTypes';
 import { SetTaskFunction, SetTasksFunction } from '../App';
 import {
@@ -66,6 +69,7 @@ function TaskRow(props: TaskRowProps): JSX.Element {
   const { task, setTasks, tasks, setTask, deleteTask, classes } = props;
   const [sortBy, setSortBy] = useState('Priority');
   const [subTasksOpen, setSubTasksOpen] = useState(false);
+  const [noteOpen, setNoteOpen] = useState(false);
 
   /**
    * Saves this task to the server and logs to the console what happened.
@@ -183,6 +187,18 @@ function TaskRow(props: TaskRowProps): JSX.Element {
               alignItems="center"
               justify="flex-start"
             >
+              <Grid item>
+                <Tooltip title={noteOpen ? 'Close Note' : 'Open Note'}>
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      setNoteOpen(!noteOpen);
+                    }}
+                  >
+                    <NotesIcon />
+                  </IconButton>
+                </Tooltip>
+              </Grid>
               <Grid item className={classes.root}>
                 <SimpleTextInput
                   value={task.title}
@@ -220,12 +236,14 @@ function TaskRow(props: TaskRowProps): JSX.Element {
                 />
               </Grid>
             </Grid>
-            <Grid item className={classes.root}>
-              <NoteInput
-                saveNote={saveText('note')}
-                note={task.note}
-                label="Task Note"
-              />
+            <Grid item className={classes.flexGrow}>
+              <Collapse in={noteOpen} timeout="auto">
+                <NoteInput
+                  saveNote={saveText('note')}
+                  note={task.note}
+                  label="Task Note"
+                />
+              </Collapse>
             </Grid>
           </Grid>
         </Card>

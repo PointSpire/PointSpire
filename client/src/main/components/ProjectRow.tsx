@@ -7,7 +7,10 @@ import {
   Grid,
   Card,
   Collapse,
+  IconButton,
+  Tooltip,
 } from '@material-ui/core';
+import NotesIcon from '@material-ui/icons/Notes';
 import { Project, TaskObjects, Task } from '../logic/dbTypes';
 import TaskRow from './TaskRow';
 import { SetTaskFunction, SetTasksFunction, SetProjectFunction } from '../App';
@@ -72,6 +75,7 @@ const ProjectRow = (props: ProjectRowProps) => {
 
   const [sortBy, setSortBy] = useState('Priority');
   const [subTasksOpen, setSubTasksOpen] = useState(false);
+  const [noteOpen, setNoteOpen] = useState(false);
 
   /**
    * Saves the project in state to the server and logs to the console what
@@ -181,6 +185,18 @@ const ProjectRow = (props: ProjectRowProps) => {
               alignItems="center"
               justify="flex-start"
             >
+              <Grid item>
+                <Tooltip title={noteOpen ? 'Close Note' : 'Open Note'}>
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      setNoteOpen(!noteOpen);
+                    }}
+                  >
+                    <NotesIcon />
+                  </IconButton>
+                </Tooltip>
+              </Grid>
               <Grid item className={classes.root} key={`${project._id}.title`}>
                 <SimpleTextInput
                   label="Project Title"
@@ -220,11 +236,13 @@ const ProjectRow = (props: ProjectRowProps) => {
             </Grid>
 
             <Grid item className={classes.flexGrow} key={`${project._id}.note`}>
-              <NoteInput
-                saveNote={saveText('note')}
-                note={project.note}
-                label="Project Note"
-              />
+              <Collapse in={noteOpen} timeout="auto">
+                <NoteInput
+                  saveNote={saveText('note')}
+                  note={project.note}
+                  label="Project Note"
+                />
+              </Collapse>
             </Grid>
           </Grid>
         </Card>
