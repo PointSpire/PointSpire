@@ -141,6 +141,7 @@ function ProjectTable(props: ProjectTableProps) {
           .map(projectDoc => {
             return (
               <ProjectRow
+                settings={user.settings}
                 deleteThisProject={deleteProject(projectDoc)}
                 key={projectDoc._id}
                 setTasks={setTasks}

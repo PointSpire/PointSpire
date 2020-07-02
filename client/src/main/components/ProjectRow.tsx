@@ -10,7 +10,7 @@ import {
   Checkbox,
 } from '@material-ui/core';
 
-import { Project, TaskObjects, Task } from '../logic/dbTypes';
+import { Project, TaskObjects, Task, UserSettings } from '../logic/dbTypes';
 import TaskRow from './TaskRow';
 import { SetTaskFunction, SetTasksFunction, SetProjectFunction } from '../App';
 import { postNewTask, deleteTask, patchProject } from '../logic/fetchMethods';
@@ -57,6 +57,7 @@ export interface ProjectRowProps extends WithStyles<typeof styles> {
   setTask: SetTaskFunction;
   setTasks: SetTasksFunction;
   setProject: SetProjectFunction;
+  settings: UserSettings;
   deleteThisProject: () => Promise<void>;
 }
 
@@ -74,11 +75,12 @@ const ProjectRow = (props: ProjectRowProps) => {
     setTasks,
     setProject,
     deleteThisProject,
+    settings,
   } = props;
 
   const [sortBy, setSortBy] = useState('Priority');
   const [subTasksOpen, setSubTasksOpen] = useState(false);
-  const [noteOpen, setNoteOpen] = useState(false);
+  const [noteOpen, setNoteOpen] = useState(settings.notesExpanded);
 
   /**
    * Saves the project in state to the server and logs to the console what

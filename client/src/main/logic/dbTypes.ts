@@ -22,6 +22,7 @@ interface IndexableProperties {
 
 export type UserSettings = {
   yellowGreenTasks: boolean;
+  notesExpanded: boolean;
 
   /**
    * This is defined so that extra settings can be added onto the settings

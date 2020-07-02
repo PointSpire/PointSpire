@@ -102,7 +102,7 @@ function SettingsDialog(props: SettingsDialogProps): JSX.Element {
 
   /**
    * Handles changing of a checkbox by making the toggling the associated
-   * setting for the user.
+   * setting for the user if that setting is held on the server.
    *
    * @param {React.ChangeEvent<HTMLInputElement>} event the event passed in by
    * the element this handler is attached to
@@ -139,6 +139,28 @@ function SettingsDialog(props: SettingsDialogProps): JSX.Element {
                     checked={settings.yellowGreenTasks}
                     color="primary"
                     name="yellowGreenTasks"
+                    onChange={handleCheckboxChange}
+                  />
+                }
+              />
+              <Typography variant="caption" display="block" component="span">
+                Enabling this option makes it so tasks that have a pre-requisite
+                are yellow and tasks that can be worked on are green. If this
+                option is disabled, then tasks that have a pre-requisite are
+                grayed out, and tasks that can be worked on have a normal white
+                background.
+              </Typography>
+            </FormGroup>
+          </ListItem>
+          <ListItem>
+            <FormGroup row={false}>
+              <FormControlLabel
+                label="Notes Expanded by Default"
+                control={
+                  <Checkbox
+                    checked={settings.notesExpanded}
+                    color="primary"
+                    name="notesExpanded"
                     onChange={handleCheckboxChange}
                   />
                 }

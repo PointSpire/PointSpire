@@ -81,6 +81,9 @@ const definition = {
           yellowGreenTasks: {
             type: 'boolean',
           },
+          notesExpanded: {
+            type: 'boolean',
+          },
         },
       },
       allUserDataObject: {
