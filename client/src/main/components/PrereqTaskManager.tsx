@@ -19,23 +19,13 @@ import { searchByNameDescending } from '../logic/sortingFunctions';
 
 function styles(theme: Theme) {
   return createStyles({
-    // root: {
-    //   backgroundColor: theme.palette.background.default,
-    // },
     gridItem: {
       padding: theme.spacing(1),
-      // margin: theme.spacing(1),
     },
     areaPaper: {
-      // color: theme.palette.primary.dark,
       padding: theme.spacing(1),
       backgroundColor: theme.palette.background.paper,
     },
-    // areaSelectedPaper: {
-    //   // color: theme.palette.primary.dark,
-    //   padding: theme.spacing(1),
-    //   backgroundColor: theme.palette.secondary.dark,
-    // },
     paperList: {
       padding: theme.spacing(2.3),
       borderColor: theme.palette.primary.dark,
@@ -55,6 +45,15 @@ function styles(theme: Theme) {
       '&:hover': {
         backgroundColor: theme.palette.warning.dark,
       },
+    },
+    searchButtonBase: {
+      color: theme.palette.secondary.main,
+      alignItems: 'center',
+      width: '30px',
+      height: '30px',
+    },
+    dividerBase: {
+      margin: theme.spacing(0.5),
     },
   });
 }
@@ -155,30 +154,49 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
       <Grid item xs={4} className={classes.gridItem}>
         <Paper>
           <Paper className={classes.paperSearchBar}>
-            <InputBase
-              placeholder="Search Tasks"
-              value={searchText}
-              onKeyDown={handleKeyDownEvent}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                setSearchText(e.target.value);
-              }}
-            />
-            {searchOn || searchText.length > 0 ? (
-              <IconButton
-                onClick={() => {
-                  setSearchText('');
-                  handleSearchClear();
-                }}
-              >
-                <ClearIcon />
-              </IconButton>
-            ) : (
-              ''
-            )}
-            <IconButton onClick={handleSearchPrereqClick}>
-              <SearchIcon />
-            </IconButton>
+            <Grid
+              container
+              direction="row"
+              alignItems="stretch"
+              justify="space-between"
+            >
+              <Grid item xs={searchOn ? 6 : 8}>
+                <InputBase
+                  placeholder="Search Tasks"
+                  value={searchText}
+                  onKeyDown={handleKeyDownEvent}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    setSearchText(e.target.value);
+                  }}
+                />
+              </Grid>
+              {searchOn || searchText.length > 0 ? (
+                <Grid item xs={2}>
+                  <IconButton
+                    className={classes.searchButtonBase}
+                    onClick={() => {
+                      setSearchText('');
+                      handleSearchClear();
+                    }}
+                  >
+                    <ClearIcon />
+                  </IconButton>
+                </Grid>
+              ) : (
+                ''
+              )}
+              <Grid item xs={2}>
+                <IconButton
+                  onClick={handleSearchPrereqClick}
+                  className={classes.searchButtonBase}
+                >
+                  <SearchIcon />
+                </IconButton>
+              </Grid>
+            </Grid>
           </Paper>
+          <Divider orientation="horizontal" className={classes.dividerBase} />
+          <Typography>Filters</Typography>
           <Divider orientation="horizontal" />
           <Button
             variant="text"
