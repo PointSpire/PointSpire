@@ -166,11 +166,8 @@ function SettingsDialog(props: SettingsDialogProps): JSX.Element {
                 }
               />
               <Typography variant="caption" display="block" component="span">
-                Enabling this option makes it so tasks that have a pre-requisite
-                are yellow and tasks that can be worked on are green. If this
-                option is disabled, then tasks that have a pre-requisite are
-                grayed out, and tasks that can be worked on have a normal white
-                background.
+                Enabling this keeps notes expanded when you open the
+                application.
               </Typography>
             </FormGroup>
           </ListItem>
