@@ -57,6 +57,8 @@ export interface Task extends Document {
   note: string;
   title: string;
   priority: number;
+  completed: boolean;
+  completedDate: Date | null;
 }
 
 export type TaskObjects = {

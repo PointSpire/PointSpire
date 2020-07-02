@@ -32,6 +32,14 @@ const taskSchema = new Schema({
       default: new Array<typeof ObjectId>(),
     },
   ],
+  completed: {
+    type: Boolean,
+    default: false,
+  },
+  completedDate: {
+    type: Date,
+    default: null,
+  },
 });
 
 /**
@@ -46,6 +54,8 @@ export interface TaskDoc extends Document {
   dueDate: Date | null;
   priority: number;
   subtasks: Array<typeof ObjectId>;
+  completed: boolean;
+  completedDate: Date | null;
 }
 
 /**
