@@ -143,6 +143,7 @@ function TaskRow(props: TaskRowProps): JSX.Element {
     prereqTasks: string[] | null
   ) => {
     setOpenPrereq(!openPrereqs);
+    setOpen(!open);
 
     // save button id check
     if (e.currentTarget.id === savePrereqId) {

@@ -25,16 +25,17 @@ function styles(theme: Theme) {
   return createStyles({
     root: {
       width: '100%',
-      backgroundColor: theme.palette.background.paper,
+      // backgroundColor: theme.palette.background.default,
       alignItems: 'center',
     },
-    projectItem: {
-      paddingLeft: theme.spacing(4),
-      backgroundColor: theme.palette.background.paper,
-      borderColor: theme.palette.secondary.main,
-    },
-    label: {
+    // projectItem: {
+    //   paddingLeft: theme.spacing(4),
+    //   backgroundColor: theme.palette.background.paper,
+    //   borderColor: theme.palette.secondary.main,
+    // },
+    addProjectButton: {
       alignSelf: 'center',
+      background: theme.palette.primary.main,
     },
   });
 }
@@ -118,7 +119,7 @@ class ProjectTable extends React.Component<
           })}
         <ListItem>
           <Button
-            className={classes.label}
+            className={classes.addProjectButton}
             variant="outlined"
             fullWidth
             onClick={addProject}

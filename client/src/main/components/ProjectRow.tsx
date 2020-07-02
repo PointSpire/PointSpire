@@ -28,7 +28,7 @@ function styles(theme: Theme) {
   return createStyles({
     root: {
       width: '100%',
-      backgroundColor: theme.palette.background.paper,
+      // backgroundColor: theme.palette.background.paper,
     },
     nested: {
       paddingLeft: theme.spacing(4),

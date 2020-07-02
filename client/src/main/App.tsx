@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
+import { ThemeProvider } from '@material-ui/core/styles';
 import MuiAlert from '@material-ui/lab/Alert';
 import { Snackbar } from '@material-ui/core';
 import TopMenuBar from './components/TopMenuBar';
@@ -20,31 +20,9 @@ import {
   getTestUserData,
   baseServerUrl,
 } from './logic/fetchMethods';
+import buildTheme from './pointSpireTheme';
 
-const theme = createMuiTheme({
-  palette: {
-    primary: {
-      main: '#90caf9',
-    },
-    secondary: {
-      main: '#f2ac83',
-    },
-    error: {
-      main: '#ff8aa5',
-    },
-    warning: {
-      main: '#5d99c6',
-    },
-    contrastThreshold: 3,
-    tonalOffset: 0.2,
-  },
-  typography: {
-    fontSize: 16,
-  },
-  shape: {
-    borderRadius: 6,
-  },
-});
+const theme = buildTheme();
 
 /**
  * Used to determine the severity of an alert for the snackbar of the app.

@@ -19,9 +19,23 @@ import { searchByNameDescending } from '../logic/sortingFunctions';
 
 function styles(theme: Theme) {
   return createStyles({
-    root: {
-      backgroundColor: theme.palette.background.default,
+    // root: {
+    //   backgroundColor: theme.palette.background.default,
+    // },
+    gridItem: {
+      padding: theme.spacing(1),
+      // margin: theme.spacing(1),
     },
+    areaPaper: {
+      // color: theme.palette.primary.dark,
+      padding: theme.spacing(1),
+      backgroundColor: theme.palette.background.paper,
+    },
+    // areaSelectedPaper: {
+    //   // color: theme.palette.primary.dark,
+    //   padding: theme.spacing(1),
+    //   backgroundColor: theme.palette.secondary.dark,
+    // },
     paperList: {
       padding: theme.spacing(2.3),
       borderColor: theme.palette.primary.dark,
@@ -29,6 +43,18 @@ function styles(theme: Theme) {
     },
     paperSearchBar: {
       backgroundColor: theme.palette.primary.light,
+    },
+    saveButton: {
+      backgroundColor: theme.palette.primary.light,
+      '&:hover': {
+        backgroundColor: theme.palette.primary.dark,
+      },
+    },
+    cancelButton: {
+      backgroundColor: theme.palette.warning.light,
+      '&:hover': {
+        backgroundColor: theme.palette.warning.dark,
+      },
     },
   });
 }
@@ -110,70 +136,107 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
   };
 
   return (
-    <div className={classes.root}>
-      <Grid container direction="column">
-        <Grid item>
-          <Paper>
-            <Typography align="center">{`Current Task: ${parentTask.title}`}</Typography>
-            <Paper className={classes.paperSearchBar}>
-              <InputBase
-                placeholder="Search Tasks"
-                value={searchText}
-                onKeyDown={handleKeyDownEvent}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  setSearchText(e.target.value);
-                }}
-              />
-              {searchOn || searchText.length > 0 ? (
-                <IconButton
-                  onClick={() => {
-                    setSearchText('');
-                    handleSearchClear();
-                  }}
-                >
-                  <ClearIcon />
-                </IconButton>
-              ) : (
-                ''
-              )}
-              <IconButton onClick={handleSearchPrereqClick}>
-                <SearchIcon />
-              </IconButton>
-            </Paper>
-          </Paper>
-        </Grid>
-        {allTasks ? (
-          <PrereqTaskList
-            taskList={allTaskIds}
-            tasks={allTasks}
-            handlePrereqTaskChange={handlePrereqTasksChange}
-          />
-        ) : (
-          <Typography>You have nothing to do! Wow.</Typography>
-        )}
-        <Divider orientation="horizontal" />
-        <Typography align="center">Current Prerequisite Tasks</Typography>
-        {currentPrereqTasks && currentPrereqTasks.length > 0 ? (
-          <PrereqTaskList
-            taskList={currentPrereqTasks}
-            tasks={allTasks}
-            handlePrereqTaskChange={handlePrereqTasksChange}
-          />
-        ) : (
-          <Typography align="center">No Prerequisite Tasks</Typography>
-        )}
+    <Grid container direction="row">
+      <Grid item xs={4} className={classes.gridItem}>
+        <Paper className={classes.areaPaper}>
+          <Typography align="center">{`Task: ${parentTask.title}`}</Typography>
+          {allTasks ? (
+            <PrereqTaskList
+              isMainList
+              taskList={allTaskIds}
+              tasks={allTasks}
+              handlePrereqTaskChange={handlePrereqTasksChange}
+            />
+          ) : (
+            <Typography>You have nothing to do! Wow.</Typography>
+          )}
+        </Paper>
       </Grid>
-      <Button variant="text" onClick={e => closeDialog(e, null)}>
-        Cancel
-      </Button>
-      <Button
-        id={savePrereqId}
-        variant="text"
-        onClick={e => closeDialog(e, currentPrereqTasks)}
+      <Grid item xs={4} className={classes.gridItem}>
+        <Paper>
+          <Paper className={classes.paperSearchBar}>
+            <InputBase
+              placeholder="Search Tasks"
+              value={searchText}
+              onKeyDown={handleKeyDownEvent}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                setSearchText(e.target.value);
+              }}
+            />
+            {searchOn || searchText.length > 0 ? (
+              <IconButton
+                onClick={() => {
+                  setSearchText('');
+                  handleSearchClear();
+                }}
+              >
+                <ClearIcon />
+              </IconButton>
+            ) : (
+              ''
+            )}
+            <IconButton onClick={handleSearchPrereqClick}>
+              <SearchIcon />
+            </IconButton>
+          </Paper>
+          <Divider orientation="horizontal" />
+          <Button
+            variant="text"
+            fullWidth
+            onClick={() => setCurrentPrereqTasks(allTaskIds)}
+          >
+            Add All
+          </Button>
+          <Button
+            variant="text"
+            fullWidth
+            onClick={() => setCurrentPrereqTasks([])}
+          >
+            Remove All
+          </Button>
+        </Paper>
+      </Grid>
+      <Grid item xs={4} className={classes.gridItem}>
+        <Paper className={classes.areaPaper}>
+          <Typography align="center">Prerequisite Tasks</Typography>
+          {currentPrereqTasks && currentPrereqTasks.length > 0 ? (
+            <PrereqTaskList
+              taskList={currentPrereqTasks}
+              tasks={allTasks}
+              handlePrereqTaskChange={handlePrereqTasksChange}
+            />
+          ) : (
+            <Typography align="center">No Prerequisite Tasks</Typography>
+          )}
+        </Paper>
+      </Grid>
+      <Grid
+        container
+        direction="row-reverse"
+        className={classes.gridItem}
+        alignItems="flex-start"
       >
-        Save
-      </Button>
-    </div>
+        <Grid item>
+          <Button
+            className={classes.saveButton}
+            id={savePrereqId}
+            variant="text"
+            onClick={e => closeDialog(e, currentPrereqTasks)}
+          >
+            Save
+          </Button>
+        </Grid>
+        <Grid item>
+          <Button
+            className={classes.cancelButton}
+            variant="text"
+            onClick={e => closeDialog(e, null)}
+          >
+            Cancel
+          </Button>
+        </Grid>
+      </Grid>
+    </Grid>
   );
 };
 

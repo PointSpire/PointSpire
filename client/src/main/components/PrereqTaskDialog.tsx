@@ -4,11 +4,29 @@ import {
   DialogContent,
   DialogTitle,
   DialogActions,
+  createStyles,
+  Theme,
+  WithStyles,
+  withStyles,
 } from '@material-ui/core';
 import { Task, TaskObjects } from '../logic/dbTypes';
 import PrereqTaskManager from './PrereqTaskManager';
 
-export interface PrereqTaskDialogProps {
+function styles(theme: Theme) {
+  return createStyles({
+    root: {
+      background: theme.palette.background.default,
+    },
+    title: {
+      background: theme.palette.primary.main,
+    },
+    content: {
+      background: theme.palette.background.default,
+    },
+  });
+}
+
+export interface PrereqTaskDialogProps extends WithStyles<typeof styles> {
   savePrereqId: string;
   tasks: TaskObjects;
   parentTask: Task;
@@ -24,15 +42,24 @@ export interface PrereqTaskDialogProps {
  * @param {PrereqTaskDialogProps} props PrereqTaskDialog properties.
  */
 const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
-  const { tasks, openDialog, parentTask, savePrereqId, closeDialog } = props;
+  const {
+    classes,
+    tasks,
+    openDialog,
+    parentTask,
+    savePrereqId,
+    closeDialog,
+  } = props;
 
   return (
     <Dialog
       open={openDialog}
       onClose={(e: MouseEvent<HTMLElement>) => closeDialog(e, null)}
     >
-      <DialogTitle>Prerequisite Tasks Menu</DialogTitle>
-      <DialogContent>
+      <DialogTitle className={classes.title}>
+        Prerequisite Tasks Menu
+      </DialogTitle>
+      <DialogContent className={classes.content}>
         <PrereqTaskManager
           savePrereqId={savePrereqId}
           parentTask={parentTask}
@@ -45,4 +72,4 @@ const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
   );
 };
 
-export default PrereqTaskDialog;
+export default withStyles(styles, { withTheme: true })(PrereqTaskDialog);

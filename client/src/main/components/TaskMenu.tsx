@@ -76,7 +76,12 @@ class TaskMenu extends React.Component<TaskMenuProps, TaskMenuState> {
         >
           <MenuItem onClick={handleAddSubTask}>Add SubTask</MenuItem>
           <MenuItem onClick={handleDelete}>Delete</MenuItem>
-          <MenuItem onClick={e => openPrereqTaskDialog(e, null)}>
+          <MenuItem
+            onClick={e => {
+              openPrereqTaskDialog(e, null);
+              this.setAnchorEl(null);
+            }}
+          >
             Prerequisites
           </MenuItem>
         </Menu>
