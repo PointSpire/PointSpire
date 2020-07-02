@@ -181,14 +181,6 @@ function createUsersRouter(db: typeof mongoose): Router {
 
       // Get all of the projects for the user
       if (userDoc.projects) {
-        /*
-        projects = await Project.find({
-          _id: {
-            $in: userDoc.projects,
-          },
-        });
-        */
-
         const projectsArr: Array<ProjectDoc> = await Project.aggregate()
           .match({
             _id: {

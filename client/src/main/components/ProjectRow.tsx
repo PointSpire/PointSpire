@@ -7,7 +7,6 @@ import {
   Grid,
   Card,
   Collapse,
-  Checkbox,
 } from '@material-ui/core';
 
 import { Project, TaskObjects, Task, UserSettings } from '../logic/dbTypes';
@@ -23,6 +22,7 @@ import sortingFunctions from '../logic/sortingFunctions';
 import PriorityButton from './PriorityButton/PriorityButton';
 import TaskExpanderButton from './TaskExpanderButton';
 import NoteButton from './NoteButton';
+import CompletedCheckbox from './CompletedCheckbox';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -191,10 +191,11 @@ const ProjectRow = (props: ProjectRowProps) => {
               justify="flex-start"
             >
               <Grid item>
-                <Checkbox
+                <CompletedCheckbox
+                  setProject={setProject}
+                  saveProject={saveProject}
                   className={classes.checkbox}
-                  color="primary"
-                  size="medium"
+                  project={project}
                 />
               </Grid>
               <Grid item>

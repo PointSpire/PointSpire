@@ -51,6 +51,58 @@ const fetchData = {
 export const { baseServerUrl } = fetchData;
 
 /**
+ * Parses the dates returned by a server call into actual date objects. This
+ * is needed becuase the data is sent via JSON, and needs to be re-constructed
+ * into a class object.
+ *
+ * @param {Task | Project} returnedObject the task or project to convert the
+ * dates for
+ * @returns {Task | Project} the converted original object
+ */
+function parseReturnedDates(returnedObject: Task | Project): Task {
+  const convertedObject = returnedObject;
+  if (returnedObject.startDate) {
+    convertedObject.startDate = new Date(returnedObject.startDate);
+  }
+  if (returnedObject.dueDate) {
+    convertedObject.dueDate = new Date(returnedObject.dueDate);
+  }
+  return convertedObject;
+}
+
+/**
+ * Looks at the given Task or Project and makes sure that the `completed`
+ * property is a boolean. If not, it sets that value to false.
+ *
+ * NOTE: This isn't needed at the moment.
+ *
+ * @param {Task | Project} returnedObject the returned Project or Task
+ * @returns {Task} the converted original object
+ */
+function evaluateCompleted(returnedObject: Task | Project): Task {
+  const convertedObject = returnedObject;
+  if (typeof returnedObject.completed !== 'boolean') {
+    convertedObject.completed = false;
+  }
+  return convertedObject;
+}
+
+/**
+ * Sanitizes the provided Task or Project so that the values conform to this
+ * client's needs and it potentially fills in for documents on the database
+ * that were made before certain properties were defined on the server.
+ *
+ * @param {Task | Project} completeable the Task or Project to sanitize
+ * @returns {Task} the santized completable
+ */
+function sanitizeCompletable(completeable: Task | Project): Task {
+  let sanitizedObject = completeable;
+  sanitizedObject = parseReturnedDates(sanitizedObject);
+  sanitizedObject = evaluateCompleted(sanitizedObject);
+  return sanitizedObject;
+}
+
+/**
  * Gets the project with the specified ID.
  *
  * @param {string} id the id of the project to retrieve data for
@@ -184,26 +236,6 @@ export async function postNewProject(
 }
 
 /**
- * Parses the dates returned by a server call into actual date objects. This
- * is needed becuase the data is sent via JSON, and needs to be re-constructed
- * into a class object.
- *
- * @param {Task | Project} returnedObject the task or project to convert the
- * dates for
- * @returns {Task | Project} the converted original object
- */
-function parseReturnedDates(returnedObject: Task | Project): Task {
-  const convertedObject = returnedObject;
-  if (returnedObject.startDate) {
-    convertedObject.startDate = new Date(returnedObject.startDate);
-  }
-  if (returnedObject.dueDate) {
-    convertedObject.dueDate = new Date(returnedObject.dueDate);
-  }
-  return convertedObject;
-}
-
-/**
  * Makes a patch request to the server with the given project.
  *
  * @param {Project} project the project to send to update on the server
@@ -220,7 +252,7 @@ export async function patchProject(project: Task): Promise<boolean> {
     body: JSON.stringify(project),
   });
   const returnedProject = (await res.json()) as Task;
-  const parsedProject = parseReturnedDates(returnedProject);
+  const parsedProject = sanitizeCompletable(returnedProject);
   if (projectsAreEqual(project, parsedProject)) {
     return true;
   }
@@ -276,7 +308,7 @@ export async function postNewTask(
     body: JSON.stringify(newTask),
   });
   const returnedTask = (await taskRes.json()) as Task;
-  const parsedTask = parseReturnedDates(returnedTask);
+  const parsedTask = sanitizeCompletable(returnedTask);
 
   return parsedTask;
 }
