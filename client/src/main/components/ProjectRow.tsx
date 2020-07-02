@@ -7,6 +7,7 @@ import {
   Grid,
   Card,
   Collapse,
+  Checkbox,
 } from '@material-ui/core';
 
 import { Project, TaskObjects, Task } from '../logic/dbTypes';
@@ -43,6 +44,9 @@ function styles(theme: Theme) {
     },
     nested: {
       marginLeft: theme.spacing(2),
+    },
+    checkbox: {
+      paddingRight: 0,
     },
   });
 }
@@ -184,6 +188,13 @@ const ProjectRow = (props: ProjectRowProps) => {
               alignItems="center"
               justify="flex-start"
             >
+              <Grid item>
+                <Checkbox
+                  className={classes.checkbox}
+                  color="primary"
+                  size="medium"
+                />
+              </Grid>
               <Grid item>
                 <NoteButton
                   noteIsEmpty={!project.note || project.note.length === 0}
