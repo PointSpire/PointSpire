@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
@@ -50,6 +50,10 @@ function SettingsDialog(props: SettingsDialogProps): JSX.Element {
     setTheme,
   } = props;
 
+  const [pendingClientSettings, setPendingClientSettings] = useState<{
+    fontSize: number;
+  }>({ fontSize: appTheme.typography.fontSize });
+
   /**
    * Handles closing of the SettingsDialog.
    */
@@ -57,11 +61,22 @@ function SettingsDialog(props: SettingsDialogProps): JSX.Element {
     setOpen(false);
   }
 
+  function saveClientSettings(): void {
+    const { fontSize } = pendingClientSettings;
+    setCookie(ClientCookies.fontSize, fontSize.toString());
+    const newTheme = Object.assign(baseThemeOptions, {
+      typography: { fontSize },
+    });
+    setTheme(createMuiTheme(newTheme));
+  }
+
   /**
    * Handles saving of the user settings.
    */
   function handleSave(): void {
     setOpen(false);
+
+    saveClientSettings();
 
     // Save their settings on the server
     sendUpdatedUserToServer()
@@ -79,25 +94,14 @@ function SettingsDialog(props: SettingsDialogProps): JSX.Element {
   }
 
   /**
-   * Sets the font size for the application as long as the provided number is
-   * a positive integer. This also sets a cookie for the fontSize.
+   * Sets the font size for the application. The input value is expected to
+   * be a positive integer and already validated.
    *
    * @param {number} fontSize the new font size
-   * @returns {boolean} true if successful and false if the font size value
-   * wasn't correct
    */
-  function setFontSize(fontSize: number): boolean {
-    if (Number.isInteger(fontSize) && fontSize > 0) {
-      setCookie(ClientCookies.fontSize, fontSize.toString());
-      const newTheme = Object.assign(baseThemeOptions, {
-        typography: { fontSize },
-      });
-      // eslint-disable-next-line
-      console.log(newTheme);
-      setTheme(createMuiTheme(newTheme));
-      return true;
-    }
-    return false;
+  function setFontSize(fontSize: number): void {
+    pendingClientSettings.fontSize = fontSize;
+    setPendingClientSettings(pendingClientSettings);
   }
 
   /**
