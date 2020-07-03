@@ -20,7 +20,7 @@ import {
 import MenuIcon from '@material-ui/icons/Menu';
 import SettingsIcon from '@material-ui/icons/Settings';
 import HelpIcon from '@material-ui/icons/Help';
-import SettingsDialog from './SettingsDialog';
+import SettingsDialog from './SettingsDialog/SettingsDialog';
 import LoginDialog from './LoginDialog';
 import {
   AlertFunction,
@@ -59,6 +59,8 @@ export interface TopMenuBarProps extends WithStyles<typeof styles> {
   sendUpdatedUserToServer: UpdateUserOnServerFunction;
   baseServerUrl: string;
   githubClientId: string;
+  appTheme: Theme;
+  setTheme: (theme: Theme) => void;
 }
 
 export interface TopMenuBarState {
@@ -208,6 +210,8 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
       updateSettings,
       sendUpdatedUserToServer,
       githubClientId,
+      appTheme,
+      setTheme,
     } = this.props;
 
     // Set up the settingsDialog based on existence of user info
@@ -221,6 +225,8 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
           setOpen={setSettingsOpen}
           alert={alert}
           settings={userSettings}
+          appTheme={appTheme}
+          setTheme={setTheme}
         />
       );
     } else {
