@@ -1,4 +1,4 @@
-import React, { useState, MouseEvent, KeyboardEvent } from 'react';
+import React, { useState, MouseEvent, KeyboardEvent, ChangeEvent } from 'react';
 import {
   Grid,
   Divider,
@@ -11,11 +11,14 @@ import {
   Theme,
   WithStyles,
   Button,
+  MenuItem,
+  Select,
 } from '@material-ui/core';
 import { Search as SearchIcon, Clear as ClearIcon } from '@material-ui/icons';
-import { Task, TaskObjects } from '../logic/dbTypes';
+import { Task, TaskObjects, ProjectObjects } from '../logic/dbTypes';
 import PrereqTaskList from './PrereqTaskList';
 import { searchByNameDescending } from '../logic/sortingFunctions';
+import PrereqTaskList2 from './PrereqTaskList2';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -62,10 +65,16 @@ export interface PrereqTaskManagerProps extends WithStyles<typeof styles> {
   savePrereqId: string;
   parentTask: Task;
   allTasks: TaskObjects;
+  allProjects: ProjectObjects;
   closeDialog: (
     e: MouseEvent<HTMLElement>,
     prereqTasks: string[] | null
   ) => void;
+}
+
+interface Selection {
+  name?: string | undefined;
+  value: unknown;
 }
 
 /**
@@ -74,10 +83,18 @@ export interface PrereqTaskManagerProps extends WithStyles<typeof styles> {
  * up and more efficient.
  */
 const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
-  const { classes, parentTask, allTasks, savePrereqId, closeDialog } = props;
+  const {
+    classes,
+    parentTask,
+    allTasks,
+    allProjects,
+    savePrereqId,
+    closeDialog,
+  } = props;
   const [currentPrereqTasks, setCurrentPrereqTasks] = useState<string[]>(
     parentTask.prereqTasks
   );
+  const [selectedFilter, setFilter] = useState<string>('Projects');
   const [searchText, setSearchText] = useState<string>('');
   const [searchOn, setSearch] = useState<boolean>(false);
   const [searchResults, setSearchResults] = useState<string[]>([]);
@@ -134,12 +151,42 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
     }
   };
 
+  const handleSelectEvent = (e: ChangeEvent<Selection>) => {
+    const { value } = e.target;
+    if (value !== undefined) {
+      setFilter(value as string);
+    }
+  };
+
+  const generateMainTaskList = () => {
+    if (allTasks) {
+      if (selectedFilter === 'Projects') {
+        return (
+          <PrereqTaskList2
+            projects={allProjects}
+            tasks={allTasks}
+            handlePrereqTaskChange={handlePrereqTasksChange}
+          />
+        );
+      }
+      return (
+        <PrereqTaskList
+          isMainList
+          taskList={allTaskIds}
+          tasks={allTasks}
+          handlePrereqTaskChange={handlePrereqTasksChange}
+        />
+      );
+    }
+    return <Typography>You have nothing to do! Wow.</Typography>;
+  };
+
   return (
     <Grid container direction="row">
       <Grid item xs={4} className={classes.gridItem}>
         <Paper className={classes.areaPaper}>
           <Typography align="center">{`Task: ${parentTask.title}`}</Typography>
-          {allTasks ? (
+          {/* {allTasks ? (
             <PrereqTaskList
               isMainList
               taskList={allTaskIds}
@@ -148,7 +195,30 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
             />
           ) : (
             <Typography>You have nothing to do! Wow.</Typography>
-          )}
+          )} */}
+          <Select value={selectedFilter} onChange={handleSelectEvent}>
+            <MenuItem value="Projects">Projects</MenuItem>
+            <MenuItem value="Tasks">Tasks</MenuItem>
+          </Select>
+          {generateMainTaskList()}
+          {/* {allTasks ? (
+            selectedFilter === 'Projects' ? (
+              <PrereqTaskList2
+                projects={allProjects}
+                tasks={allTasks}
+                handlePrereqTaskChange={handlePrereqTasksChange}
+              />
+            ) : (
+              <PrereqTaskList
+                isMainList
+                taskList={allTaskIds}
+                tasks={allTasks}
+                handlePrereqTaskChange={handlePrereqTasksChange}
+              />
+            )
+          ) : (
+            <Typography>You have nothing to do! Wow.</Typography>
+          )} */}
         </Paper>
       </Grid>
       <Grid item xs={4} className={classes.gridItem}>

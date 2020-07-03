@@ -9,7 +9,7 @@ import {
   Collapse,
   Grid,
 } from '@material-ui/core';
-import { Task, TaskObjects } from '../logic/dbTypes';
+import { Task, TaskObjects, ProjectObjects } from '../logic/dbTypes';
 import { SetTaskFunction, SetTasksFunction } from '../App';
 import {
   patchTask,
@@ -46,13 +46,22 @@ const savePrereqId = 'save-prereq-tasks';
 export interface TaskRowProps extends WithStyles<typeof styles> {
   task: Task;
   tasks: TaskObjects;
+  projects: ProjectObjects;
   setTask: SetTaskFunction;
   setTasks: SetTasksFunction;
   deleteTask: (task: Task) => Promise<void>;
 }
 
 function TaskRow(props: TaskRowProps): JSX.Element {
-  const { task, setTasks, tasks, setTask, deleteTask, classes } = props;
+  const {
+    task,
+    setTasks,
+    tasks,
+    projects,
+    setTask,
+    deleteTask,
+    classes,
+  } = props;
   const [open, setOpen] = useState(false);
   const [openPrereqs, setOpenPrereq] = useState<boolean>(false);
 
@@ -230,6 +239,7 @@ function TaskRow(props: TaskRowProps): JSX.Element {
         </Grid>
         <PrereqTaskDialog
           savePrereqId={savePrereqId}
+          projects={projects}
           tasks={tasks}
           parentTask={task}
           openDialog={openPrereqs}
@@ -247,6 +257,7 @@ function TaskRow(props: TaskRowProps): JSX.Element {
                   classes={classes}
                   task={tasks[taskId]}
                   tasks={tasks}
+                  projects={projects}
                 />
               ))}
             </List>

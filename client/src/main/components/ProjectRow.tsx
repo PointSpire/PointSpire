@@ -15,7 +15,7 @@ import {
 import UpIcon from '@material-ui/icons/ArrowUpward';
 import DownIcon from '@material-ui/icons/ArrowDownward';
 import AddListIcon from '@material-ui/icons/PlaylistAdd';
-import { Project, TaskObjects, Task } from '../logic/dbTypes';
+import { Project, TaskObjects, Task, ProjectObjects } from '../logic/dbTypes';
 import TaskRow from './TaskRow';
 import { postNewTask, deleteTask, patchProject } from '../logic/fetchMethods';
 import scheduleCallback from '../logic/savingTimer';
@@ -52,6 +52,7 @@ function styles(theme: Theme) {
 export interface ProjectRowProps extends WithStyles<typeof styles> {
   project: Project;
   tasks: TaskObjects;
+  projects: ProjectObjects;
   setTask: (updatedTask: Task) => void;
   setTasks: (updatedTasks: TaskObjects) => void;
   setProject: (updatedProject: Project) => void;
@@ -64,7 +65,15 @@ export interface ProjectRowState {
 }
 
 const ProjectRow = (props: ProjectRowProps) => {
-  const { project, classes, tasks, setTask, setTasks, setProject } = props;
+  const {
+    project,
+    classes,
+    tasks,
+    projects,
+    setTask,
+    setTasks,
+    setProject,
+  } = props;
 
   const [open, setOpen] = useState(false);
 
@@ -242,6 +251,7 @@ const ProjectRow = (props: ProjectRowProps) => {
                   setTask={setTask}
                   task={tasks[taskId]}
                   tasks={tasks}
+                  projects={projects}
                   deleteTask={deleteSubTask}
                 />
               ))}

@@ -6,28 +6,37 @@ import {
   DialogActions,
   createStyles,
   Theme,
+  Typography,
   WithStyles,
   withStyles,
 } from '@material-ui/core';
-import { Task, TaskObjects } from '../logic/dbTypes';
+import { Task, TaskObjects, ProjectObjects } from '../logic/dbTypes';
 import PrereqTaskManager from './PrereqTaskManager';
 
 function styles(theme: Theme) {
   return createStyles({
     root: {
       background: theme.palette.background.default,
+      // width: '800px',
+    },
+    mainDialog: {
+      // minWidth: '500px',
+      // maxWidth: '800px',
     },
     title: {
       background: theme.palette.primary.main,
+      // width: '800px',
     },
     content: {
       background: theme.palette.background.default,
+      // width: '800px',
     },
   });
 }
 
 export interface PrereqTaskDialogProps extends WithStyles<typeof styles> {
   savePrereqId: string;
+  projects: ProjectObjects;
   tasks: TaskObjects;
   parentTask: Task;
   openDialog: boolean;
@@ -44,6 +53,7 @@ export interface PrereqTaskDialogProps extends WithStyles<typeof styles> {
 const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
   const {
     classes,
+    projects,
     tasks,
     openDialog,
     parentTask,
@@ -53,6 +63,8 @@ const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
 
   return (
     <Dialog
+      className={classes.mainDialog}
+      maxWidth="lg"
       open={openDialog}
       onClose={(e: MouseEvent<HTMLElement>) => closeDialog(e, null)}
     >
@@ -60,7 +72,9 @@ const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
         Prerequisite Tasks Menu
       </DialogTitle>
       <DialogContent className={classes.content}>
+        <Typography align="center">{parentTask.title}</Typography>
         <PrereqTaskManager
+          allProjects={projects}
           savePrereqId={savePrereqId}
           parentTask={parentTask}
           allTasks={tasks}
