@@ -7,7 +7,6 @@ import {
   WithStyles,
 } from '@material-ui/core/styles';
 import { ProjectObjects, TaskObjects, Project, User } from '../logic/dbTypes';
-import ProjectRow from './ProjectRow';
 import {
   SetProjectsFunction,
   SetProjectFunction,
@@ -21,6 +20,7 @@ import {
 } from '../logic/fetchMethods';
 import sortingFunctions from '../logic/sortingFunctions';
 import SortInput from './SortInput';
+import CompletableRow from './CompletableRow';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */
@@ -140,13 +140,14 @@ function ProjectTable(props: ProjectTableProps) {
           .sort(sortingFunctions[sortBy])
           .map(projectDoc => {
             return (
-              <ProjectRow
+              <CompletableRow
                 settings={user.settings}
-                deleteThisProject={deleteProject(projectDoc)}
+                deleteThisCompletable={deleteProject(projectDoc)}
+                completableType="project"
                 key={projectDoc._id}
                 setTasks={setTasks}
                 setProject={setProject}
-                project={projectDoc}
+                completable={projectDoc}
                 tasks={tasks}
                 setTask={setTask}
               />

@@ -1,43 +1,39 @@
 import React from 'react';
 import { Checkbox } from '@material-ui/core';
-import { Project } from '../logic/dbTypes';
-import scheduleCallback from '../logic/savingTimer';
+import { Project, Task } from '../logic/dbTypes';
 
 export type CompletedCheckboxProps = {
   className?: string;
-  project: Project;
-  setProject: (project: Project) => void;
-  saveProject(): void;
+  completable: Project | Task;
+  setAndScheduleSave: (completable: Project | Task) => void;
 };
 
 function CompletedCheckbox(props: CompletedCheckboxProps) {
-  const { className, project, setProject, saveProject } = props;
+  const { className, completable, setAndScheduleSave } = props;
 
   /* Convert the project's completed boolean if needed. This isn't a very
   efficient way to do this, but it only happens once for each project
   that doesn't have a valid `completed` property yet. */
-  if (typeof project.completed !== 'boolean') {
-    project.completed = false;
-    setProject(project);
-    scheduleCallback(`${project._id}.saveProject`, saveProject);
+  if (typeof completable.completed !== 'boolean') {
+    completable.completed = false;
+    setAndScheduleSave(completable);
   }
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
-    project.completed = event.target.checked;
-    if (project.completed) {
-      project.completedDate = new Date();
+    completable.completed = event.target.checked;
+    if (completable.completed) {
+      completable.completedDate = new Date();
     } else {
-      project.completedDate = null;
+      completable.completedDate = null;
     }
-    setProject(project);
-    scheduleCallback(`${project._id}.saveProject`, saveProject);
+    setAndScheduleSave(completable);
   }
 
   return (
     <Checkbox
-      key={project._id}
+      key={completable._id}
       className={className}
-      checked={project.completed}
+      checked={completable.completed}
       onChange={handleChange}
       color="primary"
       size="medium"

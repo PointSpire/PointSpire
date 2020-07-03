@@ -8,11 +8,14 @@ import {
   Card,
   Collapse,
 } from '@material-ui/core';
-
 import { Project, TaskObjects, Task, UserSettings } from '../logic/dbTypes';
-import TaskRow from './TaskRow';
 import { SetTaskFunction, SetTasksFunction, SetProjectFunction } from '../App';
-import { postNewTask, deleteTask, patchProject } from '../logic/fetchMethods';
+import {
+  postNewTask,
+  deleteTask,
+  patchProject,
+  patchTask,
+} from '../logic/fetchMethods';
 import scheduleCallback from '../logic/savingTimer';
 import NoteInput from './NoteInput';
 import DateInput from './DateInput';
@@ -51,30 +54,32 @@ function styles(theme: Theme) {
   });
 }
 
-export interface ProjectRowProps extends WithStyles<typeof styles> {
-  project: Project;
+export interface CompletableRowProps extends WithStyles<typeof styles> {
+  completableType: 'project' | 'task';
+  completable: Project | Task;
   tasks: TaskObjects;
   setTask: SetTaskFunction;
   setTasks: SetTasksFunction;
   setProject: SetProjectFunction;
   settings: UserSettings;
-  deleteThisProject: () => Promise<void>;
+  deleteThisCompletable: () => Promise<void>;
 }
 
 /**
- * Represents a row for a Project in the UI.
+ * Represents a row for either a Project or a Task.
  *
- * @param {ProjectRowProps} props the props
+ * @param {CompletableRowProps} props the props
  */
-const ProjectRow = (props: ProjectRowProps) => {
+const CompletableRow = (props: CompletableRowProps) => {
   const {
-    project,
+    completableType,
+    completable,
     classes,
     tasks,
     setTask,
     setTasks,
     setProject,
-    deleteThisProject,
+    deleteThisCompletable,
     settings,
   } = props;
 
@@ -82,20 +87,41 @@ const ProjectRow = (props: ProjectRowProps) => {
   const [subTasksOpen, setSubTasksOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(settings.notesExpanded);
 
+  // Setup single conditional to define setting the completable in state
+  let setCompletable: {
+    (updatedProject: Task): void;
+    (updatedTask: Task): void;
+  };
+  if (completableType === 'project') {
+    setCompletable = setProject;
+  } else {
+    setCompletable = setTask;
+  }
+
   /**
-   * Saves the project in state to the server and logs to the console what
+   * Saves the completable in state to the server and logs to the console what
    * happened.
    */
-  function saveProject(): void {
-    patchProject(project)
+  function saveCompletable(): void {
+    let patchCompletable;
+    if (completableType === 'project') {
+      patchCompletable = patchProject;
+    } else {
+      patchCompletable = patchTask;
+    }
+    patchCompletable(completable)
       .then(result => {
         if (result) {
           // eslint-disable-next-line
-          console.log('Project was successfully saved to the server');
+          console.log(
+            `${completableType} with ID: ${completable._id} was ` +
+              `successfully saved to the server`
+          );
         } else {
           // eslint-disable-next-line
           console.log(
-            'Project was not saved to the server. There was an error.'
+            `${completableType} with ID: ${completable._id} failed ` +
+              `to save to the server`
           );
         }
       })
@@ -105,72 +131,93 @@ const ProjectRow = (props: ProjectRowProps) => {
       });
   }
 
+  /**
+   * Sets the provided copmletable to state, and schedules it to be saved on
+   * the server.
+   *
+   * @param {Project | Task} updatedCompletable the updated completable to use
+   */
+  function setAndScheduleSave(updatedCompletable: Task | Project): void {
+    setCompletable(updatedCompletable);
+    scheduleCallback(
+      `${updatedCompletable._id}.saveCompletable`,
+      saveCompletable
+    );
+  }
+
   function saveDueDate(newDate: Date | null): void {
-    project.dueDate = newDate;
-    setProject(project);
-    scheduleCallback(`${project._id}.saveProject`, saveProject);
+    completable.dueDate = newDate;
+    setAndScheduleSave(completable);
   }
 
   function saveStartDate(newDate: Date | null): void {
-    project.startDate = newDate;
-    setProject(project);
-    scheduleCallback(`${project._id}.saveProject`, saveProject);
+    completable.startDate = newDate;
+    setAndScheduleSave(completable);
   }
 
   function savePriority(newPriority: number): void {
-    project.priority = newPriority;
-    setProject(project);
-    scheduleCallback(`${project._id}.saveProject`, saveProject);
+    completable.priority = newPriority;
+    setAndScheduleSave(completable);
   }
 
   /**
    * Generates a function which can be used to modify the specified `property`
-   * of the project and schedule it to be saved on the server.
+   * of the completable and schedule it to be saved on the server.
    *
-   * @param {'note' | 'title'} property the property to modify on the project state
+   * @param {'note' | 'title'} property the property to modify on the
+   * completable state
    * @returns {(newText: string) => void} the function which can be used to
    * save the specified `property` as long as the property is a string type
    */
   function saveText(property: 'note' | 'title') {
     return (newText: string): void => {
-      project[property] = newText;
-      setProject(project);
-      scheduleCallback(`${project._id}.saveProject`, saveProject);
+      completable[property] = newText;
+      setAndScheduleSave(completable);
     };
   }
 
   /**
-   * Adds a new task to this project on the server and in state.
+   * Adds a new task to this completable on the server and in state.
    *
    * @param {string} newTitle the title of the new task
    */
   async function addSubTask(newTitle: string): Promise<void> {
     // Make the request for the new task
-    const newTask = await postNewTask('project', project._id, newTitle);
+    const newTask = await postNewTask(
+      completableType,
+      completable._id,
+      newTitle
+    );
 
     // Add the new task to the task objects
     tasks[newTask._id] = newTask;
     setTasks(tasks);
 
-    // Add the new task to the project
-    project.subtasks.push(newTask._id);
-    setProject(project);
+    // Add the new task to the completable
+    completable.subtasks.push(newTask._id);
+    setCompletable(completable);
   }
 
   /**
-   * Deletes the given task from state and from the server.
+   * Generates a function that deletes the given task from state and from the
+   * server.
    *
    * @param {Task} task the task to delete
    */
-  async function deleteSubTask(task: Task): Promise<void> {
-    // Delete the task from state first
-    delete tasks[task._id];
-    setTasks(tasks);
-    project.subtasks.splice(project.subtasks.indexOf(task._id), 1);
-    setProject(project);
+  function deleteSubTask(taskToDelete: Task) {
+    return async () => {
+      // Delete the task from state first
+      delete tasks[taskToDelete._id];
+      setTasks(tasks);
+      completable.subtasks.splice(
+        completable.subtasks.indexOf(taskToDelete._id),
+        1
+      );
+      setCompletable(completable);
 
-    // Make the request to delete the task
-    await deleteTask(task);
+      // Make the request to delete the task
+      await deleteTask(taskToDelete);
+    };
   }
 
   return (
@@ -179,9 +226,9 @@ const ProjectRow = (props: ProjectRowProps) => {
         <TaskExpanderButton
           open={subTasksOpen}
           setOpen={setSubTasksOpen}
-          parent={project}
+          parent={completable}
         />
-        <Card className={`${classes.card}`} raised key={project._id}>
+        <Card className={`${classes.card}`} raised key={completable._id}>
           <Grid container justify="flex-start" alignItems="center">
             <Grid
               container
@@ -192,44 +239,53 @@ const ProjectRow = (props: ProjectRowProps) => {
             >
               <Grid item>
                 <CompletedCheckbox
-                  setProject={setProject}
-                  saveProject={saveProject}
+                  setAndScheduleSave={setAndScheduleSave}
                   className={classes.checkbox}
-                  project={project}
+                  completable={completable}
                 />
               </Grid>
               <Grid item>
                 <NoteButton
-                  noteIsEmpty={!project.note || project.note.length === 0}
+                  noteIsEmpty={
+                    !completable.note || completable.note.length === 0
+                  }
                   setNoteOpen={setNoteOpen}
                   noteOpen={noteOpen}
                 />
               </Grid>
-              <Grid item className={classes.root} key={`${project._id}.title`}>
+              <Grid
+                item
+                className={classes.root}
+                key={`${completable._id}.title`}
+              >
                 <SimpleTextInput
-                  label="Project Title"
-                  value={project.title}
+                  label={
+                    completableType === 'project'
+                      ? 'Project Title'
+                      : 'Task Title'
+                  }
+                  value={completable.title}
                   saveValue={saveText('title')}
                 />
               </Grid>
               <Grid item>
                 <PriorityButton
                   savePriority={savePriority}
-                  priority={project.priority}
-                  projectOrTaskTitle={project.title}
+                  priority={completable.priority}
+                  projectOrTaskTitle={completable.title}
                 />
               </Grid>
               <Grid item>
                 <DateInput
                   label="Start Date"
-                  date={project.startDate}
+                  date={completable.startDate}
                   saveDate={saveStartDate}
                 />
               </Grid>
               <Grid item>
                 <DateInput
                   label="Due Date"
-                  date={project.dueDate}
+                  date={completable.dueDate}
                   saveDate={saveDueDate}
                 />
               </Grid>
@@ -237,18 +293,22 @@ const ProjectRow = (props: ProjectRowProps) => {
                 <TaskMenu
                   sortBy={sortBy}
                   setSortBy={setSortBy}
-                  deleteTask={deleteThisProject}
+                  deleteTask={deleteThisCompletable}
                   addSubTask={addSubTask}
                 />
               </Grid>
             </Grid>
 
-            <Grid item className={classes.flexGrow} key={`${project._id}.note`}>
+            <Grid
+              item
+              className={classes.flexGrow}
+              key={`${completable._id}.note`}
+            >
               <Collapse in={noteOpen} timeout="auto">
                 <NoteInput
                   saveNote={saveText('note')}
-                  note={project.note}
-                  label="Project Note"
+                  note={completable.note}
+                  label="Note"
                 />
               </Collapse>
             </Grid>
@@ -258,16 +318,20 @@ const ProjectRow = (props: ProjectRowProps) => {
       <div className={classes.nested}>
         <Collapse in={subTasksOpen} timeout="auto" className={classes.flexGrow}>
           {Object.values(tasks)
-            .filter(task => project.subtasks.includes(task._id))
+            .filter(task => completable.subtasks.includes(task._id))
             .sort(sortingFunctions[sortBy])
             .map(task => (
-              <TaskRow
+              <CompletableRow
+                classes={classes}
+                settings={settings}
+                setProject={setProject}
                 key={task._id}
                 setTasks={setTasks}
                 setTask={setTask}
-                task={task}
+                completable={task}
+                completableType="task"
                 tasks={tasks}
-                deleteTask={deleteSubTask}
+                deleteThisCompletable={deleteSubTask(task)}
               />
             ))}
         </Collapse>
@@ -276,4 +340,4 @@ const ProjectRow = (props: ProjectRowProps) => {
   );
 };
 
-export default withStyles(styles, { withTheme: true })(ProjectRow);
+export default withStyles(styles, { withTheme: true })(CompletableRow);
