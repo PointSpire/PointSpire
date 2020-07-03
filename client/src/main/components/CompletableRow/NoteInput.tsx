@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TextField } from '@material-ui/core';
-import { resetTimer } from '../logic/savingTimer';
+import { resetTimer } from '../../logic/savingTimer';
 
 export type NoteInputProps = {
   saveNote: (note: string) => void;

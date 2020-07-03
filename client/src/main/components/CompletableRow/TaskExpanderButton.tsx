@@ -2,7 +2,7 @@ import { Grid, IconButton } from '@material-ui/core';
 import UpIcon from '@material-ui/icons/ArrowUpward';
 import DownIcon from '@material-ui/icons/ArrowDownward';
 import React from 'react';
-import { Task, Project } from '../logic/dbTypes';
+import { Task, Project } from '../../logic/dbTypes';
 
 export type TaskExpanderButtonProps = {
   parent: Task | Project;

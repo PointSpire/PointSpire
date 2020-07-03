@@ -8,21 +8,25 @@ import {
   Card,
   Collapse,
 } from '@material-ui/core';
-import { Project, TaskObjects, Task, UserSettings } from '../logic/dbTypes';
-import { SetTaskFunction, SetTasksFunction, SetProjectFunction } from '../App';
+import { Project, TaskObjects, Task, UserSettings } from '../../logic/dbTypes';
+import {
+  SetTaskFunction,
+  SetTasksFunction,
+  SetProjectFunction,
+} from '../../App';
 import {
   postNewTask,
   deleteTask,
   patchProject,
   patchTask,
-} from '../logic/fetchMethods';
-import scheduleCallback from '../logic/savingTimer';
+} from '../../logic/fetchMethods';
+import scheduleCallback from '../../logic/savingTimer';
 import NoteInput from './NoteInput';
 import DateInput from './DateInput';
-import SimpleTextInput from './SimpleTextInput';
-import TaskMenu from './TaskMenu/TaskMenu';
-import sortingFunctions from '../logic/sortingFunctions';
-import PriorityButton from './PriorityButton/PriorityButton';
+import SimpleTextInput from '../SimpleTextInput';
+import TaskMenu from '../TaskMenu/TaskMenu';
+import sortingFunctions from '../../logic/sortingFunctions';
+import PriorityButton from '../PriorityButton/PriorityButton';
 import TaskExpanderButton from './TaskExpanderButton';
 import NoteButton from './NoteButton';
 import CompletedCheckbox from './CompletedCheckbox';

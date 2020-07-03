@@ -20,7 +20,7 @@ import {
 } from '../logic/fetchMethods';
 import sortingFunctions from '../logic/sortingFunctions';
 import SortInput from './SortInput';
-import CompletableRow from './CompletableRow';
+import CompletableRow from './CompletableRow/CompletableRow';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */
