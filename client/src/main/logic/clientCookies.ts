@@ -28,12 +28,6 @@ export enum ClientCookies {
   fontSize = 'fontSize',
 }
 
-export function getCookies(): string {
-  // eslint-disable-next-line
-  console.log(document.cookie);
-  return document.cookie;
-}
-
 /**
  * Sets the specified cookie to the given value.
  *

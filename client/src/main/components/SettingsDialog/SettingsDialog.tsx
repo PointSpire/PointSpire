@@ -92,8 +92,6 @@ function SettingsDialog(props: SettingsDialogProps): JSX.Element {
       const newTheme = Object.assign(baseThemeOptions, {
         typography: { fontSize },
       });
-      // eslint-disable-next-line
-      console.log(newTheme);
       setTheme(createMuiTheme(newTheme));
       return true;
     }
