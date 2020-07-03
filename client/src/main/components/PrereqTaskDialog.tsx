@@ -9,6 +9,7 @@ import {
   Typography,
   WithStyles,
   withStyles,
+  // Button,
 } from '@material-ui/core';
 import { Task, TaskObjects, ProjectObjects } from '../logic/dbTypes';
 import PrereqTaskManager from './PrereqTaskManager';
@@ -17,19 +18,12 @@ function styles(theme: Theme) {
   return createStyles({
     root: {
       background: theme.palette.background.default,
-      // width: '800px',
-    },
-    mainDialog: {
-      // minWidth: '500px',
-      // maxWidth: '800px',
     },
     title: {
       background: theme.palette.primary.main,
-      // width: '800px',
     },
     content: {
       background: theme.palette.background.default,
-      // width: '800px',
     },
   });
 }
@@ -63,7 +57,6 @@ const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
 
   return (
     <Dialog
-      className={classes.mainDialog}
       maxWidth="lg"
       open={openDialog}
       onClose={(e: MouseEvent<HTMLElement>) => closeDialog(e, null)}
@@ -82,6 +75,9 @@ const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
         />
       </DialogContent>
       <DialogActions />
+      {/* <Button variant="text" onClick={() => close()}>Cancel</Button>
+        <Button>Save</Button>
+      </DialogActions> */}
     </Dialog>
   );
 };
