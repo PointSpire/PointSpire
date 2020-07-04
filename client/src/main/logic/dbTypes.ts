@@ -18,6 +18,13 @@ interface IndexableProperties {
   [key: string]: unknown;
 }
 
+/**
+ * Represents a completable type that is either a Task or a Project.
+ */
+export type Completable = Task | Project;
+
+export type CompletableType = 'project' | 'task';
+
 /* User Types */
 
 export type UserSettings = {

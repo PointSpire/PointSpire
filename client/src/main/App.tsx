@@ -22,6 +22,7 @@ import {
   baseServerUrl,
 } from './logic/fetchMethods';
 import baseThemeOptions from './AppTheme';
+import ClientData from './logic/ClientData';
 
 /**
  * Used to determine the severity of an alert for the snackbar of the app.
@@ -111,11 +112,17 @@ class App extends React.Component<AppProps, AppState> {
     } else {
       userData = await getUserData();
     }
+
+    // Set the state for the application
     this.setState({
       user: userData.user,
       projects: userData.projects,
       tasks: userData.tasks,
     });
+
+    // Set the ClientData as well
+    ClientData.setProjects(userData.projects);
+    ClientData.setTasks(userData.tasks);
   }
 
   // #region Project Functions
