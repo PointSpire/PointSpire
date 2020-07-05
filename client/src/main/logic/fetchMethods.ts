@@ -263,12 +263,12 @@ export async function patchProject(project: Task): Promise<boolean> {
  * Deletes the given project from the server and returns the successfully
  * deleted project.
  *
- * @param {Project} project the project to delete
+ * @param {string} projectId the ID of the project to delete
  * @returns {Promise<Project>} the successfully deleted Project
  */
-export async function deleteProject(project: Project): Promise<Project> {
+export async function deleteProject(projectId: string): Promise<Project> {
   const { basicHeader } = fetchData;
-  const fullUrl = `${baseServerUrl}/api/projects/${project._id}`;
+  const fullUrl = `${baseServerUrl}/api/projects/${projectId}`;
   const res = await fetch(fullUrl, {
     method: 'DELETE',
     headers: basicHeader,

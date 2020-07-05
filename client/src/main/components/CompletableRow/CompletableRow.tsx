@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   WithStyles,
   createStyles,
@@ -8,12 +8,7 @@ import {
   Card,
   Collapse,
 } from '@material-ui/core';
-import { Project, TaskObjects, Task, UserSettings } from '../../logic/dbTypes';
-import {
-  SetTaskFunction,
-  SetTasksFunction,
-  SetProjectFunction,
-} from '../../App';
+import { UserSettings, Completable } from '../../logic/dbTypes';
 import {
   postNewTask,
   deleteTask,
@@ -30,6 +25,7 @@ import PriorityButton from '../PriorityButton/PriorityButton';
 import TaskExpanderButton from './TaskExpanderButton';
 import NoteButton from './NoteButton';
 import CompletedCheckbox from './CompletedCheckbox';
+import ClientData from '../../logic/ClientData';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -60,11 +56,7 @@ function styles(theme: Theme) {
 
 export interface CompletableRowProps extends WithStyles<typeof styles> {
   completableType: 'project' | 'task';
-  completable: Project | Task;
-  tasks: TaskObjects;
-  setTask: SetTaskFunction;
-  setTasks: SetTasksFunction;
-  setProject: SetProjectFunction;
+  completableId: string;
   settings: UserSettings;
   deleteThisCompletable: () => Promise<void>;
 }
@@ -76,13 +68,9 @@ export interface CompletableRowProps extends WithStyles<typeof styles> {
  */
 const CompletableRow = (props: CompletableRowProps) => {
   const {
+    completableId,
     completableType,
-    completable,
     classes,
-    tasks,
-    setTask,
-    setTasks,
-    setProject,
     deleteThisCompletable,
     settings,
   } = props;
@@ -90,20 +78,41 @@ const CompletableRow = (props: CompletableRowProps) => {
   const [sortBy, setSortBy] = useState('Priority');
   const [subTasksOpen, setSubTasksOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(settings.notesExpanded);
-
-  // Setup single conditional to define setting the completable in state
-  let setCompletable: {
-    (updatedProject: Task): void;
-    (updatedTask: Task): void;
-  };
-  if (completableType === 'project') {
-    setCompletable = setProject;
-  } else {
-    setCompletable = setTask;
-  }
+  const [completable, setCompletable] = useState(
+    ClientData.getCompletable(completableType, completableId)
+  );
 
   /**
-   * Saves the completable in state to the server and logs to the console what
+   * Subscribes to changes of this completable. This should run once when the
+   * component is mounted.
+   */
+  useEffect(() => {
+    const listenerId = `${completableId}.CompletableRow`;
+    ClientData.addCompletableListener(
+      completableType,
+      completableId,
+      listenerId,
+      updatedCompletable => {
+        // eslint-disable-next-line
+        console.log('listenerCallback was triggered');
+        if (updatedCompletable !== null) {
+          setCompletable(updatedCompletable);
+        }
+      }
+    );
+
+    // This will be ran when the compoennt is unmounted
+    return function cleanup() {
+      ClientData.removeCompletableListener(
+        'project',
+        completableId,
+        listenerId
+      );
+    };
+  });
+
+  /**
+   * Saves the completable to the server and logs to the console what
    * happened.
    */
   function saveCompletable(): void {
@@ -136,13 +145,15 @@ const CompletableRow = (props: CompletableRowProps) => {
   }
 
   /**
-   * Sets the provided copmletable to state, and schedules it to be saved on
-   * the server.
+   * Sets the provided copmletable to ClientData which triggers the state,
+   * and schedules it to be saved on the server.
    *
-   * @param {Project | Task} updatedCompletable the updated completable to use
+   * @param {Completable} updatedCompletable the updated completable to use
    */
-  function setAndScheduleSave(updatedCompletable: Task | Project): void {
-    setCompletable(updatedCompletable);
+  function setAndScheduleSave(updatedCompletable: Completable): void {
+    // eslint-disable-next-line
+    console.log('setAndScheduleSave was triggered');
+    ClientData.setCompletable(completableType, updatedCompletable);
     scheduleCallback(
       `${updatedCompletable._id}.saveCompletable`,
       saveCompletable
@@ -181,45 +192,43 @@ const CompletableRow = (props: CompletableRowProps) => {
   }
 
   /**
-   * Adds a new task to this completable on the server and in state.
+   * Adds a new task to this completable on the server and in ClientData which
+   * triggers state.
    *
    * @param {string} newTitle the title of the new task
    */
   async function addSubTask(newTitle: string): Promise<void> {
     // Make the request for the new task
-    const newTask = await postNewTask(
-      completableType,
-      completable._id,
-      newTitle
-    );
+    const newTask = await postNewTask(completableType, completableId, newTitle);
 
     // Add the new task to the task objects
+    const tasks = ClientData.getTasks();
     tasks[newTask._id] = newTask;
-    setTasks(tasks);
+    ClientData.setTasks(tasks);
 
-    // Add the new task to the completable
+    // Add the new sub task to the completable
     completable.subtasks.push(newTask._id);
-    setCompletable(completable);
+    ClientData.setCompletable(completableType, completable);
   }
 
   /**
-   * Generates a function that deletes the given task from state and from the
-   * server.
+   * Generates a function that will delete the specified subtask in this
+   * completables state, in the ClientData, and on the server.
    *
-   * @param {Task} task the task to delete
+   * @param {string} taskId the ID of the task to delete
    */
-  function deleteSubTask(taskToDelete: Task) {
+  function deleteSubTask(taskId: string) {
     return async () => {
-      // Delete the task from state first
-      delete tasks[taskToDelete._id];
-      setTasks(tasks);
-      completable.subtasks.splice(
-        completable.subtasks.indexOf(taskToDelete._id),
-        1
-      );
-      setCompletable(completable);
+      const taskToDelete = ClientData.getCompletable('task', taskId);
 
-      // Make the request to delete the task
+      // Delete the task from ClientData first
+      ClientData.deleteCompletable('task', taskId);
+
+      // Set this completables subtasks info on ClientData which triggers state
+      completable.subtasks.splice(completable.subtasks.indexOf(taskId), 1);
+      ClientData.setCompletable(completableType, completable);
+
+      // Make the request to delete the project
       await deleteTask(taskToDelete);
     };
   }
@@ -321,21 +330,16 @@ const CompletableRow = (props: CompletableRowProps) => {
       </div>
       <div className={classes.nested}>
         <Collapse in={subTasksOpen} timeout="auto" className={classes.flexGrow}>
-          {Object.values(tasks)
-            .filter(task => completable.subtasks.includes(task._id))
-            .sort(sortingFunctions[sortBy])
-            .map(task => (
+          {completable.subtasks
+            .sort(sortingFunctions[sortBy]('task'))
+            .map(taskId => (
               <CompletableRow
-                classes={classes}
                 settings={settings}
-                setProject={setProject}
-                key={task._id}
-                setTasks={setTasks}
-                setTask={setTask}
-                completable={task}
+                deleteThisCompletable={deleteSubTask(taskId)}
                 completableType="task"
-                tasks={tasks}
-                deleteThisCompletable={deleteSubTask(task)}
+                key={taskId}
+                completableId={taskId}
+                classes={classes}
               />
             ))}
         </Collapse>

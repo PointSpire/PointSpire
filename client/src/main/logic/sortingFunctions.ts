@@ -1,51 +1,80 @@
 import moment from 'moment';
-import { Task } from './dbTypes';
+import { CompletableType } from './dbTypes';
+import ClientData from './ClientData';
 
-/**
- * Sorts tasks by priority where the first task has the lowest number prirotiy
- * and the last task has the highesst. This can be provided to the `sort`
- * function on arrays for either Tasks or Projects.
- *
- * @param {Task} task1 the first task
- * @param {Task} task2 the second task
- */
-export function prioritySortDescending(task1: Task, task2: Task): number {
-  return task1.priority - task2.priority;
+function getCompletables(type: CompletableType) {
+  if (type === 'project') {
+    return ClientData.getProjects();
+  }
+  return ClientData.getTasks();
 }
 
 /**
- * Sorts tasks by the dueDate.
+ * Generates a sorting function that can be used to sort completables by
+ * priority.
  *
- * @param {Task} task1 the first task
- * @param {Task} task2 the second task
+ * @param {CompletableType} type the type of the completables
  */
-export function dueDateSortDescending(task1: Task, task2: Task): number {
-  return moment(task1.dueDate).diff(task2.dueDate);
+export function prioritySortDescending(type: CompletableType) {
+  const completables = getCompletables(type);
+  return (completable1Id: string, completable2Id: string): number => {
+    return (
+      completables[completable1Id].priority -
+      completables[completable2Id].priority
+    );
+  };
 }
 
 /**
- * Sorts tasks by the startDate.
+ * Generates a sorting function that can be used to sort completables by
+ * dueDate.
  *
- * @param {Task} task1 the first task
- * @param {Task} task2 the second task
+ * @param {CompletableType} type the type of the completables
  */
-export function startDateSortDescending(task1: Task, task2: Task): number {
-  return moment(task1.startDate).diff(task2.startDate);
+export function dueDateSortDescending(type: CompletableType) {
+  const completables = getCompletables(type);
+  return (completable1Id: string, completable2Id: string): number => {
+    const completable1 = completables[completable1Id];
+    const completable2 = completables[completable2Id];
+    return moment(completable1.dueDate).diff(completable2.dueDate);
+  };
 }
 
 /**
- * Sorts tasks by the title.
+ * Generates a sorting function that can be used to sort completables by
+ * startDate.
  *
- * @param {Task} task1 the first task
- * @param {Task} task2 the second task
+ * @param {CompletableType} type the type of the completables
  */
-export function titleSortDescending(task1: Task, task2: Task): number {
-  return task1.title.localeCompare(task2.title);
+export function startDateSortDescending(type: CompletableType) {
+  const completables = getCompletables(type);
+  return (completable1Id: string, completable2Id: string): number => {
+    const completable1 = completables[completable1Id];
+    const completable2 = completables[completable2Id];
+    return moment(completable1.startDate).diff(completable2.startDate);
+  };
 }
 
-export interface SortingFunctions {
-  [key: string]: (task1: Task, task2: Task) => number;
+/**
+ * Generates a sorting function that can be used to sort completables by
+ * title.
+ *
+ * @param {CompletableType} type the type of the completables
+ */
+export function titleSortDescending(type: CompletableType) {
+  const completables = getCompletables(type);
+  return (completable1Id: string, completable2Id: string): number => {
+    const completable1 = completables[completable1Id];
+    const completable2 = completables[completable2Id];
+    return completable1.title.localeCompare(completable2.title);
+  };
 }
+
+export type SortingFunctions = {
+  [title: string]: (
+    type: CompletableType
+  ) => (completable1Id: string, completable2Id: string) => number;
+};
 
 /**
  * Used to specify the different sorting options for the user. The key is

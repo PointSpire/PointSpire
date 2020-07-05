@@ -20,6 +20,11 @@ function CompletedCheckbox(props: CompletedCheckboxProps) {
   }
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
+    // eslint-disable-next-line
+    console.log(
+      'The checkbox was changed and its value is now:',
+      event.target.checked
+    );
     completable.completed = event.target.checked;
     if (completable.completed) {
       completable.completedDate = new Date();
