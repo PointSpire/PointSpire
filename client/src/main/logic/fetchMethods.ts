@@ -298,3 +298,20 @@ export async function deleteTask(task: Task): Promise<Task> {
   const returnedTask = (await res.json()) as Task;
   return returnedTask;
 }
+
+/**
+ * Handles logout of app
+ */
+export async function logout() {
+  const { basicHeader } = fetchData;
+  const url = `${baseServerUrl}/logout`;
+  const res = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+    headers: basicHeader,
+  });
+  if (res.status === 200) {
+    // reload application
+    window.location.replace(window.location.pathname);
+  }
+}
