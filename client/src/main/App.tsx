@@ -205,6 +205,7 @@ class App extends React.Component<AppProps, AppState> {
             updateSettings={updateSettings}
             appTheme={appTheme}
             setTheme={setTheme}
+            loggedIn={!!user}
           />
           {/* If projects and tasks exist, show project table */}
           {user && ClientData.getProjects() ? (

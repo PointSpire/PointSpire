@@ -34,7 +34,17 @@ function authGithubRouter(db: typeof mongoose): Router {
   router.post('/', async (req, res) => {
     try {
       res.setHeader('Access-Control-Allow-Credentials', 'true');
-      if (req.body && req.body.code) {
+
+      // See if they have already logged in
+      if (req.session && req.session.userId) {
+        console.log(
+          'The user tried to authenticate when they were already' +
+            'logged in to PointSpire'
+        );
+        res.redirect(`/api/users/${req.session.userId}`);
+
+        // If they haven't already logged in, request the data from github
+      } else if (req.body && req.body.code) {
         const githubReqBody = {
           // eslint-disable-next-line @typescript-eslint/camelcase
           client_id: githubClientId,
