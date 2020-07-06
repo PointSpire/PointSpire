@@ -190,3 +190,7 @@ build
 
 # Personal Files
 ColorPalletes.json
+
+# Personal API Test files -Cody
+*.rest
+APITests/
