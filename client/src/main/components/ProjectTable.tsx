@@ -97,10 +97,12 @@ function ProjectTable(props: ProjectTableProps) {
         'project',
         projectId,
         listenerId,
-        () => {
-          const newUser = { ...user };
-          newUser.projects.sort(sortingFunctions[sortBy]('project'));
-          setUser(newUser);
+        updatedCompletable => {
+          if (updatedCompletable !== null) {
+            const newUser = { ...user };
+            newUser.projects.sort(sortingFunctions[sortBy]('project'));
+            setUser(newUser);
+          }
         }
       );
     });
@@ -131,10 +133,12 @@ function ProjectTable(props: ProjectTableProps) {
       'project',
       newProject._id,
       listenerId,
-      () => {
-        const newUser = { ...user };
-        newUser.projects.sort(sortingFunctions[sortBy]('project'));
-        setUser(newUser);
+      updatedCompletable => {
+        if (updatedCompletable !== null) {
+          const newUser = { ...user };
+          newUser.projects.sort(sortingFunctions[sortBy]('project'));
+          setUser(newUser);
+        }
       }
     );
 

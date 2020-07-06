@@ -110,11 +110,18 @@ const CompletableRow = (props: CompletableRowProps) => {
    */
   useEffect(() => {
     completable.subtasks.forEach(taskId => {
-      ClientData.addCompletableListener('task', taskId, listenerId, () => {
-        const newCompletable = { ...completable };
-        newCompletable.subtasks.sort(sortingFunctions[sortBy]('task'));
-        setCompletable(newCompletable);
-      });
+      ClientData.addCompletableListener(
+        'task',
+        taskId,
+        listenerId,
+        updatedCompletable => {
+          if (updatedCompletable !== null) {
+            const newCompletable = { ...completable };
+            newCompletable.subtasks.sort(sortingFunctions[sortBy]('task'));
+            setCompletable(newCompletable);
+          }
+        }
+      );
     });
 
     // This will be ran when the compoennt is unmounted
@@ -266,11 +273,18 @@ const CompletableRow = (props: CompletableRowProps) => {
     ClientData.setCompletable(completableType, updatedCompletable);
 
     // Set this completable as a listener of the new one
-    ClientData.addCompletableListener('task', newTask._id, listenerId, () => {
-      const newCompletable = { ...completable };
-      newCompletable.subtasks.sort(sortingFunctions[sortBy]('task'));
-      setCompletable(newCompletable);
-    });
+    ClientData.addCompletableListener(
+      'task',
+      newTask._id,
+      listenerId,
+      updatedTask => {
+        if (updatedTask !== null) {
+          const newCompletable = { ...completable };
+          newCompletable.subtasks.sort(sortingFunctions[sortBy]('task'));
+          setCompletable(newCompletable);
+        }
+      }
+    );
   }
 
   /**
