@@ -94,10 +94,14 @@ const CompletableRow = (props: CompletableRowProps) => {
       listenerId,
       updatedCompletable => {
         if (updatedCompletable !== null) {
-          // eslint-disable-next-line
-          console.log('The updated completable is:');
-          // eslint-disable-next-line
-          console.log(updatedCompletable);
+          if (completable === updatedCompletable) {
+            // eslint-disable-next-line
+            console.log(
+              'Caution: Completable did not re-render because ' +
+                'it is equal to the updated completable. You may want to make ' +
+                'sure that the updated completable is an entirely new object.'
+            );
+          }
           setCompletable(updatedCompletable);
         }
       }
@@ -161,18 +165,21 @@ const CompletableRow = (props: CompletableRowProps) => {
   }
 
   function saveDueDate(newDate: Date | null): void {
-    completable.dueDate = newDate;
-    setAndScheduleSave(completable);
+    const newCompletable = { ...completable };
+    newCompletable.dueDate = newDate;
+    setAndScheduleSave(newCompletable);
   }
 
   function saveStartDate(newDate: Date | null): void {
-    completable.startDate = newDate;
-    setAndScheduleSave(completable);
+    const newCompletable = { ...completable };
+    newCompletable.startDate = newDate;
+    setAndScheduleSave(newCompletable);
   }
 
   function savePriority(newPriority: number): void {
-    completable.priority = newPriority;
-    setAndScheduleSave(completable);
+    const newCompletable = { ...completable };
+    newCompletable.priority = newPriority;
+    setAndScheduleSave(newCompletable);
   }
 
   /**
@@ -186,8 +193,9 @@ const CompletableRow = (props: CompletableRowProps) => {
    */
   function saveText(property: 'note' | 'title') {
     return (newText: string): void => {
-      completable[property] = newText;
-      setAndScheduleSave(completable);
+      const newCompletable = { ...completable };
+      newCompletable[property] = newText;
+      setAndScheduleSave(newCompletable);
     };
   }
 

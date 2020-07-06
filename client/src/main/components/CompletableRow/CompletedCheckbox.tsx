@@ -23,13 +23,14 @@ function CompletedCheckbox(props: CompletedCheckboxProps) {
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     setChecked(event.target.checked);
-    completable.completed = event.target.checked;
-    if (completable.completed) {
-      completable.completedDate = new Date();
+    const newCompletable = { ...completable };
+    newCompletable.completed = event.target.checked;
+    if (newCompletable.completed) {
+      newCompletable.completedDate = new Date();
     } else {
-      completable.completedDate = null;
+      newCompletable.completedDate = null;
     }
-    setAndScheduleSave(completable);
+    setAndScheduleSave(newCompletable);
   }
 
   return (
