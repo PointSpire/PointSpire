@@ -61,6 +61,23 @@ export interface CompletableRowProps extends WithStyles<typeof styles> {
   deleteThisCompletable: () => Promise<void>;
 }
 
+/*
+ * TODO: What is the most efficient way to sort the list of tasks and projects?
+ - The Parent of each task needs to listen to changes in the tasks so that
+ updates can happen to the sorting if something is modified. What specifically
+ needs to be updated if it happens though? Somehow the parent component needs
+ to be triggered to be modified. So that means that either the order of the
+ children needs to change, or something else. Ah that might be a good idea. 
+ - If a child is changed, it can trigger a callback to see if the changed
+ property is the one that is being sorted upon. If it is, then it can sort
+ the array of subtasks, then trigger a state change by updating the
+ completable.
+
+ Some things to consider are:
+ - Updating the sorting logic for the project table
+ - How to subscribe to all children upon addition or anything else. 
+ */
+
 /**
  * Represents a row for either a Project or a Task.
  *
@@ -82,12 +99,41 @@ const CompletableRow = (props: CompletableRowProps) => {
     ClientData.getCompletable(completableType, completableId)
   );
 
+  const listenerId = `${completableId}.CompletableRow`;
+
   /**
-   * Subscribes to changes of this completable. This should run once when the
-   * component is mounted.
+   * Subscribe to changes in the children for sorting purposes.
+   *
+   * This could potentially be made more efficient by comparing to see if the
+   * sorted array is different than the original array. Not sure if that is
+   * more efficient than just pushing the change or not though.
    */
   useEffect(() => {
-    const listenerId = `${completableId}.CompletableRow`;
+    completable.subtasks.forEach(taskId => {
+      ClientData.addCompletableListener('task', taskId, listenerId, () => {
+        const newCompletable = { ...completable };
+        newCompletable.subtasks.sort(sortingFunctions[sortBy]('task'));
+        setCompletable(newCompletable);
+      });
+    });
+
+    // This will be ran when the compoennt is unmounted
+    return function cleanup() {
+      // eslint-disable-next-line
+      console.log('cleanup function was ran');
+      completable.subtasks.forEach(taskId => {
+        ClientData.removeCompletableListener('task', taskId, listenerId);
+      });
+    };
+  }, []);
+
+  /**
+   * Subscribes to changes of this completable. This should run once when the
+   * component is mounted because of the empty array as the second argument.
+   *
+   * See also: https://reactjs.org/docs/hooks-effect.html#tip-optimizing-performance-by-skipping-effects
+   */
+  useEffect(() => {
     ClientData.addCompletableListener(
       completableType,
       completableId,
@@ -110,12 +156,12 @@ const CompletableRow = (props: CompletableRowProps) => {
     // This will be ran when the compoennt is unmounted
     return function cleanup() {
       ClientData.removeCompletableListener(
-        'project',
+        completableType,
         completableId,
         listenerId
       );
     };
-  });
+  }, []);
 
   /**
    * Saves the completable to the server and logs to the console what
@@ -218,6 +264,13 @@ const CompletableRow = (props: CompletableRowProps) => {
     const updatedCompletable = { ...completable };
     updatedCompletable.subtasks.push(newTask._id);
     ClientData.setCompletable(completableType, updatedCompletable);
+
+    // Set this completable as a listener of the new one
+    ClientData.addCompletableListener('task', newTask._id, listenerId, () => {
+      const newCompletable = { ...completable };
+      newCompletable.subtasks.sort(sortingFunctions[sortBy]('task'));
+      setCompletable(newCompletable);
+    });
   }
 
   /**

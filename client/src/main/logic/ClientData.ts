@@ -49,8 +49,6 @@ class ClientData {
     completableId: string,
     updatedCompletable: Completable | null
   ) {
-    // eslint-disable-next-line
-    console.log('notifyCompletableListeners was triggered');
     let completableListeners;
     if (type === 'project') {
       completableListeners = this.projectListeners;
