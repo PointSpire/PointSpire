@@ -9,9 +9,8 @@ import {
   Typography,
   WithStyles,
   withStyles,
-  // Button,
 } from '@material-ui/core';
-import { Task, TaskObjects, ProjectObjects } from '../logic/dbTypes';
+import { Task, TaskObjects, ProjectObjects } from '../../logic/dbTypes';
 import PrereqTaskManager from './PrereqTaskManager';
 
 function styles(theme: Theme) {
@@ -75,9 +74,6 @@ const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
         />
       </DialogContent>
       <DialogActions />
-      {/* <Button variant="text" onClick={() => close()}>Cancel</Button>
-        <Button>Save</Button>
-      </DialogActions> */}
     </Dialog>
   );
 };

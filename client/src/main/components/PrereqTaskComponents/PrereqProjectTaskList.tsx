@@ -11,7 +11,7 @@ import {
   ListSubheader,
   ListItemText,
 } from '@material-ui/core';
-import { ProjectObjects, TaskObjects } from '../logic/dbTypes';
+import { ProjectObjects, TaskObjects } from '../../logic/dbTypes';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -21,7 +21,6 @@ function styles(theme: Theme) {
       margin: theme.spacing(1),
     },
     itemPrimary: {
-      margin: theme.spacing(1),
       backgroundColor: theme.palette.primary.light,
     },
     itemSecondary: {
@@ -40,7 +39,7 @@ export interface PrereqTaskListProps extends WithStyles<typeof styles> {
  * Displays the prerequisite tasks as a list of buttons.
  * @param {PrereqTaskListProps} props PrereqTaskList properties.
  */
-const PrereqTaskMainList = (props: PrereqTaskListProps): JSX.Element => {
+const PrereqProjectTaskList = (props: PrereqTaskListProps): JSX.Element => {
   const { classes, projects, tasks, handlePrereqTaskChange } = props;
 
   const projectList = Object.values(projects);
@@ -73,4 +72,4 @@ const PrereqTaskMainList = (props: PrereqTaskListProps): JSX.Element => {
   );
 };
 
-export default withStyles(styles, { withTheme: true })(PrereqTaskMainList);
+export default withStyles(styles, { withTheme: true })(PrereqProjectTaskList);

@@ -1,20 +1,13 @@
 import React, { useState } from 'react';
 import {
-  IconButton,
   WithStyles,
   createStyles,
   Theme,
   withStyles,
-  Collapse,
   Grid,
-  List,
-  ListItem,
   Card,
-  Tooltip,
+  Collapse,
 } from '@material-ui/core';
-import UpIcon from '@material-ui/icons/ArrowUpward';
-import DownIcon from '@material-ui/icons/ArrowDownward';
-import AddListIcon from '@material-ui/icons/PlaylistAdd';
 import { Project, TaskObjects, Task, ProjectObjects } from '../logic/dbTypes';
 import TaskRow from './TaskRow';
 import { postNewTask, deleteTask, patchProject } from '../logic/fetchMethods';
@@ -22,29 +15,32 @@ import scheduleCallback from '../logic/savingTimer';
 import NoteInput from './NoteInput';
 import DateInput from './DateInput';
 import SimpleTextInput from './SimpleTextInput';
-import PriorityInput from './PriorityInput';
+import TaskMenu from './TaskMenu/TaskMenu';
+import sortingFunctions from '../logic/sortingFunctions';
+import PriorityButton from './PriorityButton/PriorityButton';
+import TaskExpanderButton from './TaskExpanderButton';
+import { SetTaskFunction, SetTasksFunction, SetProjectFunction } from '../App';
 
 function styles(theme: Theme) {
   return createStyles({
     root: {
+      display: 'flex',
       width: '100%',
-      // backgroundColor: theme.palette.background.paper,
+      flexDirection: 'row',
+      alignItems: 'center',
     },
-    nested: {
-      paddingLeft: theme.spacing(4),
-      borderColor: theme.palette.secondary.main,
-    },
-    iconButton: {
-      backgroundColor: theme.palette.secondary.main,
-      '&:hover': {
-        backgroundColor: theme.palette.secondary.light,
-      },
-    },
-    iconButtonHover: {
-      backgroundColor: theme.palette.primary.main,
+    flexGrow: {
+      flexGrow: 1,
     },
     card: {
-      padding: theme.spacing(2),
+      flexGrow: 1,
+      padding: theme.spacing(1),
+      marginTop: theme.spacing(1),
+      marginRight: theme.spacing(1),
+      marginLeft: theme.spacing(1),
+    },
+    nested: {
+      marginLeft: theme.spacing(2),
     },
   });
 }
@@ -53,29 +49,31 @@ export interface ProjectRowProps extends WithStyles<typeof styles> {
   project: Project;
   tasks: TaskObjects;
   projects: ProjectObjects;
-  setTask: (updatedTask: Task) => void;
-  setTasks: (updatedTasks: TaskObjects) => void;
-  setProject: (updatedProject: Project) => void;
+  setTask: SetTaskFunction;
+  setTasks: SetTasksFunction;
+  setProject: SetProjectFunction;
+  deleteThisProject: () => Promise<void>;
 }
 
-export interface ProjectRowState {
-  open: boolean;
-  priority: number;
-  title: string;
-}
-
+/**
+ * Represents a row for a Project in the UI.
+ *
+ * @param {ProjectRowProps} props the props
+ */
 const ProjectRow = (props: ProjectRowProps) => {
   const {
     project,
+    projects,
     classes,
     tasks,
-    projects,
     setTask,
     setTasks,
     setProject,
+    deleteThisProject,
   } = props;
 
-  const [open, setOpen] = useState(false);
+  const [sortBy, setSortBy] = useState('Priority');
+  const [subTasksOpen, setSubTasksOpen] = useState(false);
 
   /**
    * Saves the project in state to the server and logs to the console what
@@ -107,7 +105,7 @@ const ProjectRow = (props: ProjectRowProps) => {
   }
 
   function saveStartDate(newDate: Date | null): void {
-    project.dueDate = newDate;
+    project.startDate = newDate;
     setProject(project);
     scheduleCallback(`${project._id}.saveProject`, saveProject);
   }
@@ -168,98 +166,90 @@ const ProjectRow = (props: ProjectRowProps) => {
     await deleteTask(task);
   }
 
-  function handleAddNewTaskClick(): void {
-    addSubTask('Untitled').catch(err => {
-      // eslint-disable-next-line
-      console.error(err);
-    });
-
-    /* TODO: Try to get the transition to run when it opens. Right now it
-    doesn't. */
-    setOpen(true);
-  }
-
   return (
-    <ListItem className={classes.root} key={project._id}>
-      <Card variant="outlined" className={`${classes.card} ${classes.root}`}>
-        <Grid container spacing={1} justify="space-between" alignItems="center">
-          <Grid item>
-            <IconButton
-              aria-label="project-expander"
-              onClick={() => {
-                setOpen(!open);
-              }}
+    <>
+      <div className={classes.root}>
+        <TaskExpanderButton
+          open={subTasksOpen}
+          setOpen={setSubTasksOpen}
+          parent={project}
+        />
+        <Card className={`${classes.card}`} raised key={project._id}>
+          <Grid container justify="flex-start" alignItems="center">
+            <Grid
+              container
+              spacing={2}
+              wrap="nowrap"
+              alignItems="center"
+              justify="flex-start"
             >
-              {open ? <UpIcon /> : <DownIcon />}
-            </IconButton>
-          </Grid>
-          <Grid item>
-            <SimpleTextInput
-              label="Project Title"
-              value={project.title}
-              saveValue={saveText('title')}
-            />
-          </Grid>
-          <Grid item>
-            <PriorityInput
-              savePriority={savePriority}
-              priority={project.priority}
-            />
-          </Grid>
-          <Grid item>
-            <DateInput
-              label="Start Date"
-              date={project.startDate}
-              saveDate={saveStartDate}
-            />
-          </Grid>
-          <Grid item>
-            <DateInput
-              label="Due Date"
-              date={project.dueDate}
-              saveDate={saveDueDate}
-            />
-          </Grid>
-          <Grid item>
-            <Tooltip title="Add Subtask">
-              <IconButton
-                aria-label="new-project-task-button"
-                onClick={handleAddNewTaskClick}
-              >
-                <AddListIcon fontSize="large" />
-              </IconButton>
-            </Tooltip>
-          </Grid>
-          <Grid item className={classes.root}>
-            <NoteInput
-              saveNote={saveText('note')}
-              note={project.note}
-              label="Project Note"
-            />
-          </Grid>
-          <Collapse
-            in={open}
-            timeout="auto"
-            className={classes.root}
-            component={List}
-          >
-            <List>
-              {project.subtasks.map(taskId => (
-                <TaskRow
-                  key={taskId}
-                  setTasks={setTasks}
-                  setTask={setTask}
-                  task={tasks[taskId]}
-                  tasks={tasks}
-                  projects={projects}
-                  deleteTask={deleteSubTask}
+              <Grid item className={classes.root} key={`${project._id}.title`}>
+                <SimpleTextInput
+                  label="Project Title"
+                  value={project.title}
+                  saveValue={saveText('title')}
                 />
-              ))}
-            </List>
-          </Collapse>
-        </Grid>
-      </Card>
-    </ListItem>
+              </Grid>
+              <Grid item>
+                <PriorityButton
+                  savePriority={savePriority}
+                  priority={project.priority}
+                  projectOrTaskTitle={project.title}
+                />
+              </Grid>
+              <Grid item>
+                <DateInput
+                  label="Start Date"
+                  date={project.startDate}
+                  saveDate={saveStartDate}
+                />
+              </Grid>
+              <Grid item>
+                <DateInput
+                  label="Due Date"
+                  date={project.dueDate}
+                  saveDate={saveDueDate}
+                />
+              </Grid>
+              <Grid item>
+                <TaskMenu
+                  sortBy={sortBy}
+                  setSortBy={setSortBy}
+                  deleteTask={deleteThisProject}
+                  addSubTask={addSubTask}
+                />
+              </Grid>
+            </Grid>
+
+            <Grid item className={classes.flexGrow} key={`${project._id}.note`}>
+              <NoteInput
+                saveNote={saveText('note')}
+                note={project.note}
+                label="Project Note"
+              />
+            </Grid>
+          </Grid>
+        </Card>
+      </div>
+      <div className={classes.nested}>
+        <Collapse in={subTasksOpen} timeout="auto" className={classes.flexGrow}>
+          {Object.values(tasks)
+            .filter(task => project.subtasks.includes(task._id))
+            .sort(sortingFunctions[sortBy])
+            .map(task => (
+              <TaskRow
+                key={task._id}
+                setTasks={setTasks}
+                setTask={setTask}
+                task={task}
+                tasks={tasks}
+                projects={projects}
+                deleteTask={deleteSubTask}
+              />
+            ))}
+        </Collapse>
+      </div>
+    </>
   );
 };
 

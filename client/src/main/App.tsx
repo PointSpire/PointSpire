@@ -1,7 +1,8 @@
 import React from 'react';
 import './App.css';
-import { ThemeProvider } from '@material-ui/core/styles';
+import { createMuiTheme, ThemeProvider, Theme } from '@material-ui/core/styles';
 import MuiAlert from '@material-ui/lab/Alert';
+
 import { Snackbar } from '@material-ui/core';
 import TopMenuBar from './components/TopMenuBar';
 import {
@@ -20,9 +21,7 @@ import {
   getTestUserData,
   baseServerUrl,
 } from './logic/fetchMethods';
-import buildTheme from './pointSpireTheme';
-
-const theme = buildTheme();
+import baseThemeOptions from './AppTheme';
 
 /**
  * Used to determine the severity of an alert for the snackbar of the app.
@@ -59,6 +58,8 @@ type AppState = {
    * All of the tasks associated with the user.
    */
   tasks?: TaskObjects;
+
+  appTheme: Theme;
 };
 
 type AppProps = unknown;
@@ -84,6 +85,7 @@ class App extends React.Component<AppProps, AppState> {
       user: undefined,
       projects: {},
       tasks: {},
+      appTheme: createMuiTheme(baseThemeOptions),
     };
 
     this.handleSnackBarClose = this.handleSnackBarClose.bind(this);
@@ -95,6 +97,7 @@ class App extends React.Component<AppProps, AppState> {
     this.setTasks = this.setTasks.bind(this);
     this.setTask = this.setTask.bind(this);
     this.setUser = this.setUser.bind(this);
+    this.setTheme = this.setTheme.bind(this);
   }
 
   /**
@@ -188,6 +191,19 @@ class App extends React.Component<AppProps, AppState> {
     });
   }
 
+  /**
+   * Updates the theme for the application. This should only be updated by
+   * modifying particular variables and not replacing the theme fresh because
+   * it is quite large.
+   *
+   * @param {Theme} updatedTheme the updated theme object
+   */
+  setTheme(updatedTheme: Theme): void {
+    this.setState({
+      appTheme: updatedTheme,
+    });
+  }
+
   async addProject(newTitle: string): Promise<void> {
     const { projects, user } = this.state;
     if (user && projects) {
@@ -267,6 +283,7 @@ class App extends React.Component<AppProps, AppState> {
       user,
       projects,
       tasks,
+      appTheme,
     } = this.state;
     const {
       handleSnackBarClose,
@@ -278,10 +295,11 @@ class App extends React.Component<AppProps, AppState> {
       setUser,
       setTask,
       setTasks,
+      setTheme,
     } = this;
     return (
       <div className="App">
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={appTheme}>
           <TopMenuBar
             githubClientId={githubClientId}
             baseServerUrl={baseServerUrl}
@@ -289,6 +307,8 @@ class App extends React.Component<AppProps, AppState> {
             alert={alert}
             userSettings={user ? user.settings : undefined}
             updateSettings={updateSettings}
+            appTheme={appTheme}
+            setTheme={setTheme}
           />
           {/* If projects and tasks exist, show project table */}
           {projects && tasks && user ? (

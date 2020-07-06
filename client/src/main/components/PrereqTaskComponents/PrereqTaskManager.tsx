@@ -15,10 +15,10 @@ import {
   Select,
 } from '@material-ui/core';
 import { Search as SearchIcon, Clear as ClearIcon } from '@material-ui/icons';
-import { Task, TaskObjects, ProjectObjects } from '../logic/dbTypes';
+import { Task, TaskObjects, ProjectObjects } from '../../logic/dbTypes';
 import PrereqTaskList from './PrereqTaskList';
-import { searchByNameDescending } from '../logic/sortingFunctions';
-import PrereqTaskList2 from './PrereqTaskList2';
+import PrereqProjectTaskList from './PrereqProjectTaskList';
+import { searchByNameDescending } from '../../logic/sortingFunctions';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -162,7 +162,7 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
     if (allTasks) {
       if (selectedFilter === 'Projects') {
         return (
-          <PrereqTaskList2
+          <PrereqProjectTaskList
             projects={allProjects}
             tasks={allTasks}
             handlePrereqTaskChange={handlePrereqTasksChange}
@@ -186,39 +186,11 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
       <Grid item xs={4} className={classes.gridItem}>
         <Paper className={classes.areaPaper}>
           <Typography align="center">{`Task: ${parentTask.title}`}</Typography>
-          {/* {allTasks ? (
-            <PrereqTaskList
-              isMainList
-              taskList={allTaskIds}
-              tasks={allTasks}
-              handlePrereqTaskChange={handlePrereqTasksChange}
-            />
-          ) : (
-            <Typography>You have nothing to do! Wow.</Typography>
-          )} */}
           <Select value={selectedFilter} onChange={handleSelectEvent}>
             <MenuItem value="Projects">Projects</MenuItem>
             <MenuItem value="Tasks">Tasks</MenuItem>
           </Select>
           {generateMainTaskList()}
-          {/* {allTasks ? (
-            selectedFilter === 'Projects' ? (
-              <PrereqTaskList2
-                projects={allProjects}
-                tasks={allTasks}
-                handlePrereqTaskChange={handlePrereqTasksChange}
-              />
-            ) : (
-              <PrereqTaskList
-                isMainList
-                taskList={allTaskIds}
-                tasks={allTasks}
-                handlePrereqTaskChange={handlePrereqTasksChange}
-              />
-            )
-          ) : (
-            <Typography>You have nothing to do! Wow.</Typography>
-          )} */}
         </Paper>
       </Grid>
       <Grid item xs={4} className={classes.gridItem}>
