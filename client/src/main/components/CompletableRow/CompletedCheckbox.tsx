@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Checkbox } from '@material-ui/core';
 import { Project, Task } from '../../logic/dbTypes';
 
@@ -19,12 +19,10 @@ function CompletedCheckbox(props: CompletedCheckboxProps) {
     setAndScheduleSave(completable);
   }
 
+  const [checked, setChecked] = useState(completable.completed);
+
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
-    // eslint-disable-next-line
-    console.log(
-      'The checkbox was changed and its value is now:',
-      event.target.checked
-    );
+    setChecked(event.target.checked);
     completable.completed = event.target.checked;
     if (completable.completed) {
       completable.completedDate = new Date();
@@ -38,7 +36,7 @@ function CompletedCheckbox(props: CompletedCheckboxProps) {
     <Checkbox
       key={completable._id}
       className={className}
-      checked={completable.completed}
+      checked={checked}
       onChange={handleChange}
       color="primary"
       size="medium"

@@ -93,9 +93,11 @@ const CompletableRow = (props: CompletableRowProps) => {
       completableId,
       listenerId,
       updatedCompletable => {
-        // eslint-disable-next-line
-        console.log('listenerCallback was triggered');
         if (updatedCompletable !== null) {
+          // eslint-disable-next-line
+          console.log('The updated completable is:');
+          // eslint-disable-next-line
+          console.log(updatedCompletable);
           setCompletable(updatedCompletable);
         }
       }
@@ -151,8 +153,6 @@ const CompletableRow = (props: CompletableRowProps) => {
    * @param {Completable} updatedCompletable the updated completable to use
    */
   function setAndScheduleSave(updatedCompletable: Completable): void {
-    // eslint-disable-next-line
-    console.log('setAndScheduleSave was triggered');
     ClientData.setCompletable(completableType, updatedCompletable);
     scheduleCallback(
       `${updatedCompletable._id}.saveCompletable`,
@@ -207,8 +207,9 @@ const CompletableRow = (props: CompletableRowProps) => {
     ClientData.setTasks(tasks);
 
     // Add the new sub task to the completable
-    completable.subtasks.push(newTask._id);
-    ClientData.setCompletable(completableType, completable);
+    const updatedCompletable = { ...completable };
+    updatedCompletable.subtasks.push(newTask._id);
+    ClientData.setCompletable(completableType, updatedCompletable);
   }
 
   /**

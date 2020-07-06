@@ -57,9 +57,11 @@ class ClientData {
     } else {
       completableListeners = this.taskListeners;
     }
-    Object.values(completableListeners[completableId]).forEach(callback => {
-      callback(updatedCompletable);
-    });
+    if (completableListeners[completableId]) {
+      Object.values(completableListeners[completableId]).forEach(callback => {
+        callback(updatedCompletable);
+      });
+    }
   }
   // #endregion
 
