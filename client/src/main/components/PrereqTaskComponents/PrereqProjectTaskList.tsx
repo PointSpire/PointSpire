@@ -47,7 +47,10 @@ const PrereqProjectTaskList = (props: PrereqTaskListProps): JSX.Element => {
     <Grid item>
       <List subheader={<li />} dense>
         {projectList.map(prj => (
-          <Paper className={classes.projectItem}>
+          <Paper
+            className={classes.projectItem}
+            key={`project-paper-${prj._id}`}
+          >
             <li key={`project-${prj._id}`}>
               <ul>
                 <ListSubheader>{prj.title}</ListSubheader>
