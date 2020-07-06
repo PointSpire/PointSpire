@@ -109,8 +109,6 @@ const CompletableRow = (props: CompletableRowProps) => {
 
     // This will be ran when the compoennt is unmounted
     return function cleanup() {
-      // eslint-disable-next-line
-      console.log('cleanup function was ran');
       completable.subtasks.forEach(taskId => {
         ClientData.removeCompletableListener('task', taskId, listenerId);
       });

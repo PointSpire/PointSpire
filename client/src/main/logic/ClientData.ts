@@ -157,8 +157,6 @@ class ClientData {
     listenerId: string,
     callback: ListenerCallback
   ) {
-    // eslint-disable-next-line
-    console.log('addCompletableListener was triggered');
     let completableListeners;
     if (type === 'project') {
       completableListeners = this.projectListeners;
