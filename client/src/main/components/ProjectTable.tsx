@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@material-ui/core/';
 import {
   Theme,
@@ -82,6 +82,37 @@ function ProjectTable(props: ProjectTableProps) {
     };
   }
 
+  const listenerId = `${user._id}.ProjectTable`;
+
+  /**
+   * Subscribe to changes in the children for sorting purposes.
+   *
+   * This could potentially be made more efficient by comparing to see if the
+   * sorted array is different than the original array. Not sure if that is
+   * more efficient than just pushing the change or not though.
+   */
+  useEffect(() => {
+    user.projects.forEach(projectId => {
+      ClientData.addCompletableListener(
+        'project',
+        projectId,
+        listenerId,
+        () => {
+          const newUser = { ...user };
+          newUser.projects.sort(sortingFunctions[sortBy]('project'));
+          setUser(newUser);
+        }
+      );
+    });
+
+    // This will be ran when the compoennt is unmounted
+    return function cleanup() {
+      user.projects.forEach(projectId => {
+        ClientData.removeCompletableListener('project', projectId, listenerId);
+      });
+    };
+  }, []);
+
   /**
    * Adds a project to the server, to the user state and the to the ClientData.
    *
@@ -94,6 +125,18 @@ function ProjectTable(props: ProjectTableProps) {
     const projects = ClientData.getProjects();
     projects[newProject._id] = newProject;
     ClientData.setProjects(projects);
+
+    // Add the project table as a listener of the new project
+    ClientData.addCompletableListener(
+      'project',
+      newProject._id,
+      listenerId,
+      () => {
+        const newUser = { ...user };
+        newUser.projects.sort(sortingFunctions[sortBy]('project'));
+        setUser(newUser);
+      }
+    );
 
     // Add it to the user state which will propogate the changes in the UI
     user.projects.push(newProject._id);
