@@ -10,6 +10,12 @@ import {
   tasksAreEqual,
   projectsAreEqual,
 } from './dbTypes';
+import {
+  setCookie,
+  ClientCookies,
+  getCookie,
+  deleteAllCookies,
+} from './clientCookies';
 
 const fetchData = {
   baseServerUrl:
@@ -101,7 +107,7 @@ export async function getUserData(): Promise<AllUserData> {
   if (githubCodeMatch) {
     githubCode = githubCodeMatch && githubCodeMatch[1];
   }
-  if (githubCode !== '') {
+  if (getCookie(ClientCookies.loggedIn) !== 'true' && githubCode !== '') {
     const url = `${fetchData.baseServerUrl}/auth/github`;
     const userDocRes = await fetch(url, {
       method: 'POST',
@@ -117,6 +123,10 @@ export async function getUserData(): Promise<AllUserData> {
     const getUserUrl = `${fetchData.baseServerUrl}/api/users/${user._id}`;
     const res = await fetch(getUserUrl);
     const data = (await res.json()) as AllUserData;
+
+    // Store a cookie that shows the user is logged in
+    setCookie(ClientCookies.loggedIn, 'true');
+
     return data;
   }
   const url = `${fetchData.baseServerUrl}/api/users`;
@@ -297,4 +307,22 @@ export async function deleteTask(task: Task): Promise<Task> {
   });
   const returnedTask = (await res.json()) as Task;
   return returnedTask;
+}
+
+/**
+ * Handles logout of app
+ */
+export async function logout() {
+  const { basicHeader } = fetchData;
+  const url = `${baseServerUrl}/logout`;
+  const res = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+    headers: basicHeader,
+  });
+  deleteAllCookies();
+  if (res.status === 200) {
+    // reload application
+    window.location.replace(window.location.pathname);
+  }
 }

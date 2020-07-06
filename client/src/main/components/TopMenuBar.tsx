@@ -28,6 +28,7 @@ import {
   UpdateUserOnServerFunction,
 } from '../App';
 import { UserSettings } from '../logic/dbTypes';
+import { logout } from '../logic/fetchMethods';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */
@@ -61,6 +62,7 @@ export interface TopMenuBarProps extends WithStyles<typeof styles> {
   githubClientId: string;
   appTheme: Theme;
   setTheme: (theme: Theme) => void;
+  loggedIn: boolean;
 }
 
 export interface TopMenuBarState {
@@ -212,6 +214,7 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
       githubClientId,
       appTheme,
       setTheme,
+      loggedIn,
     } = this.props;
 
     // Set up the settingsDialog based on existence of user info
@@ -280,9 +283,9 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
             </Typography>
             <Button
               color="inherit"
-              onClick={this.createSetLoginOpenHandler(true)}
+              onClick={loggedIn ? logout : this.createSetLoginOpenHandler(true)}
             >
-              Login
+              {loggedIn ? 'Logout' : 'Login'}
             </Button>
           </Toolbar>
         </AppBar>
