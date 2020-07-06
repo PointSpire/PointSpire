@@ -61,23 +61,6 @@ export interface CompletableRowProps extends WithStyles<typeof styles> {
   deleteThisCompletable: () => Promise<void>;
 }
 
-/*
- * TODO: What is the most efficient way to sort the list of tasks and projects?
- - The Parent of each task needs to listen to changes in the tasks so that
- updates can happen to the sorting if something is modified. What specifically
- needs to be updated if it happens though? Somehow the parent component needs
- to be triggered to be modified. So that means that either the order of the
- children needs to change, or something else. Ah that might be a good idea. 
- - If a child is changed, it can trigger a callback to see if the changed
- property is the one that is being sorted upon. If it is, then it can sort
- the array of subtasks, then trigger a state change by updating the
- completable.
-
- Some things to consider are:
- - Updating the sorting logic for the project table
- - How to subscribe to all children upon addition or anything else. 
- */
-
 /**
  * Represents a row for either a Project or a Task.
  *
