@@ -26,6 +26,18 @@ export function getCookie(cookieName: ClientCookies): string {
  */
 export enum ClientCookies {
   fontSize = 'fontSize',
+  loggedIn = 'loggedIn',
+}
+
+/**
+ * Deletes all cookies stored by this client application. So any cookies
+ * that this application can see. This doesn't include cookies that are created
+ * by the API server.
+ */
+export function deleteAllCookies(): void {
+  Object.keys(Cookies.getJSON()).forEach(key => {
+    Cookies.remove(key);
+  });
 }
 
 /**
