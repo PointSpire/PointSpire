@@ -25,6 +25,13 @@ const taskSchema = new Schema({
     type: require('mongoose-int32'),
     default: 0,
   },
+  prereqTasks: [
+    {
+      type: ObjectId,
+      ref: 'Task',
+      default: new Array<typeof ObjectId>(),
+    },
+  ],
   subtasks: [
     {
       type: ObjectId,
@@ -46,6 +53,7 @@ export interface TaskDoc extends Document {
   dueDate: Date | null;
   priority: number;
   subtasks: Array<typeof ObjectId>;
+  prereqTasks: Array<typeof ObjectId>;
 }
 
 /**

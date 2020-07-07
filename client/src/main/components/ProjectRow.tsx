@@ -8,9 +8,8 @@ import {
   Card,
   Collapse,
 } from '@material-ui/core';
-import { Project, TaskObjects, Task } from '../logic/dbTypes';
+import { Project, TaskObjects, Task, ProjectObjects } from '../logic/dbTypes';
 import TaskRow from './TaskRow';
-import { SetTaskFunction, SetTasksFunction, SetProjectFunction } from '../App';
 import { postNewTask, deleteTask, patchProject } from '../logic/fetchMethods';
 import scheduleCallback from '../logic/savingTimer';
 import NoteInput from './NoteInput';
@@ -20,6 +19,7 @@ import TaskMenu from './TaskMenu/TaskMenu';
 import sortingFunctions from '../logic/sortingFunctions';
 import PriorityButton from './PriorityButton/PriorityButton';
 import TaskExpanderButton from './TaskExpanderButton';
+import { SetTaskFunction, SetTasksFunction, SetProjectFunction } from '../App';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -48,6 +48,7 @@ function styles(theme: Theme) {
 export interface ProjectRowProps extends WithStyles<typeof styles> {
   project: Project;
   tasks: TaskObjects;
+  projects: ProjectObjects;
   setTask: SetTaskFunction;
   setTasks: SetTasksFunction;
   setProject: SetProjectFunction;
@@ -62,6 +63,7 @@ export interface ProjectRowProps extends WithStyles<typeof styles> {
 const ProjectRow = (props: ProjectRowProps) => {
   const {
     project,
+    projects,
     classes,
     tasks,
     setTask,
@@ -241,6 +243,7 @@ const ProjectRow = (props: ProjectRowProps) => {
                 setTask={setTask}
                 task={task}
                 tasks={tasks}
+                projects={projects}
                 deleteTask={deleteSubTask}
               />
             ))}

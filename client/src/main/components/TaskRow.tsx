@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, MouseEvent } from 'react';
 import {
   WithStyles,
   createStyles,
@@ -8,13 +8,14 @@ import {
   Card,
   Collapse,
 } from '@material-ui/core';
-import { Task, TaskObjects } from '../logic/dbTypes';
+import { Task, TaskObjects, ProjectObjects } from '../logic/dbTypes';
 import { SetTaskFunction, SetTasksFunction } from '../App';
 import {
   patchTask,
   deleteTask as deleteTaskOnServer,
   postNewTask,
 } from '../logic/fetchMethods';
+import PrereqTaskDialog from './PrereqTaskComponents/PrereqTaskDialog';
 import TaskMenu from './TaskMenu/TaskMenu';
 import NoteInput from './NoteInput';
 import DateInput from './DateInput';
@@ -48,9 +49,16 @@ function styles(theme: Theme) {
   });
 }
 
+/**
+ * The id used for the prerequisite save button.
+ * Only here so we can change it if needed and wont break the save functionality.
+ */
+const savePrereqId = 'save-prereq-tasks';
+
 export interface TaskRowProps extends WithStyles<typeof styles> {
   task: Task;
   tasks: TaskObjects;
+  projects: ProjectObjects;
   setTask: SetTaskFunction;
   setTasks: SetTasksFunction;
   deleteTask: (task: Task) => Promise<void>;
@@ -63,27 +71,34 @@ export interface TaskRowProps extends WithStyles<typeof styles> {
  * @param {TaskRowProps} props the props
  */
 function TaskRow(props: TaskRowProps): JSX.Element {
-  const { task, setTasks, tasks, setTask, deleteTask, classes } = props;
+  const {
+    task,
+    setTasks,
+    tasks,
+    projects,
+    setTask,
+    deleteTask,
+    classes,
+  } = props;
   const [sortBy, setSortBy] = useState('Priority');
   const [subTasksOpen, setSubTasksOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [openPrereqs, setOpenPrereq] = useState<boolean>(false);
 
-  /**
-   * Saves this task to the server and logs to the console what happened.
-   */
   function saveTask(): void {
     patchTask(task)
       .then(result => {
         if (result) {
           // eslint-disable-next-line
-          console.log('Task was successfully saved to the server');
+        console.log('Task was successfully saved to the server');
         } else {
           // eslint-disable-next-line
-          console.log('Task was not saved to the server. There was an error.');
+        console.log('Task was not saved to the server. There was an error.');
         }
       })
       .catch(err => {
         // eslint-disable-next-line
-        console.error(err);
+      console.error(err);
       });
   }
 
@@ -135,6 +150,38 @@ function TaskRow(props: TaskRowProps): JSX.Element {
   }
 
   /**
+   * Saves the new prerequisite tasks to the server when the user clicks
+   * the save button.
+   * @param {string[]} prereqTasks The new array of prerequisite tasks to save.
+   */
+  const savePrereqTasks = (prereqTasks: string[]): void => {
+    task.prereqTasks = prereqTasks;
+    setTask(task);
+    saveTask();
+  };
+
+  /**
+   * Determines wether the closing element is the save button. If so, saves
+   * the Task to the server.
+   * @param {MouseEvent<HTMLElement>} e Event args. Used for the closing element id only.
+   */
+  const handleOpenPrereqTaskDialog = (
+    e: MouseEvent<HTMLElement>,
+    prereqTasks: string[] | null
+  ) => {
+    setOpenPrereq(!openPrereqs);
+    setOpen(!open);
+
+    // save button id check
+    if (e.currentTarget.id === savePrereqId) {
+      if (prereqTasks) {
+        savePrereqTasks(prereqTasks);
+      }
+    }
+  };
+
+  /**
+   * Generates the task expander button only if this task has subtasks.
    * Generates a function which can be used to modify the specified `property`
    * of the task and schedule it to be saved on the server.
    *
@@ -217,6 +264,7 @@ function TaskRow(props: TaskRowProps): JSX.Element {
                   setSortBy={setSortBy}
                   addSubTask={addSubTask}
                   deleteTask={deleteThisTask}
+                  openPrereqTaskDialog={handleOpenPrereqTaskDialog}
                 />
               </Grid>
             </Grid>
@@ -225,6 +273,16 @@ function TaskRow(props: TaskRowProps): JSX.Element {
                 saveNote={saveText('note')}
                 note={task.note}
                 label="Task Note"
+              />
+            </Grid>
+            <Grid item>
+              <PrereqTaskDialog
+                savePrereqId={savePrereqId}
+                projects={projects}
+                tasks={tasks}
+                parentTask={task}
+                openDialog={openPrereqs}
+                closeDialog={handleOpenPrereqTaskDialog}
               />
             </Grid>
           </Grid>
@@ -243,6 +301,7 @@ function TaskRow(props: TaskRowProps): JSX.Element {
                 setTask={setTask}
                 task={currentTask}
                 tasks={tasks}
+                projects={projects}
                 deleteTask={deleteSubTask}
               />
             ))}

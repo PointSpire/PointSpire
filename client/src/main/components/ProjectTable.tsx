@@ -31,13 +31,9 @@ function styles(theme: Theme) {
       alignItems: 'center',
       flexGrow: 1,
     },
-    projectItem: {
-      paddingLeft: theme.spacing(4),
-      backgroundColor: theme.palette.background.paper,
-      borderColor: theme.palette.secondary.main,
-    },
-    label: {
+    addProjectButton: {
       alignSelf: 'center',
+      background: theme.palette.primary.main,
       margin: theme.spacing(1),
     },
     sortInput: {
@@ -147,12 +143,17 @@ function ProjectTable(props: ProjectTableProps) {
                 setProject={setProject}
                 project={projectDoc}
                 tasks={tasks}
+                projects={projects}
                 setTask={setTask}
               />
             );
           })}
       </div>
-      <Button className={classes.label} variant="outlined" onClick={addProject}>
+      <Button
+        className={classes.addProjectButton}
+        variant="outlined"
+        onClick={addProject}
+      >
         Add Project
       </Button>
     </>
