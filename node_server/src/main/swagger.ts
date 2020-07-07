@@ -315,6 +315,17 @@ const definition = {
           },
         },
       },
+      taskObjectPrereqIds: {
+        type: 'object',
+        properties: {
+          prereqTasks: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+          },
+        },
+      },
       taskObjectWithIds: {
         allOf: [
           {
@@ -322,6 +333,9 @@ const definition = {
           },
           {
             $ref: '#/components/schemas/taskObjectTaskIds',
+          },
+          {
+            $ref: '#/components/schemas/taskObjectPrereqIds',
           },
         ],
       },

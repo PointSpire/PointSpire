@@ -18,7 +18,13 @@ import { Search as SearchIcon, Clear as ClearIcon } from '@material-ui/icons';
 import { Task, TaskObjects, ProjectObjects } from '../../logic/dbTypes';
 import PrereqTaskList from './PrereqTaskList';
 import PrereqProjectTaskList from './PrereqProjectTaskList';
-import { searchByNameDescending } from '../../logic/sortingFunctions';
+
+function searchByNameDescending(searchTerm: string, tasks: Task[]): string[] {
+  const matches = tasks.filter(task =>
+    task.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  return matches.map(task => task._id);
+}
 
 function styles(theme: Theme) {
   return createStyles({

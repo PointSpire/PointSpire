@@ -17,7 +17,6 @@ const timeToWait = 10 * 1000;
 /**
  * The store for the callbacks
  */
-// eslint-disable-next-line
 let callbacks: { [key: string]: Function } = {};
 
 /**
@@ -58,7 +57,6 @@ export function resetTimer(): void {
  */
 export default function scheduleCallback(
   key: string,
-  // eslint-disable-next-line
   callback: Function
 ): void {
   callbacks[key] = callback;
