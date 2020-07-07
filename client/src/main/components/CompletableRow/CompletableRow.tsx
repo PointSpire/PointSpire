@@ -136,6 +136,12 @@ const CompletableRow = (props: CompletableRowProps) => {
                 'sure that the updated completable is an entirely new object.'
             );
           }
+          // eslint-disable-next-line
+          console.log(
+            'Completable with ID: ',
+            updatedCompletable._id,
+            ' updated'
+          );
           setCompletable(updatedCompletable);
         }
       }

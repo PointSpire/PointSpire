@@ -84,6 +84,25 @@ function ProjectTable(props: ProjectTableProps) {
 
   const listenerId = `${user._id}.ProjectTable`;
 
+  function arraysAreShallowEqual(
+    a: Array<unknown>,
+    b: Array<unknown>
+  ): boolean {
+    if (a === b) return true;
+    if (a == null || b == null) return false;
+    if (a.length !== b.length) return false;
+
+    // If you don't care about the order of the elements inside
+    // the array, you should sort both arrays here.
+    // Please note that calling sort on an array will modify that array.
+    // you might want to clone your array first.
+
+    for (let i = 0; i < a.length; i += 1) {
+      if (a[i] !== b[i]) return false;
+    }
+    return true;
+  }
+
   /**
    * Subscribe to changes in the children for sorting purposes.
    *
@@ -101,7 +120,11 @@ function ProjectTable(props: ProjectTableProps) {
           if (updatedCompletable !== null) {
             const newUser = { ...user };
             newUser.projects.sort(sortingFunctions[sortBy]('project'));
-            setUser(newUser);
+            if (!arraysAreShallowEqual(newUser.projects, user.projects)) {
+              // eslint-disable-next-line
+              console.log('Arrays were not shallow equal');
+              setUser(newUser);
+            }
           }
         }
       );
