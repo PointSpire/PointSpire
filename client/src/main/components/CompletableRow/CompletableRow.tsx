@@ -331,9 +331,9 @@ const CompletableRow = (props: CompletableRowProps) => {
                       ? 'Project Title'
                       : 'Task Title'
                   }
-                  disabled={completable.completed}
-                  value={completable.title}
-                  saveValue={saveText('title')}
+                  completableType={completableType}
+                  completableId={completableId}
+                  completablePropertyName="title"
                 />
               </Grid>
               <Grid item>
