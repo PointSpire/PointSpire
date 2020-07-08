@@ -1,29 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Checkbox } from '@material-ui/core';
-import {
-  Project,
-  Task,
-  CompletableType,
-  Completable,
-} from '../../logic/dbTypes';
+import { CompletableType, Completable } from '../../logic/dbTypes';
 import ClientData from '../../logic/ClientData';
 
 export type CompletedCheckboxProps = {
   className?: string;
   completable: Completable;
   completableType: CompletableType;
-  setAndScheduleSave: (completable: Project | Task) => void;
 };
 
 function CompletedCheckbox(props: CompletedCheckboxProps) {
-  const { className, completable, setAndScheduleSave, completableType } = props;
+  const { className, completable, completableType } = props;
 
   /* Convert the project's completed boolean if needed. This isn't a very
   efficient way to do this, but it only happens once for each project
   that doesn't have a valid `completed` property yet. */
   if (typeof completable.completed !== 'boolean') {
     completable.completed = false;
-    setAndScheduleSave(completable);
+    ClientData.setAndSaveCompletable(completableType, completable);
   }
 
   const listenerId = `${completable._id}.CompletedCheckbox`;
@@ -55,7 +49,7 @@ function CompletedCheckbox(props: CompletedCheckboxProps) {
   }, []);
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
-    ClientData.setCompletableProperty(
+    ClientData.setAndSaveCompletableProperty(
       completableType,
       completable._id,
       'completed',

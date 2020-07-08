@@ -6,6 +6,8 @@ import {
   CompletableType,
   Task,
 } from './dbTypes';
+import scheduleCallback from './savingTimer';
+import { patchProject, patchTask } from './fetchMethods';
 
 /**
  * The callback which will be called if any changes are made to a Completable.
@@ -95,6 +97,44 @@ class ClientData {
     }
     return this.taskListeners;
   }
+
+  /**
+   * Generates a function that saves the completable to the server and logs to
+   * the console what happened.
+   */
+  private static saveCompletable(
+    type: CompletableType,
+    completable: Completable
+  ) {
+    return () => {
+      let patchCompletable;
+      if (type === 'project') {
+        patchCompletable = patchProject;
+      } else {
+        patchCompletable = patchTask;
+      }
+      patchCompletable(completable)
+        .then(result => {
+          if (result) {
+            // eslint-disable-next-line
+            console.log(
+              `${type} with ID: ${completable._id} was ` +
+                `successfully saved to the server`
+            );
+          } else {
+            // eslint-disable-next-line
+            console.log(
+              `${type} with ID: ${completable._id} failed ` +
+                `to save to the server`
+            );
+          }
+        })
+        .catch(err => {
+          // eslint-disable-next-line
+          console.error(err);
+        });
+    };
+  }
   // #endregion
 
   // #region Public Methods
@@ -108,23 +148,45 @@ class ClientData {
     this.projects = projects;
   }
 
-  static setCompletable(type: 'project' | 'task', completable: Completable) {
+  /**
+   * Sets the completable to the updated value, triggers any listeners attached
+   * to it, and schedules it to be saved on the server.
+   *
+   * @param {CompletableType} type the type of the completable
+   * @param {Completable} completable the updated completable
+   */
+  static setAndSaveCompletable(
+    type: 'project' | 'task',
+    completable: Completable
+  ) {
     if (type === 'project') {
       this.projects[completable._id] = completable;
     } else {
       this.tasks[completable._id] = completable;
     }
     this.notifyCompletableListeners(type, completable._id, completable);
+    scheduleCallback(
+      `${completable._id}.saveCompletable`,
+      this.saveCompletable(type, completable)
+    );
   }
 
-  static setCompletableProperty(
+  /**
+   * Sets the given completable property, notifies listeners of that property,
+   * and saves the updated completable on the server.
+   *
+   * @param {CompletableType} type the type of the completable
+   * @param {string} completableId the ID of the completable
+   * @param {string} propertyName the name of the property as it appears as a
+   * key on the completable
+   * @param {unknown} value the updated property value
+   */
+  static setAndSaveCompletableProperty(
     type: CompletableType,
     completableId: string,
     propertyName: string,
     value: unknown
   ): void {
-    // eslint-disable-next-line
-    console.log('setCompletableProperty triggered');
     let completables;
     if (type === 'project') {
       completables = this.projects;
@@ -137,6 +199,12 @@ class ClientData {
       completableId,
       propertyName,
       value
+    );
+
+    // Save the updated completable on the server
+    scheduleCallback(
+      `${completableId}.saveCompletable`,
+      this.saveCompletable(type, completables[completableId])
     );
   }
 
@@ -180,7 +248,7 @@ class ClientData {
    * @param {Project} project the updated Project
    */
   static setProject(project: Project): void {
-    this.setCompletable('project', project);
+    this.setAndSaveCompletable('project', project);
   }
 
   static setTasks(tasks: TaskObjects): void {
@@ -192,7 +260,7 @@ class ClientData {
   }
 
   static setTask(task: Task): void {
-    this.setCompletable('task', task);
+    this.setAndSaveCompletable('task', task);
   }
 
   /**

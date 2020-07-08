@@ -8,14 +8,8 @@ import {
   Card,
   Collapse,
 } from '@material-ui/core';
-import { UserSettings, Completable } from '../../logic/dbTypes';
-import {
-  postNewTask,
-  patchProject,
-  patchTask,
-  deleteTaskById,
-} from '../../logic/fetchMethods';
-import scheduleCallback from '../../logic/savingTimer';
+import { UserSettings } from '../../logic/dbTypes';
+import { postNewTask, deleteTaskById } from '../../logic/fetchMethods';
 import NoteInput from './NoteInput';
 import DateInput from './DateInput';
 import SimpleTextInput from '../SimpleTextInput';
@@ -157,74 +151,9 @@ const CompletableRow = (props: CompletableRowProps) => {
     };
   }, []);
 
-  /**
-   * Saves the completable to the server and logs to the console what
-   * happened.
-   */
-  function saveCompletable(): void {
-    let patchCompletable;
-    if (completableType === 'project') {
-      patchCompletable = patchProject;
-    } else {
-      patchCompletable = patchTask;
-    }
-    patchCompletable(completable)
-      .then(result => {
-        if (result) {
-          // eslint-disable-next-line
-          console.log(
-            `${completableType} with ID: ${completable._id} was ` +
-              `successfully saved to the server`
-          );
-        } else {
-          // eslint-disable-next-line
-          console.log(
-            `${completableType} with ID: ${completable._id} failed ` +
-              `to save to the server`
-          );
-        }
-      })
-      .catch(err => {
-        // eslint-disable-next-line
-        console.error(err);
-      });
-  }
-
-  /**
-   * Sets the provided copmletable to ClientData which triggers the state,
-   * and schedules it to be saved on the server.
-   *
-   * @param {Completable} updatedCompletable the updated completable to use
-   */
-  function setAndScheduleSave(updatedCompletable: Completable): void {
-    ClientData.setCompletable(completableType, updatedCompletable);
-    scheduleCallback(
-      `${updatedCompletable._id}.saveCompletable`,
-      saveCompletable
-    );
-  }
-
   function savePriority(newPriority: number): void {
     const newCompletable = { ...completable };
     newCompletable.priority = newPriority;
-    setAndScheduleSave(newCompletable);
-  }
-
-  /**
-   * Generates a function which can be used to modify the specified `property`
-   * of the completable and schedule it to be saved on the server.
-   *
-   * @param {'note' | 'title'} property the property to modify on the
-   * completable state
-   * @returns {(newText: string) => void} the function which can be used to
-   * save the specified `property` as long as the property is a string type
-   */
-  function saveText(property: 'note' | 'title') {
-    return (newText: string): void => {
-      const newCompletable = { ...completable };
-      newCompletable[property] = newText;
-      setAndScheduleSave(newCompletable);
-    };
   }
 
   /**
@@ -245,7 +174,7 @@ const CompletableRow = (props: CompletableRowProps) => {
     // Add the new sub task to the completable
     const updatedCompletable = { ...completable };
     updatedCompletable.subtasks.push(newTask._id);
-    ClientData.setCompletable(completableType, updatedCompletable);
+    ClientData.setAndSaveCompletable(completableType, updatedCompletable);
 
     // Set this completable as a listener of the new one
     ClientData.addCompletableListener(
@@ -279,7 +208,7 @@ const CompletableRow = (props: CompletableRowProps) => {
         completable.subtasks.indexOf(taskId),
         1
       );
-      ClientData.setCompletable(completableType, updatedCompletable);
+      ClientData.setAndSaveCompletable(completableType, updatedCompletable);
 
       // Make the request to delete the task
       await deleteTaskById(taskId);
@@ -306,7 +235,6 @@ const CompletableRow = (props: CompletableRowProps) => {
               <Grid item>
                 <CompletedCheckbox
                   completableType={completableType}
-                  setAndScheduleSave={setAndScheduleSave}
                   className={classes.checkbox}
                   completable={completable}
                 />
@@ -376,8 +304,8 @@ const CompletableRow = (props: CompletableRowProps) => {
             >
               <Collapse in={noteOpen} timeout="auto">
                 <NoteInput
-                  saveNote={saveText('note')}
-                  note={completable.note}
+                  completableId={completableId}
+                  completableType={completableType}
                   label="Note"
                 />
               </Collapse>

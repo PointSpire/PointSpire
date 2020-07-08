@@ -60,43 +60,23 @@ function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
     };
   }, []);
 
-  /**
-   * Add the property listener for the text. This could be skipped likely and
-   * just set manually when the text is changed. But this allows for the text
-   * to be changed by other components as well.
-   */
-  useEffect(() => {
-    ClientData.addCompletablePropertyListener(
-      completableType,
-      completableId,
-      listenerId,
-      completablePropertyName,
-      updatedValue => {
-        if (updatedValue !== value) {
-          setValue(updatedValue as string);
-        }
-      }
-    );
-
-    // This will be ran when the component is unmounted
-    return function cleanup() {
-      ClientData.removeCompletablePropertyListener(
-        completableType,
-        completableId,
-        listenerId,
-        completablePropertyName
-      );
-    };
-  }, []);
-
   function handleChange(event: React.ChangeEvent<HTMLInputElement>): void {
     setValue(event.target.value);
     resetTimer();
   }
 
   function handleLoseFocus(): void {
-    if (completableId !== value) {
-      // saveValue(value);
+    if (
+      ClientData.getCompletable(completableType, completableId)[
+        completablePropertyName
+      ] !== value
+    ) {
+      ClientData.setAndSaveCompletableProperty(
+        completableType,
+        completableId,
+        completablePropertyName,
+        value
+      );
     }
   }
 

@@ -94,14 +94,14 @@ function DateInput(props: DateInputProps): JSX.Element {
 
   function handleChange(newDate: MaterialUiPickersDate): void {
     if (newDate) {
-      ClientData.setCompletableProperty(
+      ClientData.setAndSaveCompletableProperty(
         completableType,
         completableId,
         completablePropertyName,
         newDate.toDate()
       );
     } else {
-      ClientData.setCompletableProperty(
+      ClientData.setAndSaveCompletableProperty(
         completableType,
         completableId,
         completablePropertyName,
