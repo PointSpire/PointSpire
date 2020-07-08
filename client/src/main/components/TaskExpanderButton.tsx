@@ -16,15 +16,17 @@ function TaskExpanderButton(props: TaskExpanderButtonProps): JSX.Element {
   return (
     <Grid item>
       <Tooltip title={open ? 'Show Less' : 'Show More'}>
-        <IconButton
-          disabled={parent.subtasks.length === 0}
-          aria-label="subtask-expander"
-          onClick={() => {
-            setOpen(!open);
-          }}
-        >
-          {open ? <ExpandMoreIcon /> : <ChevronRightIcon />}
-        </IconButton>
+        <span>
+          <IconButton
+            disabled={parent.subtasks.length === 0}
+            aria-label="subtask-expander"
+            onClick={() => {
+              setOpen(!open);
+            }}
+          >
+            {open ? <ExpandMoreIcon /> : <ChevronRightIcon />}
+          </IconButton>
+        </span>
       </Tooltip>
     </Grid>
   );
