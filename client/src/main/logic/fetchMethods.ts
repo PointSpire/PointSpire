@@ -341,6 +341,17 @@ export async function deleteTask(task: Task): Promise<Task> {
   return returnedTask;
 }
 
+export async function deleteTaskById(taskId: string): Promise<Task> {
+  const { basicHeader } = fetchData;
+  const fullUrl = `${baseServerUrl}/api/tasks/${taskId}`;
+  const res = await fetch(fullUrl, {
+    method: 'DELETE',
+    headers: basicHeader,
+  });
+  const returnedTask = (await res.json()) as Task;
+  return returnedTask;
+}
+
 /**
  * Handles logout of app
  */

@@ -7,10 +7,11 @@ export type SimpleTextInputProps = {
   value: string;
   label: string;
   className?: string;
+  disabled: boolean;
 };
 
 function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
-  const { value: propValue, label, className, saveValue } = props;
+  const { value: propValue, label, className, saveValue, disabled } = props;
   const [value, setValue] = useState(propValue);
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>): void {
@@ -27,6 +28,7 @@ function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
   return (
     <TextField
       className={className}
+      disabled={disabled}
       size="small"
       fullWidth
       label={label}

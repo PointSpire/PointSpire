@@ -13,9 +13,18 @@ import {
  */
 export type ListenerCallback = (completable: Completable | null) => void;
 
+export type PropertyListenerCallback = (updatedValue: unknown) => void;
+
 type CompletableListeners = {
   [completableId: string]: {
-    [listenerId: string]: ListenerCallback;
+    listeners: {
+      [listenerId: string]: ListenerCallback;
+    };
+    propertyListeners: {
+      [propertyName: string]: {
+        [listenerId: string]: PropertyListenerCallback;
+      };
+    };
   };
 };
 
@@ -49,17 +58,42 @@ class ClientData {
     completableId: string,
     updatedCompletable: Completable | null
   ) {
-    let completableListeners;
-    if (type === 'project') {
-      completableListeners = this.projectListeners;
-    } else {
-      completableListeners = this.taskListeners;
-    }
+    const completableListeners = this.getCompletableListeners(type);
     if (completableListeners[completableId]) {
-      Object.values(completableListeners[completableId]).forEach(callback => {
-        callback(updatedCompletable);
+      Object.values(completableListeners[completableId].listeners).forEach(
+        callback => {
+          callback(updatedCompletable);
+        }
+      );
+    }
+  }
+
+  private static notifyCompletablePropertyListeners(
+    type: CompletableType,
+    completableId: string,
+    propertyName: string,
+    updatedValue: unknown
+  ): void {
+    const completableListeners = this.getCompletableListeners(type);
+    if (
+      completableListeners[completableId] &&
+      completableListeners[completableId].propertyListeners[propertyName]
+    ) {
+      // eslint-disable-next-line
+      console.log('Entered if condition');
+      Object.values(
+        completableListeners[completableId].propertyListeners[propertyName]
+      ).forEach(callback => {
+        callback(updatedValue);
       });
     }
+  }
+
+  private static getCompletableListeners(type: CompletableType) {
+    if (type === 'project') {
+      return this.projectListeners;
+    }
+    return this.taskListeners;
   }
   // #endregion
 
@@ -81,6 +115,29 @@ class ClientData {
       this.tasks[completable._id] = completable;
     }
     this.notifyCompletableListeners(type, completable._id, completable);
+  }
+
+  static setCompletableProperty(
+    type: CompletableType,
+    completableId: string,
+    propertyName: string,
+    value: unknown
+  ): void {
+    // eslint-disable-next-line
+    console.log('setCompletableProperty triggered');
+    let completables;
+    if (type === 'project') {
+      completables = this.projects;
+    } else {
+      completables = this.tasks;
+    }
+    completables[completableId][propertyName] = value;
+    this.notifyCompletablePropertyListeners(
+      type,
+      completableId,
+      propertyName,
+      value
+    );
   }
 
   static getProjects(): ProjectObjects {
@@ -157,16 +214,38 @@ class ClientData {
     listenerId: string,
     callback: ListenerCallback
   ) {
-    let completableListeners;
-    if (type === 'project') {
-      completableListeners = this.projectListeners;
-    } else {
-      completableListeners = this.taskListeners;
-    }
+    const completableListeners = this.getCompletableListeners(type);
     if (!completableListeners[completableId]) {
-      completableListeners[completableId] = {};
+      completableListeners[completableId] = {
+        listeners: {},
+        propertyListeners: {},
+      };
     }
-    completableListeners[completableId][listenerId] = callback;
+    completableListeners[completableId].listeners[listenerId] = callback;
+  }
+
+  static addCompletablePropertyListener(
+    type: CompletableType,
+    completableId: string,
+    listenerId: string,
+    propertyName: string,
+    callback: PropertyListenerCallback
+  ) {
+    // eslint-disable-next-line
+    console.log('addCompletablePropertyListener triggered');
+    const completableListeners = this.getCompletableListeners(type);
+    if (!completableListeners[completableId]) {
+      completableListeners[completableId] = {
+        listeners: {},
+        propertyListeners: {},
+      };
+    }
+    if (!completableListeners[completableId].propertyListeners[propertyName]) {
+      completableListeners[completableId].propertyListeners[propertyName] = {};
+    }
+    completableListeners[completableId].propertyListeners[propertyName][
+      listenerId
+    ] = callback;
   }
 
   static removeCompletableListener(
@@ -174,18 +253,22 @@ class ClientData {
     completableId: string,
     listenerId: string
   ) {
-    let completableListeners;
-    if (type === 'project') {
-      completableListeners = this.projectListeners;
-    } else {
-      completableListeners = this.taskListeners;
+    const completableListeners = this.getCompletableListeners(type);
+    if (completableListeners[completableId].listeners[listenerId]) {
+      delete completableListeners[completableId].listeners[listenerId];
     }
-    if (
-      completableListeners[completableId] &&
-      completableListeners[completableId][listenerId]
-    ) {
-      delete completableListeners[completableId][listenerId];
-    }
+  }
+
+  static removeCompletablePropertyListener(
+    type: CompletableType,
+    completableId: string,
+    listenerId: string,
+    propertyName: string
+  ) {
+    const completableListeners = this.getCompletableListeners(type);
+    delete completableListeners[completableId].propertyListeners[propertyName][
+      listenerId
+    ];
   }
   // #endregion
 }

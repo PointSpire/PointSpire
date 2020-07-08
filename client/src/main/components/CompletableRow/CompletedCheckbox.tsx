@@ -1,15 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Checkbox } from '@material-ui/core';
-import { Project, Task } from '../../logic/dbTypes';
+import {
+  Project,
+  Task,
+  CompletableType,
+  Completable,
+} from '../../logic/dbTypes';
+import ClientData from '../../logic/ClientData';
 
 export type CompletedCheckboxProps = {
   className?: string;
-  completable: Project | Task;
+  completable: Completable;
+  completableType: CompletableType;
   setAndScheduleSave: (completable: Project | Task) => void;
 };
 
 function CompletedCheckbox(props: CompletedCheckboxProps) {
-  const { className, completable, setAndScheduleSave } = props;
+  const { className, completable, setAndScheduleSave, completableType } = props;
 
   /* Convert the project's completed boolean if needed. This isn't a very
   efficient way to do this, but it only happens once for each project
@@ -19,18 +26,41 @@ function CompletedCheckbox(props: CompletedCheckboxProps) {
     setAndScheduleSave(completable);
   }
 
+  const listenerId = `${completable._id}.CompletedCheckbox`;
+
   const [checked, setChecked] = useState(completable.completed);
 
+  useEffect(() => {
+    ClientData.addCompletablePropertyListener(
+      completableType,
+      completable._id,
+      listenerId,
+      'completed',
+      updatedValue => {
+        // eslint-disable-next-line
+        console.log('Updated value triggered');
+        setChecked(updatedValue as boolean);
+      }
+    );
+
+    // This will be ran when the component is unmounted
+    return function cleanup() {
+      ClientData.removeCompletablePropertyListener(
+        completableType,
+        completable._id,
+        listenerId,
+        'completed'
+      );
+    };
+  }, []);
+
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
-    setChecked(event.target.checked);
-    const newCompletable = { ...completable };
-    newCompletable.completed = event.target.checked;
-    if (newCompletable.completed) {
-      newCompletable.completedDate = new Date();
-    } else {
-      newCompletable.completedDate = null;
-    }
-    setAndScheduleSave(newCompletable);
+    ClientData.setCompletableProperty(
+      completableType,
+      completable._id,
+      'completed',
+      event.target.checked
+    );
   }
 
   return (

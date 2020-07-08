@@ -11,9 +11,9 @@ import {
 import { UserSettings, Completable } from '../../logic/dbTypes';
 import {
   postNewTask,
-  deleteTask,
   patchProject,
   patchTask,
+  deleteTaskById,
 } from '../../logic/fetchMethods';
 import scheduleCallback from '../../logic/savingTimer';
 import NoteInput from './NoteInput';
@@ -204,18 +204,6 @@ const CompletableRow = (props: CompletableRowProps) => {
     );
   }
 
-  function saveDueDate(newDate: Date | null): void {
-    const newCompletable = { ...completable };
-    newCompletable.dueDate = newDate;
-    setAndScheduleSave(newCompletable);
-  }
-
-  function saveStartDate(newDate: Date | null): void {
-    const newCompletable = { ...completable };
-    newCompletable.startDate = newDate;
-    setAndScheduleSave(newCompletable);
-  }
-
   function savePriority(newPriority: number): void {
     const newCompletable = { ...completable };
     newCompletable.priority = newPriority;
@@ -282,17 +270,19 @@ const CompletableRow = (props: CompletableRowProps) => {
    */
   function deleteSubTask(taskId: string) {
     return async () => {
-      const taskToDelete = ClientData.getCompletable('task', taskId);
-
       // Delete the task from ClientData first
       ClientData.deleteCompletable('task', taskId);
 
       // Set this completables subtasks info on ClientData which triggers state
-      completable.subtasks.splice(completable.subtasks.indexOf(taskId), 1);
-      ClientData.setCompletable(completableType, completable);
+      const updatedCompletable = { ...completable };
+      updatedCompletable.subtasks.splice(
+        completable.subtasks.indexOf(taskId),
+        1
+      );
+      ClientData.setCompletable(completableType, updatedCompletable);
 
-      // Make the request to delete the project
-      await deleteTask(taskToDelete);
+      // Make the request to delete the task
+      await deleteTaskById(taskId);
     };
   }
 
@@ -315,6 +305,7 @@ const CompletableRow = (props: CompletableRowProps) => {
             >
               <Grid item>
                 <CompletedCheckbox
+                  completableType={completableType}
                   setAndScheduleSave={setAndScheduleSave}
                   className={classes.checkbox}
                   completable={completable}
@@ -340,6 +331,7 @@ const CompletableRow = (props: CompletableRowProps) => {
                       ? 'Project Title'
                       : 'Task Title'
                   }
+                  disabled={completable.completed}
                   value={completable.title}
                   saveValue={saveText('title')}
                 />
@@ -353,16 +345,18 @@ const CompletableRow = (props: CompletableRowProps) => {
               </Grid>
               <Grid item>
                 <DateInput
+                  completablePropertyName="startDate"
+                  completableId={completableId}
+                  completableType={completableType}
                   label="Start Date"
-                  date={completable.startDate}
-                  saveDate={saveStartDate}
                 />
               </Grid>
               <Grid item>
                 <DateInput
+                  completablePropertyName="dueDate"
+                  completableId={completableId}
+                  completableType={completableType}
                   label="Due Date"
-                  date={completable.dueDate}
-                  saveDate={saveDueDate}
                 />
               </Grid>
               <Grid item>
