@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, MouseEvent } from 'react';
 import { IconButton, Menu, MenuItem } from '@material-ui/core';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import SortMenu from './SortMenu';
@@ -8,6 +8,10 @@ export type TaskMenuProps = {
   addSubTask: (title: string) => Promise<void>;
   sortBy: string;
   setSortBy: (sortBy: string) => void;
+  openPrereqTaskDialog?: (
+    e: MouseEvent<HTMLElement>,
+    prereqTasks: string[] | null
+  ) => void;
 };
 
 /**
@@ -17,7 +21,13 @@ export type TaskMenuProps = {
  * @param {TaskMenuProps} props the props
  */
 function TaskMenu(props: TaskMenuProps): JSX.Element {
-  const { deleteTask, addSubTask, sortBy, setSortBy } = props;
+  const {
+    deleteTask,
+    addSubTask,
+    sortBy,
+    setSortBy,
+    openPrereqTaskDialog,
+  } = props;
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [sortAnchorEl, setSortAnchorEl] = useState<HTMLElement | null>(null);
@@ -66,6 +76,18 @@ function TaskMenu(props: TaskMenuProps): JSX.Element {
         </MenuItem>
         <MenuItem onClick={handleAddSubTask}>Add SubTask</MenuItem>
         <MenuItem onClick={handleDelete}>Delete</MenuItem>
+        {openPrereqTaskDialog ? (
+          <MenuItem
+            onClick={event => {
+              openPrereqTaskDialog(event, null);
+              setAnchorEl(null);
+            }}
+          >
+            Prerequisites
+          </MenuItem>
+        ) : (
+          ''
+        )}
       </Menu>
       <SortMenu
         sortBy={sortBy}

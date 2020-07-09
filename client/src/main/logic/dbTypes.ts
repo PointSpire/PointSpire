@@ -58,6 +58,7 @@ export type AllUserData = {
 
 export interface Task extends Document {
   subtasks: Array<string>;
+  prereqTasks: Array<string>;
   dateCreated: Date;
   startDate: Date | null;
   dueDate: Date | null;
@@ -74,6 +75,8 @@ export type TaskObjects = {
 
 export function tasksAreEqual(task1: Task, task2: Task): boolean {
   let equal = true;
+  // eslint-disable-next-line
+  console.log(task1._id);
   Object.keys(task1).forEach(key => {
     if (
       key !== '__v' &&
@@ -81,8 +84,13 @@ export function tasksAreEqual(task1: Task, task2: Task): boolean {
       key !== 'startDate' &&
       key !== 'dueDate'
     ) {
-      if (task1[key] !== task2[key]) {
+      if (
+        task1[key] &&
+        JSON.stringify(task1[key]) !== JSON.stringify(task2[key])
+      ) {
         equal = false;
+        // eslint-disable-next-line
+        console.log(`Unequal Task - ${key} - ${task1[key]} : ${task2[key]}`);
       }
     }
   });
