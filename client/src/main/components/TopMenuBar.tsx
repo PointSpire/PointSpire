@@ -20,7 +20,7 @@ import {
 import MenuIcon from '@material-ui/icons/Menu';
 import SettingsIcon from '@material-ui/icons/Settings';
 import HelpIcon from '@material-ui/icons/Help';
-import SettingsDialog from './SettingsDialog';
+import SettingsDialog from './SettingsDialog/SettingsDialog';
 import LoginDialog from './LoginDialog';
 import {
   AlertFunction,
@@ -28,6 +28,7 @@ import {
   UpdateUserOnServerFunction,
 } from '../App';
 import { UserSettings } from '../logic/dbTypes';
+import { logout } from '../logic/fetchMethods';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */
@@ -59,6 +60,9 @@ export interface TopMenuBarProps extends WithStyles<typeof styles> {
   sendUpdatedUserToServer: UpdateUserOnServerFunction;
   baseServerUrl: string;
   githubClientId: string;
+  appTheme: Theme;
+  setTheme: (theme: Theme) => void;
+  loggedIn: boolean;
 }
 
 export interface TopMenuBarState {
@@ -208,6 +212,9 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
       updateSettings,
       sendUpdatedUserToServer,
       githubClientId,
+      appTheme,
+      setTheme,
+      loggedIn,
     } = this.props;
 
     // Set up the settingsDialog based on existence of user info
@@ -221,6 +228,8 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
           setOpen={setSettingsOpen}
           alert={alert}
           settings={userSettings}
+          appTheme={appTheme}
+          setTheme={setTheme}
         />
       );
     } else {
@@ -274,9 +283,9 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
             </Typography>
             <Button
               color="inherit"
-              onClick={this.createSetLoginOpenHandler(true)}
+              onClick={loggedIn ? logout : this.createSetLoginOpenHandler(true)}
             >
-              Login
+              {loggedIn ? 'Logout' : 'Login'}
             </Button>
           </Toolbar>
         </AppBar>

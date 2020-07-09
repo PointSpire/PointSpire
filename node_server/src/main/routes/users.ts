@@ -256,7 +256,7 @@ function createUsersRouter(db: typeof mongoose): Router {
       res.setHeader('Access-Control-Allow-Credentials', 'true');
       const userData = await graphQueryUser(req.params.userId);
       res.cookie('userId', req.params.userId);
-      res.json(userData);
+      res.status(200).json(userData);
     } catch (err) {
       res.status(400);
       res.send(err);

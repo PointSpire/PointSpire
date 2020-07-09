@@ -21,7 +21,17 @@ const taskSchema = new Schema({
    * Uses the int32 type from mongoose which just runs Math.floor basically
    * on any input values.
    */
-  priority: require('mongoose-int32'),
+  priority: {
+    type: require('mongoose-int32'),
+    default: 0,
+  },
+  prereqTasks: [
+    {
+      type: ObjectId,
+      ref: 'Task',
+      default: new Array<typeof ObjectId>(),
+    },
+  ],
   subtasks: [
     {
       type: ObjectId,
@@ -43,6 +53,7 @@ export interface TaskDoc extends Document {
   dueDate: Date | null;
   priority: number;
   subtasks: Array<typeof ObjectId>;
+  prereqTasks: Array<typeof ObjectId>;
 }
 
 /**

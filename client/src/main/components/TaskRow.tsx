@@ -1,153 +1,105 @@
-import React from 'react';
+import React, { useState, MouseEvent } from 'react';
 import {
   WithStyles,
   createStyles,
   Theme,
   withStyles,
-  ListItem,
-  List,
-  TextField,
-  Collapse,
-  IconButton,
   Grid,
+  Card,
+  Collapse,
 } from '@material-ui/core';
-import UpIcon from '@material-ui/icons/ArrowUpward';
-import DownIcon from '@material-ui/icons/ArrowDownward';
-import { DatePicker } from '@material-ui/pickers';
-import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
-import { Task, TaskObjects } from '../logic/dbTypes';
+import { Task, TaskObjects, ProjectObjects } from '../logic/dbTypes';
 import { SetTaskFunction, SetTasksFunction } from '../App';
 import {
   patchTask,
   deleteTask as deleteTaskOnServer,
   postNewTask,
 } from '../logic/fetchMethods';
-import TaskMenu from './TaskMenu';
-import { DeleteSubTaskFunction } from './ProjectRow';
+import PrereqTaskDialog from './PrereqTaskComponents/PrereqTaskDialog';
+import TaskMenu from './TaskMenu/TaskMenu';
+import NoteInput from './NoteInput';
+import DateInput from './DateInput';
+import SimpleTextInput from './SimpleTextInput';
+import scheduleCallback from '../logic/savingTimer';
+import sortingFunctions from '../logic/sortingFunctions';
+import PriorityButton from './PriorityButton/PriorityButton';
+import TaskExpanderButton from './TaskExpanderButton';
 
 function styles(theme: Theme) {
   return createStyles({
     root: {
+      display: 'flex',
       width: '100%',
-      backgroundColor: theme.palette.background.paper,
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    flexGrow: {
+      flexGrow: 1,
+    },
+    card: {
+      flexGrow: 1,
+      padding: theme.spacing(1),
+      marginTop: theme.spacing(1),
+      marginRight: theme.spacing(1),
+      marginLeft: theme.spacing(1),
     },
     nested: {
-      paddingLeft: theme.spacing(4),
+      marginLeft: theme.spacing(2),
     },
   });
 }
 
+/**
+ * The id used for the prerequisite save button.
+ * Only here so we can change it if needed and wont break the save functionality.
+ */
+const savePrereqId = 'save-prereq-tasks';
+
 export interface TaskRowProps extends WithStyles<typeof styles> {
   task: Task;
   tasks: TaskObjects;
+  projects: ProjectObjects;
   setTask: SetTaskFunction;
   setTasks: SetTasksFunction;
-  deleteSubTask: DeleteSubTaskFunction;
+  deleteTask: (task: Task) => Promise<void>;
 }
 
 /**
- * Saves the task to the server and logs to the console what happened.
+ * Represents a row for a task, which is under a project or another task in
+ * the UI.
  *
- * @param {Task} task the updated Task
+ * @param {TaskRowProps} props the props
  */
-function saveTask(task: Task): void {
-  patchTask(task)
-    .then(result => {
-      if (result) {
-        // eslint-disable-next-line
+function TaskRow(props: TaskRowProps): JSX.Element {
+  const {
+    task,
+    setTasks,
+    tasks,
+    projects,
+    setTask,
+    deleteTask,
+    classes,
+  } = props;
+  const [sortBy, setSortBy] = useState('Priority');
+  const [subTasksOpen, setSubTasksOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [openPrereqs, setOpenPrereq] = useState<boolean>(false);
+
+  function saveTask(): void {
+    patchTask(task)
+      .then(result => {
+        if (result) {
+          // eslint-disable-next-line
         console.log('Task was successfully saved to the server');
-      } else {
-        // eslint-disable-next-line
+        } else {
+          // eslint-disable-next-line
         console.log('Task was not saved to the server. There was an error.');
-      }
-    })
-    .catch(err => {
-      // eslint-disable-next-line
+        }
+      })
+      .catch(err => {
+        // eslint-disable-next-line
       console.error(err);
-    });
-}
-
-/**
- * Some of the details of the task are held in state to make it more efficient.
- * Then when the focus is left from a field in the row, then the current state
- * is saved to the task.
- */
-type TaskRowState = {
-  /**
-   * The title for the task.
-   */
-  title: string;
-
-  /**
-   * The note for the task.
-   */
-  note: string;
-
-  /**
-   * Determines if the subtasks are open or not.
-   */
-  subTasksOpen: boolean;
-
-  priority: number;
-};
-
-class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
-  constructor(props: TaskRowProps) {
-    super(props);
-
-    const { task } = props;
-
-    this.state = {
-      title: task.title,
-      note: task.note,
-      subTasksOpen: false,
-      priority: task.priority,
-    };
-
-    this.handleNoteChange = this.handleNoteChange.bind(this);
-    this.handleTitleChange = this.handleTitleChange.bind(this);
-    this.handleLoseFocus = this.handleLoseFocus.bind(this);
-    this.setSubTasksOpen = this.setSubTasksOpen.bind(this);
-    this.generateSubTaskCollapse = this.generateSubTaskCollapse.bind(this);
-    this.generateTaskExpanderButton = this.generateTaskExpanderButton.bind(
-      this
-    );
-    this.deleteTask = this.deleteTask.bind(this);
-    this.deleteSubTask = this.deleteSubTask.bind(this);
-    this.addSubTask = this.addSubTask.bind(this);
-    this.handleDueDateChange = this.handleDueDateChange.bind(this);
-    this.handleStartDateChange = this.handleStartDateChange.bind(this);
-    this.handlePriorityChange = this.handlePriorityChange.bind(this);
-  }
-
-  setSubTasksOpen(open: boolean) {
-    this.setState({ subTasksOpen: open });
-  }
-
-  /**
-   * Handles losing focus on an input element. This will save the task to the
-   * applications state.
-   */
-  handleLoseFocus(): void {
-    const { setTask, task } = this.props;
-    const { title, note, priority } = this.state;
-    task.title = title;
-    task.note = note;
-    task.priority = priority;
-    setTask(task);
-    saveTask(task);
-  }
-
-  handleTitleChange(event: React.ChangeEvent<HTMLInputElement>): void {
-    this.setState({
-      title: event.target.value,
-    });
-  }
-
-  handleNoteChange(event: React.ChangeEvent<HTMLInputElement>): void {
-    this.setState({
-      note: event.target.value,
-    });
+      });
   }
 
   /**
@@ -156,9 +108,7 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
    *
    * @param {string} title the title of the new task
    */
-  async addSubTask(title: string): Promise<void> {
-    const { setTasks, tasks, task, setTask } = this.props;
-
+  async function addSubTask(title: string): Promise<void> {
     // Make the request for the new task
     const newTask = await postNewTask('task', task._id, title);
 
@@ -169,19 +119,82 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
     // Add the new task to the project
     task.subtasks.push(newTask._id);
     setTask(task);
-
-    this.setSubTasksOpen(true);
   }
 
   /**
    * Deletes this task.
    */
-  deleteTask() {
-    const { task, deleteSubTask } = this.props;
-    deleteSubTask(task).catch(err => {
+  function deleteThisTask() {
+    deleteTask(task).catch(err => {
       // eslint-disable-next-line
       console.error(err);
     });
+  }
+
+  function saveDueDate(newDate: Date | null): void {
+    task.dueDate = newDate;
+    setTask(task);
+    scheduleCallback(`${task._id}.saveTask`, saveTask);
+  }
+
+  function saveStartDate(newDate: Date | null): void {
+    task.dueDate = newDate;
+    setTask(task);
+    scheduleCallback(`${task._id}.saveTask`, saveTask);
+  }
+
+  function savePriority(newPriority: number): void {
+    task.priority = newPriority;
+    setTask(task);
+    scheduleCallback(`${task._id}.saveTask`, saveTask);
+  }
+
+  /**
+   * Saves the new prerequisite tasks to the server when the user clicks
+   * the save button.
+   * @param {string[]} prereqTasks The new array of prerequisite tasks to save.
+   */
+  const savePrereqTasks = (prereqTasks: string[]): void => {
+    task.prereqTasks = prereqTasks;
+    setTask(task);
+    saveTask();
+  };
+
+  /**
+   * Determines wether the closing element is the save button. If so, saves
+   * the Task to the server.
+   * @param {MouseEvent<HTMLElement>} e Event args. Used for the closing element id only.
+   */
+  const handleOpenPrereqTaskDialog = (
+    e: MouseEvent<HTMLElement>,
+    prereqTasks: string[] | null
+  ) => {
+    setOpenPrereq(!openPrereqs);
+    setOpen(!open);
+
+    // save button id check
+    if (e.currentTarget.id === savePrereqId) {
+      if (prereqTasks) {
+        savePrereqTasks(prereqTasks);
+      }
+    }
+  };
+
+  /**
+   * Generates the task expander button only if this task has subtasks.
+   * Generates a function which can be used to modify the specified `property`
+   * of the task and schedule it to be saved on the server.
+   *
+   * @param {'note' | 'title'} property the property to modify on the task state
+   * @returns {(newText: string) => void} the function which can be used to
+   * save the specified `property` as long as the property is a string type
+   */
+  function saveText(property: 'note' | 'title') {
+    return (newText: string): void => {
+      task[property] = newText;
+      setTask(task);
+      scheduleCallback(`${task._id}.saveTask`, saveTask);
+    };
   }
 
   /**
@@ -189,9 +202,7 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
    *
    * @param {Task} task the task to delete
    */
-  async deleteSubTask(taskToDelete: Task): Promise<void> {
-    const { setTask, setTasks, tasks, task } = this.props;
-
+  async function deleteSubTask(taskToDelete: Task): Promise<void> {
     // Delete the task from state first
     delete tasks[taskToDelete._id];
     setTasks(tasks);
@@ -202,174 +213,102 @@ class TaskRow extends React.Component<TaskRowProps, TaskRowState> {
     await deleteTaskOnServer(task);
   }
 
-  handleStartDateChange(newDate: MaterialUiPickersDate): void {
-    const { setTask, task } = this.props;
-
-    if (newDate) {
-      task.startDate = newDate.toDate();
-    } else {
-      task.startDate = null;
-    }
-    setTask(task);
-    saveTask(task);
-  }
-
-  handleDueDateChange(newDate: MaterialUiPickersDate): void {
-    const { setTask, task } = this.props;
-
-    if (newDate) {
-      task.dueDate = newDate.toDate();
-    } else {
-      task.dueDate = null;
-    }
-    setTask(task);
-    saveTask(task);
-  }
-
-  handlePriorityChange(event: React.ChangeEvent<HTMLInputElement>): void {
-    // Check to make sure they typed an int
-    if (event.target.value.length === 0) {
-      this.setState({
-        priority: 0,
-      });
-    } else if (!Number.isNaN(Number.parseInt(event.target.value, 10))) {
-      this.setState({
-        priority: Number.parseInt(event.target.value, 10),
-      });
-    }
-  }
-
-  /**
-   * Generates the task expander button only if this task has subtasks.
-   */
-  generateTaskExpanderButton(): JSX.Element | null {
-    const { task } = this.props;
-    const { subTasksOpen } = this.state;
-    if (task.subtasks.length !== 0) {
-      return (
-        <Grid item>
-          <IconButton
-            aria-label="project-expander"
-            onClick={() => {
-              this.setSubTasksOpen(!subTasksOpen);
-            }}
-          >
-            {subTasksOpen ? <UpIcon /> : <DownIcon />}
-          </IconButton>
-        </Grid>
-      );
-    }
-    return null;
-  }
-
-  /**
-   * Generates the Collapse element only if this task has subtasks.
-   */
-  generateSubTaskCollapse(): JSX.Element | null {
-    const { task, setTask, classes, tasks, setTasks } = this.props;
-    const { subTasksOpen } = this.state;
-    const { deleteSubTask } = this;
-    if (task.subtasks.length !== 0) {
-      return (
-        <Collapse in={subTasksOpen} timeout="auto" className={classes.root}>
-          <List>
-            {task.subtasks.map(taskId => (
+  return (
+    <>
+      <div className={classes.root}>
+        <TaskExpanderButton
+          open={subTasksOpen}
+          setOpen={setSubTasksOpen}
+          parent={task}
+        />
+        <Card className={`${classes.card} ${classes.root}`} raised>
+          <Grid container justify="flex-start" alignItems="center">
+            <Grid
+              container
+              spacing={2}
+              wrap="nowrap"
+              alignItems="center"
+              justify="flex-start"
+            >
+              <Grid item className={classes.root}>
+                <SimpleTextInput
+                  value={task.title}
+                  saveValue={saveText('title')}
+                  label="Title"
+                />
+              </Grid>
+              <Grid item>
+                <PriorityButton
+                  savePriority={savePriority}
+                  priority={task.priority}
+                  projectOrTaskTitle={task.title}
+                />
+              </Grid>
+              <Grid item>
+                <DateInput
+                  saveDate={saveStartDate}
+                  date={task.startDate}
+                  label="Start Date"
+                />
+              </Grid>
+              <Grid item>
+                <DateInput
+                  saveDate={saveDueDate}
+                  date={task.dueDate}
+                  label="Due Date"
+                />
+              </Grid>
+              <Grid item>
+                <TaskMenu
+                  sortBy={sortBy}
+                  setSortBy={setSortBy}
+                  addSubTask={addSubTask}
+                  deleteTask={deleteThisTask}
+                  openPrereqTaskDialog={handleOpenPrereqTaskDialog}
+                />
+              </Grid>
+            </Grid>
+            <Grid item className={classes.root}>
+              <NoteInput
+                saveNote={saveText('note')}
+                note={task.note}
+                label="Task Note"
+              />
+            </Grid>
+            <Grid item>
+              <PrereqTaskDialog
+                savePrereqId={savePrereqId}
+                projects={projects}
+                tasks={tasks}
+                parentTask={task}
+                openDialog={openPrereqs}
+                closeDialog={handleOpenPrereqTaskDialog}
+              />
+            </Grid>
+          </Grid>
+        </Card>
+      </div>
+      <div className={classes.nested}>
+        <Collapse in={subTasksOpen} timeout="auto" className={classes.flexGrow}>
+          {Object.values(tasks)
+            .filter(currentTask => task.subtasks.includes(currentTask._id))
+            .sort(sortingFunctions[sortBy])
+            .map(currentTask => (
               <TaskRow
-                key={taskId}
-                deleteSubTask={deleteSubTask}
+                key={currentTask._id}
+                classes={classes}
                 setTasks={setTasks}
                 setTask={setTask}
-                classes={classes}
-                task={tasks[taskId]}
+                task={currentTask}
                 tasks={tasks}
+                projects={projects}
+                deleteTask={deleteSubTask}
               />
             ))}
-          </List>
         </Collapse>
-      );
-    }
-    return null;
-  }
-
-  render() {
-    const { task, classes } = this.props;
-    const { title, note, priority } = this.state;
-    const {
-      handleTitleChange,
-      handleLoseFocus,
-      generateSubTaskCollapse,
-      generateTaskExpanderButton,
-      deleteTask,
-      addSubTask,
-      handleNoteChange,
-      handleDueDateChange,
-      handlePriorityChange,
-      handleStartDateChange,
-    } = this;
-    return (
-      <ListItem key={task._id} className={classes.root}>
-        <Grid container spacing={4} justify="space-between" alignItems="center">
-          {generateTaskExpanderButton()}
-          <Grid item>
-            <TextField
-              key={task._id}
-              label="Title"
-              value={title}
-              variant="outlined"
-              onChange={handleTitleChange}
-              onBlur={handleLoseFocus}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="Notes"
-              value={note}
-              multiline
-              variant="outlined"
-              onChange={handleNoteChange}
-              onBlur={handleLoseFocus}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              onChange={handlePriorityChange}
-              label="Priority"
-              value={priority}
-              onBlur={handleLoseFocus}
-            />
-          </Grid>
-          <Grid item>
-            <DatePicker
-              variant="dialog"
-              clearable
-              onBlur={handleLoseFocus}
-              label="Start Date"
-              value={task.startDate}
-              onChange={handleStartDateChange}
-            />
-          </Grid>
-          <Grid item>
-            <DatePicker
-              variant="dialog"
-              label="Due Date"
-              value={task.dueDate}
-              onBlur={handleLoseFocus}
-              clearable
-              onChange={handleDueDateChange}
-            />
-          </Grid>
-          <Grid item>
-            <TaskMenu addSubTask={addSubTask} deleteTask={deleteTask} />
-          </Grid>
-          {generateSubTaskCollapse()}
-        </Grid>
-      </ListItem>
-    );
-  }
+      </div>
+    </>
+  );
 }
 
 export default withStyles(styles, { withTheme: true })(TaskRow);
-
-export type DeleteTaskFunction = typeof TaskRow.prototype.deleteTask;
-
-export type AddSubTaskFunction = typeof TaskRow.prototype.addSubTask;
