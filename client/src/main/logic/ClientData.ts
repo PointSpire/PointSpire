@@ -322,7 +322,10 @@ class ClientData {
     listenerId: string
   ) {
     const completableListeners = this.getCompletableListeners(type);
-    if (completableListeners[completableId].listeners[listenerId]) {
+    if (
+      completableListeners[completableId] &&
+      completableListeners[completableId].listeners[listenerId]
+    ) {
       delete completableListeners[completableId].listeners[listenerId];
     }
   }
@@ -334,9 +337,14 @@ class ClientData {
     propertyName: string
   ) {
     const completableListeners = this.getCompletableListeners(type);
-    delete completableListeners[completableId].propertyListeners[propertyName][
-      listenerId
-    ];
+    if (
+      completableListeners[completableId] &&
+      completableListeners[completableId].propertyListeners[propertyName]
+    ) {
+      delete completableListeners[completableId].propertyListeners[
+        propertyName
+      ][listenerId];
+    }
   }
   // #endregion
 }
