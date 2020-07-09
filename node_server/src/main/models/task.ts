@@ -61,12 +61,9 @@ export interface TaskDoc extends Document {
   dueDate: Date | null;
   priority: number;
   subtasks: Array<typeof ObjectId>;
-<<<<<<< HEAD
   completed: boolean;
   completedDate: Date | null;
-=======
   prereqTasks: Array<typeof ObjectId>;
->>>>>>> development
 }
 
 /**
