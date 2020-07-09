@@ -151,11 +151,6 @@ const CompletableRow = (props: CompletableRowProps) => {
     };
   }, []);
 
-  function savePriority(newPriority: number): void {
-    const newCompletable = { ...completable };
-    newCompletable.priority = newPriority;
-  }
-
   /**
    * Adds a new task to this completable on the server and in ClientData which
    * triggers state.
@@ -266,9 +261,8 @@ const CompletableRow = (props: CompletableRowProps) => {
               </Grid>
               <Grid item>
                 <PriorityButton
-                  savePriority={savePriority}
-                  priority={completable.priority}
-                  projectOrTaskTitle={completable.title}
+                  completableType={completableType}
+                  completableId={completableId}
                 />
               </Grid>
               <Grid item>
