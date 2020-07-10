@@ -70,21 +70,40 @@ export function titleSortDescending(type: CompletableType) {
   };
 }
 
+/**
+ * Sorting functions that can be used to sort completables. Includes the
+ * correct label name and the key is the completable property name.
+ */
 export type SortingFunctions = {
-  [title: string]: (
-    type: CompletableType
-  ) => (completable1Id: string, completable2Id: string) => number;
+  [propertyName: string]: {
+    labelName: string;
+    function: (
+      type: CompletableType
+    ) => (completable1Id: string, completable2Id: string) => number;
+  };
 };
 
 /**
- * Used to specify the different sorting options for the user. The key is
- * user-facing.
+ * Used to specify the different sorting options for the user. The key is the
+ * property name on the completable.
  */
 const sortingFunctions: SortingFunctions = {
-  Priority: prioritySortDescending,
-  'Due Date': dueDateSortDescending,
-  'Start Date': startDateSortDescending,
-  Title: titleSortDescending,
+  priority: {
+    labelName: 'Priority',
+    function: prioritySortDescending,
+  },
+  dueDate: {
+    labelName: 'Due Date',
+    function: dueDateSortDescending,
+  },
+  startDate: {
+    labelName: 'Start Date',
+    function: startDateSortDescending,
+  },
+  title: {
+    labelName: 'Title',
+    function: titleSortDescending,
+  },
 };
 
 export default sortingFunctions;

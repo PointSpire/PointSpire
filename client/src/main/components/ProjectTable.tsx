@@ -16,6 +16,7 @@ import sortingFunctions from '../logic/sortingFunctions';
 import SortInput from './SortInput';
 import CompletableRow from './CompletableRow/CompletableRow';
 import ClientData from '../logic/ClientData';
+// import arraysAreShallowEqual from '../logic/comparisonFunctions';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */
@@ -55,8 +56,64 @@ export type ProjectTableState = unknown;
  */
 function ProjectTable(props: ProjectTableProps) {
   const { user, setUser, classes } = props;
+  const [sortBy, setSortBy] = useState('priority');
 
-  const [sortBy, setSortBy] = useState('Priority');
+  const listenerId = `${user._id}.ProjectTable`;
+
+  /**
+   * Removes all of the listeners for the projects on the field indicated by
+   * `sortBy`.
+   */
+  function removeSortByListeners() {
+    user.projects.forEach(projectId => {
+      ClientData.removeCompletablePropertyListener(
+        'project',
+        projectId,
+        listenerId,
+        sortBy
+      );
+    });
+  }
+
+  /**
+   * Adds listers to all of the projects for the user on the property indicated
+   * by the `updatedSortBy` variable.
+   *
+   * @param {string} updatedSortBy the property name that will be used to add
+   * listeners
+   */
+  function addSortByListeners(updatedSortBy: string) {
+    user.projects.forEach(projectId => {
+      ClientData.addCompletablePropertyListener(
+        'project',
+        projectId,
+        listenerId,
+        updatedSortBy,
+        () => {
+          const newUser = { ...user };
+          setUser(newUser);
+        }
+      );
+    });
+  }
+
+  /**
+   * Updates the `sortBy` prop so that the appropriate listeners are removed
+   * and re-added to the project table.
+   *
+   * @param {string} updatedSortBy the updated sortBy value which should match
+   * one of the available properties on the sortingFunctions object
+   */
+  function updateSortBy(updatedSortBy: string) {
+    // eslint-disable-next-line
+    console.log('triggered updateSortBy');
+    // Skip the update if they are the same
+    if (updatedSortBy !== sortBy) {
+      removeSortByListeners();
+      setSortBy(updatedSortBy);
+      addSortByListeners(updatedSortBy);
+    }
+  }
 
   /**
    * Generates a function that will delete the specified project in the user
@@ -66,7 +123,8 @@ function ProjectTable(props: ProjectTableProps) {
    */
   function deleteProject(projectId: string) {
     return async () => {
-      // Delete the project from ClientData first
+      // Delete the project from ClientData first. Listeners do not need to be
+      // deleted because deleting the completable removes all listeners.
       ClientData.deleteCompletable('project', projectId);
 
       // Set the user state
@@ -78,27 +136,6 @@ function ProjectTable(props: ProjectTableProps) {
     };
   }
 
-  const listenerId = `${user._id}.ProjectTable`;
-
-  function arraysAreShallowEqual(
-    a: Array<unknown>,
-    b: Array<unknown>
-  ): boolean {
-    if (a === b) return true;
-    if (a == null || b == null) return false;
-    if (a.length !== b.length) return false;
-
-    // If you don't care about the order of the elements inside
-    // the array, you should sort both arrays here.
-    // Please note that calling sort on an array will modify that array.
-    // you might want to clone your array first.
-
-    for (let i = 0; i < a.length; i += 1) {
-      if (a[i] !== b[i]) return false;
-    }
-    return true;
-  }
-
   /**
    * Subscribe to changes in the children for sorting purposes.
    *
@@ -107,35 +144,16 @@ function ProjectTable(props: ProjectTableProps) {
    * more efficient than just pushing the change or not though.
    */
   useEffect(() => {
-    user.projects.forEach(projectId => {
-      ClientData.addCompletableListener(
-        'project',
-        projectId,
-        listenerId,
-        updatedCompletable => {
-          if (updatedCompletable !== null) {
-            const newUser = { ...user };
-            newUser.projects.sort(sortingFunctions[sortBy]('project'));
-            if (!arraysAreShallowEqual(newUser.projects, user.projects)) {
-              // eslint-disable-next-line
-              console.log('Arrays were not shallow equal');
-              setUser(newUser);
-            }
-          }
-        }
-      );
-    });
+    addSortByListeners(sortBy);
 
-    // This will be ran when the compoennt is unmounted
+    // This will be ran when the component is unmounted
     return function cleanup() {
-      user.projects.forEach(projectId => {
-        ClientData.removeCompletableListener('project', projectId, listenerId);
-      });
+      removeSortByListeners();
     };
   }, []);
 
   /**
-   * Adds a project to the server, to the user state and the to the ClientData.
+   * Adds a project to the server, to the user state and the ClientData.
    *
    * @param {string} projectTitle the title of the new project
    */
@@ -147,7 +165,7 @@ function ProjectTable(props: ProjectTableProps) {
     projects[newProject._id] = newProject;
     ClientData.setProjects(projects);
 
-    // Add the project table as a listener of the new project
+    // Add the project table as a listener of the new project for sorting
     ClientData.addCompletableListener(
       'project',
       newProject._id,
@@ -155,13 +173,13 @@ function ProjectTable(props: ProjectTableProps) {
       updatedCompletable => {
         if (updatedCompletable !== null) {
           const newUser = { ...user };
-          newUser.projects.sort(sortingFunctions[sortBy]('project'));
+          newUser.projects.sort(sortingFunctions[sortBy].function('project'));
           setUser(newUser);
         }
       }
     );
 
-    // Add it to the user state which will propogate the changes in the UI
+    // Add project to the user state which will propogate the changes in the UI
     user.projects.push(newProject._id);
     setUser(user);
   }
@@ -171,11 +189,11 @@ function ProjectTable(props: ProjectTableProps) {
       <SortInput
         className={classes.sortInput}
         sortBy={sortBy}
-        setSortBy={setSortBy}
+        setSortBy={updateSortBy}
       />
       <div className={classes.root}>
         {user.projects
-          .sort(sortingFunctions[sortBy]('project'))
+          .sort(sortingFunctions[sortBy].function('project'))
           .map(projectId => (
             <CompletableRow
               settings={user.settings}

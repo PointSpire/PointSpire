@@ -8,7 +8,7 @@ import {
   Card,
   Collapse,
 } from '@material-ui/core';
-import { UserSettings } from '../../logic/dbTypes';
+import { UserSettings, CompletableType } from '../../logic/dbTypes';
 import { postNewTask, deleteTaskById } from '../../logic/fetchMethods';
 import NoteInput from './NoteInput';
 import DateInput from './DateInput';
@@ -49,7 +49,7 @@ function styles(theme: Theme) {
 }
 
 export interface CompletableRowProps extends WithStyles<typeof styles> {
-  completableType: 'project' | 'task';
+  completableType: CompletableType;
   completableId: string;
   settings: UserSettings;
   deleteThisCompletable: () => Promise<void>;
@@ -69,7 +69,7 @@ const CompletableRow = (props: CompletableRowProps) => {
     settings,
   } = props;
 
-  const [sortBy, setSortBy] = useState('Priority');
+  const [sortBy, setSortBy] = useState('priority');
   const [subTasksOpen, setSubTasksOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(settings.notesExpanded);
   const [completable, setCompletable] = useState(
@@ -79,6 +79,63 @@ const CompletableRow = (props: CompletableRowProps) => {
   const listenerId = `${completableId}.CompletableRow`;
 
   /**
+   * Removes all of the listeners for the projects on the field indicated by
+   * `sortBy`.
+   */
+  function removeSortByListeners() {
+    completable.subtasks.forEach(taskId => {
+      ClientData.removeCompletablePropertyListener(
+        'task',
+        taskId,
+        listenerId,
+        sortBy
+      );
+    });
+  }
+
+  function addSortByListener(taskId: string, updatedSortBy: string) {
+    ClientData.addCompletablePropertyListener(
+      'task',
+      taskId,
+      listenerId,
+      updatedSortBy,
+      () => {
+        const newCompletable = { ...completable };
+        setCompletable(newCompletable);
+      }
+    );
+  }
+
+  /**
+   * Adds listers to all of the tasks for the completable on the property
+   * indicated by the `updatedSortBy` variable.
+   *
+   * @param {string} updatedSortBy the property name that will be used to add
+   * listeners
+   */
+  function addSortByListeners(updatedSortBy: string) {
+    completable.subtasks.forEach(taskId => {
+      addSortByListener(taskId, updatedSortBy);
+    });
+  }
+
+  /**
+   * Updates the `sortBy` prop so that the appropriate listeners are removed
+   * and re-added to the subtasks of the completableRow.
+   *
+   * @param {string} updatedSortBy the updated sortBy value which should match
+   * one of the available properties on the sortingFunctions object
+   */
+  function updateSortBy(updatedSortBy: string) {
+    // Skip the update if they are the same
+    if (updatedSortBy !== sortBy) {
+      removeSortByListeners();
+      setSortBy(updatedSortBy);
+      addSortByListeners(updatedSortBy);
+    }
+  }
+
+  /**
    * Subscribe to changes in the children for sorting purposes.
    *
    * This could potentially be made more efficient by comparing to see if the
@@ -86,26 +143,11 @@ const CompletableRow = (props: CompletableRowProps) => {
    * more efficient than just pushing the change or not though.
    */
   useEffect(() => {
-    completable.subtasks.forEach(taskId => {
-      ClientData.addCompletableListener(
-        'task',
-        taskId,
-        listenerId,
-        updatedCompletable => {
-          if (updatedCompletable !== null) {
-            const newCompletable = { ...completable };
-            newCompletable.subtasks.sort(sortingFunctions[sortBy]('task'));
-            setCompletable(newCompletable);
-          }
-        }
-      );
-    });
+    addSortByListeners(sortBy);
 
     // This will be ran when the compoennt is unmounted
     return function cleanup() {
-      completable.subtasks.forEach(taskId => {
-        ClientData.removeCompletableListener('task', taskId, listenerId);
-      });
+      removeSortByListeners();
     };
   }, []);
 
@@ -172,18 +214,7 @@ const CompletableRow = (props: CompletableRowProps) => {
     ClientData.setAndSaveCompletable(completableType, updatedCompletable);
 
     // Set this completable as a listener of the new one
-    ClientData.addCompletableListener(
-      'task',
-      newTask._id,
-      listenerId,
-      updatedTask => {
-        if (updatedTask !== null) {
-          const newCompletable = { ...completable };
-          newCompletable.subtasks.sort(sortingFunctions[sortBy]('task'));
-          setCompletable(newCompletable);
-        }
-      }
-    );
+    addSortByListener(newTask._id, sortBy);
   }
 
   /**
@@ -284,7 +315,7 @@ const CompletableRow = (props: CompletableRowProps) => {
               <Grid item>
                 <TaskMenu
                   sortBy={sortBy}
-                  setSortBy={setSortBy}
+                  setSortBy={updateSortBy}
                   deleteTask={deleteThisCompletable}
                   addSubTask={addSubTask}
                 />
@@ -310,7 +341,7 @@ const CompletableRow = (props: CompletableRowProps) => {
       <div className={classes.nested}>
         <Collapse in={subTasksOpen} timeout="auto" className={classes.flexGrow}>
           {completable.subtasks
-            .sort(sortingFunctions[sortBy]('task'))
+            .sort(sortingFunctions[sortBy].function('task'))
             .map(taskId => (
               <CompletableRow
                 settings={settings}

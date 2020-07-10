@@ -81,8 +81,6 @@ class ClientData {
       completableListeners[completableId] &&
       completableListeners[completableId].propertyListeners[propertyName]
     ) {
-      // eslint-disable-next-line
-      console.log('Entered if condition');
       Object.values(
         completableListeners[completableId].propertyListeners[propertyName]
       ).forEach(callback => {
@@ -299,8 +297,6 @@ class ClientData {
     propertyName: string,
     callback: PropertyListenerCallback
   ) {
-    // eslint-disable-next-line
-    console.log('addCompletablePropertyListener triggered');
     const completableListeners = this.getCompletableListeners(type);
     if (!completableListeners[completableId]) {
       completableListeners[completableId] = {
