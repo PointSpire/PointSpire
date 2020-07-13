@@ -47,7 +47,9 @@ export type ProjectTableState = unknown;
  */
 function ProjectTable(props: ProjectTableProps) {
   const { classes } = props;
-  const [projectIds, setProjectIds] = useState(ClientData.getUser().projects);
+  const [projectIds, setProjectIds] = useState([
+    ...ClientData.getUser().projects,
+  ]);
   const [sortBy, setSortBy] = useState('priority');
 
   const listenerId = `ProjectTable`;
@@ -83,7 +85,7 @@ function ProjectTable(props: ProjectTableProps) {
       updatedSortBy,
       () => {
         // Simply trigger a re-render so it re-sorts the projects list
-        const newProjects = { ...ClientData.getUser().projects };
+        const newProjects = [...ClientData.getUser().projects];
         setProjectIds(newProjects);
       }
     );
@@ -137,22 +139,10 @@ function ProjectTable(props: ProjectTableProps) {
    * Subscribe to changes in the projects array on the user.
    */
   useEffect(() => {
-    ClientData.addUserPropertyListener(
-      listenerId,
-      'projects',
-      updatedProjectIds => {
-        // eslint-disable-next-line
-        console.log('Triggered ProjectTable user projects callback');
-        // eslint-disable-next-line
-        console.log(
-          'Equality of new ids and old ids: ',
-          updatedProjectIds === projectIds
-        );
-        // eslint-disable-next-line
-        console.log(updatedProjectIds);
-        setProjectIds(updatedProjectIds as string[]);
-      }
-    );
+    ClientData.addUserPropertyListener(listenerId, 'projects', () => {
+      const newProjects = [...ClientData.getUser().projects];
+      setProjectIds(newProjects);
+    });
 
     return function cleanup() {
       ClientData.removeUserPropertyListener('projects', listenerId);
@@ -176,7 +166,7 @@ function ProjectTable(props: ProjectTableProps) {
   }, []);
 
   /**
-   * Adds a new project.
+   * Adds a new project with a default title.
    */
   async function addProject(): Promise<void> {
     const newProject = await ClientData.addProject('Untitled');

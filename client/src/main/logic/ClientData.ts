@@ -455,7 +455,9 @@ class ClientData {
       deleteCompletableOnServer = deleteProject;
 
       // Remove the project from the user's projects array
-      this.user.projects.splice(this.user.projects.indexOf(completableId));
+      this.user.projects.splice(this.user.projects.indexOf(completableId), 1);
+      // eslint-disable-next-line
+      console.log('The user.projects is now: ', this.user.projects);
       this.setAndSaveUserProperty('projects', this.user.projects);
     } else {
       completables = this.tasks;
