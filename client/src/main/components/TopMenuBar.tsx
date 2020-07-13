@@ -151,7 +151,7 @@ function TopMenuBar(props: TopMenuBarProps): JSX.Element {
   }
 
   let settingsDialog: JSX.Element;
-  if (loggedIn) {
+  if (ClientData.getUser().settings) {
     settingsDialog = (
       <SettingsDialog
         open={settingsOpen}

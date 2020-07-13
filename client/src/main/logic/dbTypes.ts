@@ -75,8 +75,6 @@ export type TaskObjects = {
 
 export function tasksAreEqual(task1: Task, task2: Task): boolean {
   let equal = true;
-  // eslint-disable-next-line
-  console.log(task1._id);
   Object.keys(task1).forEach(key => {
     if (
       key !== '__v' &&

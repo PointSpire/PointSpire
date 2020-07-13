@@ -112,8 +112,6 @@ function ProjectTable(props: ProjectTableProps) {
    * one of the available properties on the sortingFunctions object
    */
   function updateSortBy(updatedSortBy: string) {
-    // eslint-disable-next-line
-    console.log('triggered updateSortBy');
     // Skip the update if they are the same
     if (updatedSortBy !== sortBy) {
       removeSortByListeners();

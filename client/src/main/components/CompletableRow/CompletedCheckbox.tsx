@@ -31,8 +31,6 @@ function CompletedCheckbox(props: CompletedCheckboxProps) {
       listenerId,
       'completed',
       updatedValue => {
-        // eslint-disable-next-line
-        console.log('Updated value triggered');
         setChecked(updatedValue as boolean);
       }
     );

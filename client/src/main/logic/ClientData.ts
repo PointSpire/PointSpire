@@ -97,9 +97,11 @@ class ClientData {
     propertyName: string,
     updatedValue: unknown
   ) {
-    Object.values(this.userListeners[propertyName]).forEach(callback => {
-      callback(updatedValue);
-    });
+    if (this.userListeners[propertyName]) {
+      Object.values(this.userListeners[propertyName]).forEach(callback => {
+        callback(updatedValue);
+      });
+    }
   }
 
   private static notifyCompletablePropertyListeners(
@@ -272,8 +274,11 @@ class ClientData {
     this.projects = projects;
   }
 
+  /**
+   * Returns a copy of the projects object.
+   */
   static getProjects(): ProjectObjects {
-    return this.projects;
+    return { ...this.projects };
   }
 
   /**
@@ -290,8 +295,11 @@ class ClientData {
     this.tasks = tasks;
   }
 
+  /**
+   * Returns a copy of the Tasks object.
+   */
   static getTasks(): TaskObjects {
-    return this.tasks;
+    return { ...this.tasks };
   }
 
   /**
@@ -304,10 +312,18 @@ class ClientData {
    */
   static setUser(user: User): void {
     this.user = user;
+
+    // Set the setting if it doesn't exist yet
+    if (!this.user.settings.notesExpanded) {
+      this.user.settings.notesExpanded = false;
+    }
   }
 
+  /**
+   * Returns a copy of the user object in ClientData.
+   */
   static getUser(): User {
-    return this.user;
+    return { ...this.user };
   }
 
   /**
@@ -456,8 +472,6 @@ class ClientData {
 
       // Remove the project from the user's projects array
       this.user.projects.splice(this.user.projects.indexOf(completableId), 1);
-      // eslint-disable-next-line
-      console.log('The user.projects is now: ', this.user.projects);
       this.setAndSaveUserProperty('projects', this.user.projects);
     } else {
       completables = this.tasks;

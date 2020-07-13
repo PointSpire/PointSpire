@@ -37,9 +37,10 @@ function SettingsDialog(props: SettingsDialogProps): JSX.Element {
   const [pendingClientSettings, setPendingClientSettings] = useState<{
     fontSize: number;
   }>({ fontSize: appTheme.typography.fontSize });
-  const [userSettings, setUserSettings] = useState(
-    ClientData.getUser().settings
-  );
+
+  const [userSettings, setUserSettings] = useState({
+    ...ClientData.getUser().settings,
+  });
 
   /**
    * Handles closing of the SettingsDialog.
@@ -92,8 +93,9 @@ function SettingsDialog(props: SettingsDialogProps): JSX.Element {
     event: React.ChangeEvent<HTMLInputElement>
   ): void {
     const { name, checked } = event.target;
-    userSettings[name] = checked;
-    setUserSettings(userSettings);
+    const newUserSettings = { ...userSettings };
+    newUserSettings[name] = checked;
+    setUserSettings(newUserSettings);
   }
 
   return (
