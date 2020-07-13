@@ -6,8 +6,6 @@ import {
   withStyles,
   WithStyles,
 } from '@material-ui/core/styles';
-import { User } from '../logic/dbTypes';
-import { SetUserFunction } from '../App';
 import {
   postNewProject,
   deleteProject as deleteProjectOnServer,
@@ -41,10 +39,7 @@ function styles(theme: Theme) {
   });
 }
 
-export interface ProjectTableProps extends WithStyles<typeof styles> {
-  user: User;
-  setUser: SetUserFunction;
-}
+export type ProjectTableProps = WithStyles<typeof styles>;
 
 export type ProjectTableState = unknown;
 
@@ -55,17 +50,18 @@ export type ProjectTableState = unknown;
  * @param {ProjectTableProps} props the props
  */
 function ProjectTable(props: ProjectTableProps) {
-  const { user, setUser, classes } = props;
+  const { classes } = props;
+  const [projectIds, setProjectIds] = useState(ClientData.getUser().projects);
   const [sortBy, setSortBy] = useState('priority');
 
-  const listenerId = `${user._id}.ProjectTable`;
+  const listenerId = `ProjectTable`;
 
   /**
    * Removes all of the listeners for the projects on the field indicated by
    * `sortBy`.
    */
   function removeSortByListeners() {
-    user.projects.forEach(projectId => {
+    projectIds.forEach(projectId => {
       ClientData.removeCompletablePropertyListener(
         'project',
         projectId,
@@ -76,24 +72,37 @@ function ProjectTable(props: ProjectTableProps) {
   }
 
   /**
-   * Adds listers to all of the projects for the user on the property indicated
-   * by the `updatedSortBy` variable.
+   * Adds a single listener to the project with the given ID on the property
+   * indicated by `updatedSortBy`.
+   *
+   * @param {string} projectId the ID of the project
+   * @param {string} updatedSortBy the property name that will be used to add
+   * listeners
+   */
+  function addSortByListener(projectId: string, updatedSortBy: string) {
+    ClientData.addCompletablePropertyListener(
+      'project',
+      projectId,
+      listenerId,
+      updatedSortBy,
+      () => {
+        // Simply trigger a re-render so it re-sorts the projects list
+        const newProjects = { ...ClientData.getUser().projects };
+        setProjectIds(newProjects);
+      }
+    );
+  }
+
+  /**
+   * Adds listeners to all of the projects for the user on the property
+   * indicated by the `updatedSortBy` variable.
    *
    * @param {string} updatedSortBy the property name that will be used to add
    * listeners
    */
   function addSortByListeners(updatedSortBy: string) {
-    user.projects.forEach(projectId => {
-      ClientData.addCompletablePropertyListener(
-        'project',
-        projectId,
-        listenerId,
-        updatedSortBy,
-        () => {
-          const newUser = { ...user };
-          setUser(newUser);
-        }
-      );
+    projectIds.forEach(projectId => {
+      addSortByListener(projectId, updatedSortBy);
     });
   }
 
@@ -127,14 +136,33 @@ function ProjectTable(props: ProjectTableProps) {
       // deleted because deleting the completable removes all listeners.
       ClientData.deleteCompletable('project', projectId);
 
-      // Set the user state
-      user.projects.splice(user.projects.indexOf(projectId), 1);
-      setUser(user);
+      // Set user in ClientData
+      projectIds.splice(projectIds.indexOf(projectId), 1);
+      ClientData.setAndSaveUserProperty('projects', projectIds);
 
       // Make the request to delete the project
       await deleteProjectOnServer(projectId);
     };
   }
+
+  /**
+   * Subscribe to changes in the projects array for the user.
+   */
+  useEffect(() => {
+    ClientData.addUserPropertyListener(
+      listenerId,
+      'projects',
+      updatedProjectIds => {
+        // eslint-disable-next-line
+        console.log('Triggered ProjectTable user projects callback');
+        setProjectIds(updatedProjectIds as string[]);
+      }
+    );
+
+    return function cleanup() {
+      ClientData.removeUserPropertyListener('projects', listenerId);
+    };
+  }, []);
 
   /**
    * Subscribe to changes in the children for sorting purposes.
@@ -158,30 +186,22 @@ function ProjectTable(props: ProjectTableProps) {
    * @param {string} projectTitle the title of the new project
    */
   async function addProject(): Promise<void> {
-    const newProject = await postNewProject(user._id, 'Untitled');
+    const newProject = await postNewProject(
+      ClientData.getUser()._id,
+      'Untitled'
+    );
 
     // Add to the ClientData
     const projects = ClientData.getProjects();
     projects[newProject._id] = newProject;
     ClientData.setProjects(projects);
 
-    // Add the project table as a listener of the new project for sorting
-    ClientData.addCompletableListener(
-      'project',
-      newProject._id,
-      listenerId,
-      updatedCompletable => {
-        if (updatedCompletable !== null) {
-          const newUser = { ...user };
-          newUser.projects.sort(sortingFunctions[sortBy].function('project'));
-          setUser(newUser);
-        }
-      }
-    );
+    // Add the sorting listener
+    addSortByListener(newProject._id, sortBy);
 
-    // Add project to the user state which will propogate the changes in the UI
-    user.projects.push(newProject._id);
-    setUser(user);
+    // Add project to the user which will propogate changes to the ProjectTable
+    projectIds.push(newProject._id);
+    ClientData.setAndSaveUserProperty('projects', projectIds);
   }
 
   return (
@@ -192,11 +212,10 @@ function ProjectTable(props: ProjectTableProps) {
         setSortBy={updateSortBy}
       />
       <div className={classes.root}>
-        {user.projects
+        {projectIds
           .sort(sortingFunctions[sortBy].function('project'))
           .map(projectId => (
             <CompletableRow
-              settings={user.settings}
               deleteThisCompletable={deleteProject(projectId)}
               completableType="project"
               key={projectId}

@@ -2,12 +2,11 @@ import {
   ProjectObjects,
   TaskObjects,
   Completable,
-  Project,
   CompletableType,
-  Task,
+  User,
 } from './dbTypes';
 import scheduleCallback from './savingTimer';
-import { patchProject, patchTask } from './fetchMethods';
+import { patchProject, patchTask, patchUser } from './fetchMethods';
 
 /**
  * The callback which will be called if any changes are made to a Completable.
@@ -17,16 +16,18 @@ export type ListenerCallback = (completable: Completable | null) => void;
 
 export type PropertyListenerCallback = (updatedValue: unknown) => void;
 
+type PropertyListeners = {
+  [propertyName: string]: {
+    [listenerId: string]: PropertyListenerCallback;
+  };
+};
+
 type CompletableListeners = {
   [completableId: string]: {
     listeners: {
       [listenerId: string]: ListenerCallback;
     };
-    propertyListeners: {
-      [propertyName: string]: {
-        [listenerId: string]: PropertyListenerCallback;
-      };
-    };
+    propertyListeners: PropertyListeners;
   };
 };
 
@@ -41,9 +42,13 @@ class ClientData {
 
   private static tasks: TaskObjects;
 
+  private static user: User;
+
   private static projectListeners: CompletableListeners = {};
 
   private static taskListeners: CompletableListeners = {};
+
+  private static userListeners: PropertyListeners = {};
   // #endregion
 
   // #region Private Methods
@@ -68,6 +73,23 @@ class ClientData {
         }
       );
     }
+  }
+
+  /**
+   * Notifies all of the listers attached to the specified property of the
+   * user object that a change has occurred.
+   *
+   * @param {string} propertyName the name of the property to trigger listeners
+   * for
+   * @param {unknown} updatedValue the updated value
+   */
+  private static notifyUserPropertyListeners(
+    propertyName: string,
+    updatedValue: unknown
+  ) {
+    Object.values(this.userListeners[propertyName]).forEach(callback => {
+      callback(updatedValue);
+    });
   }
 
   private static notifyCompletablePropertyListeners(
@@ -133,17 +155,88 @@ class ClientData {
         });
     };
   }
+
+  /**
+   * Generates a function that saves the user to the server and logs what
+   * happened to the console.
+   *
+   * @param {User} updatedUser the updated user object
+   */
+  private static saveUser(updatedUser: User) {
+    return () => {
+      patchUser(updatedUser)
+        .then(result => {
+          if (result) {
+            // eslint-disable-next-line
+          console.log(`User with ID: ${updatedUser._id} was successfully ` +
+                `saved to the server`
+            );
+          } else {
+            // eslint-disable-next-line
+          console.log(`User with ID: ${updatedUser._id} failed to save to ` +
+                `the server`
+            );
+          }
+        })
+        .catch(err => {
+          // eslint-disable-next-line
+          console.error(err);
+        });
+    };
+  }
   // #endregion
 
   // #region Public Methods
   /**
-   * Sets the entire projects object to the provided value. This does not
-   * trigger any callbacks.
+   * Sets the entire projects object to the provided value.
+   *
+   * This doesn't trigger any callbacks because there shouldn't be any on the
+   * entire projects object to help performance.
+   *
+   * This should be used at application startup, and when adding new projects.
    *
    * @param {ProjectObjects} projects the updated projects object
    */
   static setProjects(projects: ProjectObjects): void {
     this.projects = projects;
+  }
+
+  static getProjects(): ProjectObjects {
+    return this.projects;
+  }
+
+  /**
+   * Sets the entire tasks object to the provided value.
+   *
+   * This doesn't trigger any callbacks because there shouldn't be any on the
+   * entire tasks object to help performance.
+   *
+   * This should be used at application startup and when adding new tasks.
+   *
+   * @param {TaskObjects} tasks the new tasks object
+   */
+  static setTasks(tasks: TaskObjects): void {
+    this.tasks = tasks;
+  }
+
+  static getTasks(): TaskObjects {
+    return this.tasks;
+  }
+
+  /**
+   * Sets the user object to the provided value and doesn't trigger any
+   * callbacks.
+   *
+   * This should only be used at application startup.
+   *
+   * @param {User} user the fresh user object from the server
+   */
+  static setUser(user: User): void {
+    this.user = user;
+  }
+
+  static getUser(): User {
+    return this.user;
   }
 
   /**
@@ -167,6 +260,20 @@ class ClientData {
       `${completable._id}.saveCompletable`,
       this.saveCompletable(type, completable)
     );
+  }
+
+  /**
+   * Sets the given property on the user object, triggers callbacks for that
+   * property, and schedules the user to be saved on the server.
+   *
+   * @param {string} propertyName the name of the property to set on the user
+   * object
+   * @param {unknown} value the updated value of the property
+   */
+  static setAndSaveUserProperty(propertyName: string, value: unknown) {
+    this.user[propertyName] = value;
+    this.notifyUserPropertyListeners(propertyName, value);
+    scheduleCallback(`user.saveUser`, this.saveUser(this.user));
   }
 
   /**
@@ -206,10 +313,6 @@ class ClientData {
     );
   }
 
-  static getProjects(): ProjectObjects {
-    return this.projects;
-  }
-
   static getCompletable(type: CompletableType, completableId: string) {
     if (type === 'project') {
       return this.projects[completableId];
@@ -237,28 +340,6 @@ class ClientData {
     delete completables[completableId];
     this.notifyCompletableListeners(type, completableId, null);
     delete completableListeners[completableId];
-  }
-
-  /**
-   * Sets the given project and notifies all listeners assigned to it with
-   * the updated project.
-   *
-   * @param {Project} project the updated Project
-   */
-  static setProject(project: Project): void {
-    this.setAndSaveCompletable('project', project);
-  }
-
-  static setTasks(tasks: TaskObjects): void {
-    this.tasks = tasks;
-  }
-
-  static getTasks(): TaskObjects {
-    return this.tasks;
-  }
-
-  static setTask(task: Task): void {
-    this.setAndSaveCompletable('task', task);
   }
 
   /**
@@ -290,6 +371,42 @@ class ClientData {
     completableListeners[completableId].listeners[listenerId] = callback;
   }
 
+  /**
+   * Adds a listener to the given property of the user object so that when
+   * changes are made to that property, the callback is ran with the updated
+   * value.
+   *
+   * @param {string} listenerId the unique ID of the listener. This should be
+   * something like `<ComponentName>`. For example: `ProjectTable`.
+   * @param {string} propertyName the property to assign the listener to
+   * @param {PropertyListenerCallback} callback the callback to run when the
+   * property is changed
+   */
+  static addUserPropertyListener(
+    listenerId: string,
+    propertyName: string,
+    callback: PropertyListenerCallback
+  ) {
+    if (!this.userListeners[propertyName]) {
+      this.userListeners[propertyName] = {};
+    }
+    this.userListeners[propertyName][listenerId] = callback;
+  }
+
+  /**
+   * Adds a listener to the given property of the completable object so that
+   * when changes are made to that property, the callback is ran with the
+   * updated value.
+   *
+   * @param {CompletableType} type the type of the completable
+   * @param {string} completableId the ID of the completable
+   * @param {string} listenerId the unique ID of the listener. This should be
+   * something like `<listeningTaskOrProjectID>.<ComponentName>`. For example:
+   * `H2532hlh2l3h5l2520.CompletableRow`.
+   * @param {string} propertyName the property to assign the listener to
+   * @param {PropertyListenerCallback} callback the callback to run when the
+   * property is changed
+   */
   static addCompletablePropertyListener(
     type: CompletableType,
     completableId: string,
@@ -310,6 +427,15 @@ class ClientData {
     completableListeners[completableId].propertyListeners[propertyName][
       listenerId
     ] = callback;
+  }
+
+  static removeUserPropertyListener(propertyName: string, listenerId: string) {
+    if (
+      this.userListeners[propertyName] &&
+      this.userListeners[propertyName][listenerId]
+    ) {
+      delete this.userListeners[propertyName][listenerId];
+    }
   }
 
   static removeCompletableListener(

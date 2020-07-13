@@ -147,6 +147,21 @@ export async function patchTask(task: Task): Promise<boolean> {
 }
 
 /**
+ * Makes a patch request to the server with the given user.
+ *
+ * @param {User} user the updated user object to send to the server
+ * @returns {boolean} true if successful and false if not
+ */
+export async function patchUser(user: User): Promise<boolean> {
+  const res = await fetch(`${baseServerUrl}/api/users/${user._id}`, {
+    method: 'PATCH',
+    headers: fetchData.basicHeader,
+    body: JSON.stringify(user),
+  });
+  return res.status === 200;
+}
+
+/**
  * Gets the user data from the server by using the current code in the user's
  * url path. If the code isn't there, then it makes a request to `/api/users`
  * expecting the user to have a cookie with a valid session ID in it, so the

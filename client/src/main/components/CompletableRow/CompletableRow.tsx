@@ -8,7 +8,7 @@ import {
   Card,
   Collapse,
 } from '@material-ui/core';
-import { UserSettings, CompletableType } from '../../logic/dbTypes';
+import { CompletableType } from '../../logic/dbTypes';
 import { postNewTask, deleteTaskById } from '../../logic/fetchMethods';
 import NoteInput from './NoteInput';
 import DateInput from './DateInput';
@@ -51,7 +51,6 @@ function styles(theme: Theme) {
 export interface CompletableRowProps extends WithStyles<typeof styles> {
   completableType: CompletableType;
   completableId: string;
-  settings: UserSettings;
   deleteThisCompletable: () => Promise<void>;
 }
 
@@ -66,12 +65,13 @@ const CompletableRow = (props: CompletableRowProps) => {
     completableType,
     classes,
     deleteThisCompletable,
-    settings,
   } = props;
 
   const [sortBy, setSortBy] = useState('priority');
   const [subTasksOpen, setSubTasksOpen] = useState(false);
-  const [noteOpen, setNoteOpen] = useState(settings.notesExpanded);
+  const [noteOpen, setNoteOpen] = useState(
+    ClientData.getUser().settings.notesExpanded
+  );
   const [completable, setCompletable] = useState(
     ClientData.getCompletable(completableType, completableId)
   );
@@ -79,7 +79,7 @@ const CompletableRow = (props: CompletableRowProps) => {
   const listenerId = `${completableId}.CompletableRow`;
 
   /**
-   * Removes all of the listeners for the projects on the field indicated by
+   * Removes all of the listeners for the tasks on the field indicated by
    * `sortBy`.
    */
   function removeSortByListeners() {
@@ -107,7 +107,7 @@ const CompletableRow = (props: CompletableRowProps) => {
   }
 
   /**
-   * Adds listers to all of the tasks for the completable on the property
+   * Adds listeners to all of the tasks for the completable on the property
    * indicated by the `updatedSortBy` variable.
    *
    * @param {string} updatedSortBy the property name that will be used to add
@@ -344,7 +344,6 @@ const CompletableRow = (props: CompletableRowProps) => {
             .sort(sortingFunctions[sortBy].function('task'))
             .map(taskId => (
               <CompletableRow
-                settings={settings}
                 deleteThisCompletable={deleteSubTask(taskId)}
                 completableType="task"
                 key={taskId}

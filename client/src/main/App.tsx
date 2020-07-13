@@ -5,13 +5,9 @@ import MuiAlert from '@material-ui/lab/Alert';
 
 import { Snackbar } from '@material-ui/core';
 import TopMenuBar from './components/TopMenuBar';
-import { User, AllUserData, UserSettings } from './logic/dbTypes';
+import { AllUserData } from './logic/dbTypes';
 import ProjectTable from './components/ProjectTable';
-import {
-  getUserData,
-  getTestUserData,
-  baseServerUrl,
-} from './logic/fetchMethods';
+import { getUserData, getTestUserData } from './logic/fetchMethods';
 import baseThemeOptions from './AppTheme';
 import ClientData from './logic/ClientData';
 
@@ -37,9 +33,9 @@ type AppState = {
   snackBarText: string;
 
   /**
-   * The primary user object in memory for the client.
+   * State for the projectIds which is just used to show the ProjectTable
    */
-  user?: User;
+  projectIds: Array<string> | null;
 
   appTheme: Theme;
 };
@@ -64,16 +60,14 @@ class App extends React.Component<AppProps, AppState> {
       snackBarOpen: false,
       snackBarSeverity: 'error',
       snackBarText: 'unknown',
-      user: undefined,
       appTheme: createMuiTheme(baseThemeOptions),
+      projectIds: null,
     };
 
     this.handleSnackBarClose = this.handleSnackBarClose.bind(this);
     this.alert = this.alert.bind(this);
-    this.updateSettings = this.updateSettings.bind(this);
-    this.sendUpdatedUserToServer = this.sendUpdatedUserToServer.bind(this);
-    this.setUser = this.setUser.bind(this);
     this.setTheme = this.setTheme.bind(this);
+    this.setProjectIds = this.setProjectIds.bind(this);
   }
 
   /**
@@ -91,21 +85,19 @@ class App extends React.Component<AppProps, AppState> {
     // Set the ClientData first
     ClientData.setProjects(userData.projects);
     ClientData.setTasks(userData.tasks);
+    ClientData.setUser(userData.user);
 
-    // Then set the state for the application
-    this.setUser(userData.user);
+    this.setProjectIds(userData.user.projects);
   }
 
-  setUser(updatedUser: User): void {
+  setProjectIds(updatedProjectIds: Array<string>): void {
     this.setState({
-      user: updatedUser,
+      projectIds: updatedProjectIds,
     });
   }
 
   /**
-   * Updates the theme for the application. This should only be updated by
-   * modifying particular variables and not replacing the theme fresh because
-   * it is quite large.
+   * Updates the theme for the application.
    *
    * @param {Theme} updatedTheme the updated theme object
    */
@@ -119,45 +111,6 @@ class App extends React.Component<AppProps, AppState> {
     this.setState({
       snackBarOpen: false,
     });
-  }
-
-  /**
-   * Sends the current `user` stored in the app's state to the server as a
-   * patch request. This can be passed down to any component that modifies
-   * some part of the `user` object in the app's state.
-   *
-   * @returns {boolean} true if successful and false if not
-   */
-  async sendUpdatedUserToServer(): Promise<boolean> {
-    const { user } = this.state;
-    if (user) {
-      const res = await fetch(`${baseServerUrl}/api/users/${user._id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(user),
-      });
-      return res.status === 200;
-    }
-    return false;
-  }
-
-  /**
-   * Updates the settings for the user on the client side. This does not send
-   * the updated settings to the server. For that, use
-   * `sendUpdatedUserToServer`. This can be passed down to components that
-   * modify settings for the user.
-   *
-   * @param {UserSettings} updatedSettings the updated settings object to save
-   * to the user state
-   */
-  updateSettings(updatedSettings: UserSettings): void {
-    const { user } = this.state;
-    if (user) {
-      user.settings = updatedSettings;
-      this.setUser(user);
-    }
   }
 
   /**
@@ -182,37 +135,21 @@ class App extends React.Component<AppProps, AppState> {
       snackBarOpen,
       snackBarSeverity,
       snackBarText,
-      user,
       appTheme,
+      projectIds,
     } = this.state;
-    const {
-      handleSnackBarClose,
-      alert,
-      updateSettings,
-      sendUpdatedUserToServer,
-      setUser,
-      setTheme,
-    } = this;
+    const { handleSnackBarClose, alert, setTheme } = this;
     return (
       <div className="App">
         <ThemeProvider theme={appTheme}>
           <TopMenuBar
             githubClientId={githubClientId}
-            baseServerUrl={baseServerUrl}
-            sendUpdatedUserToServer={sendUpdatedUserToServer}
             alert={alert}
-            userSettings={user ? user.settings : undefined}
-            updateSettings={updateSettings}
             appTheme={appTheme}
             setTheme={setTheme}
-            loggedIn={!!user}
+            loggedIn={!!ClientData.getUser()}
           />
-          {/* If projects and tasks exist, show project table */}
-          {user && ClientData.getProjects() ? (
-            <ProjectTable setUser={setUser} user={user} />
-          ) : (
-            ''
-          )}
+          {projectIds ? <ProjectTable /> : <></>}
           <Snackbar
             open={snackBarOpen}
             autoHideDuration={3000}
@@ -237,20 +174,5 @@ class App extends React.Component<AppProps, AppState> {
  * the functions type when passing it down as a prop to other components.
  */
 export type AlertFunction = typeof App.prototype.alert;
-
-/**
- * The type of the method 'updateSettings' on the App class.
- */
-export type UpdateSettingsFunction = typeof App.prototype.updateSettings;
-
-/**
- * The type of the method 'sendUpdatedUserToServer' on the App class.
- */
-export type UpdateUserOnServerFunction = typeof App.prototype.sendUpdatedUserToServer;
-
-/**
- * The type of the method 'setUser' on the App class.
- */
-export type SetUserFunction = typeof App.prototype.setUser;
 
 export default App;
