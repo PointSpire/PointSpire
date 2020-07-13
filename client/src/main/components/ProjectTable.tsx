@@ -6,10 +6,6 @@ import {
   withStyles,
   WithStyles,
 } from '@material-ui/core/styles';
-import {
-  postNewProject,
-  deleteProject as deleteProjectOnServer,
-} from '../logic/fetchMethods';
 import sortingFunctions from '../logic/sortingFunctions';
 import SortInput from './SortInput';
 import CompletableRow from './CompletableRow/CompletableRow';
@@ -125,28 +121,20 @@ function ProjectTable(props: ProjectTableProps) {
   }
 
   /**
-   * Generates a function that will delete the specified project in the user
-   * state, in the ClientData, and on the server.
+   * Generates a function that will delete the specified project.
    *
    * @param {string} projectId the ID of the project to delete
    */
   function deleteProject(projectId: string) {
-    return async () => {
-      // Delete the project from ClientData first. Listeners do not need to be
+    return () => {
+      // Delete the project from ClientData. Listeners do not need to be
       // deleted because deleting the completable removes all listeners.
       ClientData.deleteCompletable('project', projectId);
-
-      // Set user in ClientData
-      projectIds.splice(projectIds.indexOf(projectId), 1);
-      ClientData.setAndSaveUserProperty('projects', projectIds);
-
-      // Make the request to delete the project
-      await deleteProjectOnServer(projectId);
     };
   }
 
   /**
-   * Subscribe to changes in the projects array for the user.
+   * Subscribe to changes in the projects array on the user.
    */
   useEffect(() => {
     ClientData.addUserPropertyListener(
@@ -155,6 +143,13 @@ function ProjectTable(props: ProjectTableProps) {
       updatedProjectIds => {
         // eslint-disable-next-line
         console.log('Triggered ProjectTable user projects callback');
+        // eslint-disable-next-line
+        console.log(
+          'Equality of new ids and old ids: ',
+          updatedProjectIds === projectIds
+        );
+        // eslint-disable-next-line
+        console.log(updatedProjectIds);
         setProjectIds(updatedProjectIds as string[]);
       }
     );
@@ -181,27 +176,13 @@ function ProjectTable(props: ProjectTableProps) {
   }, []);
 
   /**
-   * Adds a project to the server, to the user state and the ClientData.
-   *
-   * @param {string} projectTitle the title of the new project
+   * Adds a new project.
    */
   async function addProject(): Promise<void> {
-    const newProject = await postNewProject(
-      ClientData.getUser()._id,
-      'Untitled'
-    );
-
-    // Add to the ClientData
-    const projects = ClientData.getProjects();
-    projects[newProject._id] = newProject;
-    ClientData.setProjects(projects);
+    const newProject = await ClientData.addProject('Untitled');
 
     // Add the sorting listener
     addSortByListener(newProject._id, sortBy);
-
-    // Add project to the user which will propogate changes to the ProjectTable
-    projectIds.push(newProject._id);
-    ClientData.setAndSaveUserProperty('projects', projectIds);
   }
 
   return (

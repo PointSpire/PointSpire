@@ -51,7 +51,7 @@ function styles(theme: Theme) {
 export interface CompletableRowProps extends WithStyles<typeof styles> {
   completableType: CompletableType;
   completableId: string;
-  deleteThisCompletable: () => Promise<void>;
+  deleteThisCompletable: () => void;
 }
 
 /**
