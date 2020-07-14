@@ -107,6 +107,18 @@ class App extends React.Component<AppProps, AppState> {
     GlobalState.setState = (state: AppState) => {
       this.setState(state);
     };
+
+    // Prevent unload of the app if the user has any unsaved changes
+    window.addEventListener('beforeunload', e => {
+      const { pendingChanges } = this.state;
+      if (pendingChanges !== PendingChanges.Saved) {
+        // Prevent unload
+        e.preventDefault();
+        e.returnValue = '';
+      }
+      // Allow unload
+      delete e.returnValue;
+    });
   }
 
   setProjectIds(updatedProjectIds: Array<string>): void {
