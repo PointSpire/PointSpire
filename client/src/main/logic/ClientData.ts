@@ -22,7 +22,11 @@ import {
  * The callback which will be called if any changes are made to a Completable.
  * If the completable is deleted, then null is passed to the callback.
  */
-export type ListenerCallback = (completable: Completable | null) => void;
+export type CompletableListenerCallback = (
+  completable: Completable | null
+) => void;
+
+export type UserListenerCallback = (user: User | null) => void;
 
 export type PropertyListenerCallback = (updatedValue: unknown) => void;
 
@@ -35,10 +39,17 @@ type PropertyListeners = {
 type CompletableListeners = {
   [completableId: string]: {
     listeners: {
-      [listenerId: string]: ListenerCallback;
+      [listenerId: string]: CompletableListenerCallback;
     };
     propertyListeners: PropertyListeners;
   };
+};
+
+type UserListeners = {
+  listeners: {
+    [listenerId: string]: UserListenerCallback;
+  };
+  propertyListeners: PropertyListeners;
 };
 
 /**
@@ -58,7 +69,10 @@ class ClientData {
 
   private static taskListeners: CompletableListeners = {};
 
-  private static userListeners: PropertyListeners = {};
+  private static userListeners: UserListeners = {
+    listeners: {},
+    propertyListeners: {},
+  };
   // #endregion
 
   // #region Private Methods
@@ -86,6 +100,19 @@ class ClientData {
   }
 
   /**
+   * Notifies all of the listeners for the user object itself that the entire
+   * user object has changed. This does not trigger the individual property
+   * listeners. (Although it may need to in the future perhaps).
+   *
+   * @param {User} updatedUser the updated user object
+   */
+  private static notifyUserListeners(updatedUser: User | null) {
+    Object.values(this.userListeners.listeners).forEach(callback => {
+      callback(updatedUser);
+    });
+  }
+
+  /**
    * Notifies all of the listers attached to the specified property of the
    * user object that a change has occurred.
    *
@@ -97,10 +124,12 @@ class ClientData {
     propertyName: string,
     updatedValue: unknown
   ) {
-    if (this.userListeners[propertyName]) {
-      Object.values(this.userListeners[propertyName]).forEach(callback => {
-        callback(updatedValue);
-      });
+    if (this.userListeners.propertyListeners[propertyName]) {
+      Object.values(this.userListeners.propertyListeners[propertyName]).forEach(
+        callback => {
+          callback(updatedValue);
+        }
+      );
     }
   }
 
@@ -303,10 +332,8 @@ class ClientData {
   }
 
   /**
-   * Sets the user object to the provided value and doesn't trigger any
-   * callbacks.
-   *
-   * This should only be used at application startup.
+   * Sets the user object to the provided value triggers callbacks but doesn't
+   * save to the server.
    *
    * @param {User} user the fresh user object from the server
    */
@@ -317,6 +344,8 @@ class ClientData {
     if (!this.user.settings.notesExpanded) {
       this.user.settings.notesExpanded = false;
     }
+
+    this.notifyUserListeners(user);
   }
 
   /**
@@ -499,14 +528,14 @@ class ClientData {
    * @param {string} listenerId the unique ID of the listener. This should be
    * something like `<listeningTaskOrProjectID>.<ComponentName>`. For example:
    * `H2532hlh2l3h5l2520.CompletableRow`.
-   * @param {ListenerCallback} callback the callback to run when changes are
+   * @param {CompletableListenerCallback} callback the callback to run when changes are
    * made to the completable with the provided ID
    */
   static addCompletableListener(
     type: CompletableType,
     completableId: string,
     listenerId: string,
-    callback: ListenerCallback
+    callback: CompletableListenerCallback
   ) {
     const completableListeners = this.getCompletableListeners(type);
     if (!completableListeners[completableId]) {
@@ -516,6 +545,19 @@ class ClientData {
       };
     }
     completableListeners[completableId].listeners[listenerId] = callback;
+  }
+
+  /**
+   * Adds a listener to the user object so that when the entire user object is
+   * set, the provided callback is ran.
+   *
+   * @param {string} listenerId the unique ID of the listener. This should be
+   * something like `<ComponentName>`. For example: `ProjectTable`.
+   * @param {UserListenerCallback} callback the callback to run when the
+   * user object is changed
+   */
+  static addUserListener(listenerId: string, callback: UserListenerCallback) {
+    this.userListeners.listeners[listenerId] = callback;
   }
 
   /**
@@ -534,10 +576,10 @@ class ClientData {
     propertyName: string,
     callback: PropertyListenerCallback
   ) {
-    if (!this.userListeners[propertyName]) {
-      this.userListeners[propertyName] = {};
+    if (!this.userListeners.propertyListeners[propertyName]) {
+      this.userListeners.propertyListeners[propertyName] = {};
     }
-    this.userListeners[propertyName][listenerId] = callback;
+    this.userListeners.propertyListeners[propertyName][listenerId] = callback;
   }
 
   /**
@@ -576,12 +618,18 @@ class ClientData {
     ] = callback;
   }
 
+  static removeUserListener(listenerId: string) {
+    if (this.userListeners.listeners[listenerId]) {
+      delete this.userListeners.listeners[listenerId];
+    }
+  }
+
   static removeUserPropertyListener(propertyName: string, listenerId: string) {
     if (
-      this.userListeners[propertyName] &&
-      this.userListeners[propertyName][listenerId]
+      this.userListeners.propertyListeners[propertyName] &&
+      this.userListeners.propertyListeners[propertyName][listenerId]
     ) {
-      delete this.userListeners[propertyName][listenerId];
+      delete this.userListeners.propertyListeners[propertyName][listenerId];
     }
   }
 

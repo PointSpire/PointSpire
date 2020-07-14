@@ -75,19 +75,19 @@ class App extends React.Component<AppProps, AppState> {
    */
   async componentDidMount(): Promise<void> {
     // Get the data for the user
-    let userData: AllUserData;
+    let userData: AllUserData | null;
     if (process.env.REACT_APP_ENV === 'LOCAL_DEV') {
       userData = await getTestUserData();
     } else {
       userData = await getUserData();
     }
 
-    // Set the ClientData first
-    ClientData.setProjects(userData.projects);
-    ClientData.setTasks(userData.tasks);
-    ClientData.setUser(userData.user);
-
-    this.setProjectIds(userData.user.projects);
+    if (userData) {
+      ClientData.setProjects(userData.projects);
+      ClientData.setTasks(userData.tasks);
+      ClientData.setUser(userData.user);
+      this.setProjectIds(userData.user.projects);
+    }
   }
 
   setProjectIds(updatedProjectIds: Array<string>): void {
@@ -147,7 +147,6 @@ class App extends React.Component<AppProps, AppState> {
             alert={alert}
             appTheme={appTheme}
             setTheme={setTheme}
-            loggedIn={!!ClientData.getUser()}
           />
           {projectIds ? <ProjectTable /> : <></>}
           <Snackbar

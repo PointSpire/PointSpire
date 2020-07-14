@@ -166,8 +166,12 @@ export async function patchUser(user: User): Promise<boolean> {
  * url path. If the code isn't there, then it makes a request to `/api/users`
  * expecting the user to have a cookie with a valid session ID in it, so the
  * server returns the correct AllUserData object.
+ *
+ * @returns {Promise<AllUserData | null>} all of the user data if it came back
+ * or null if there wasn't a session cookie that the server could use and
+ * the user isn't trying to login after a callback from authentication
  */
-export async function getUserData(): Promise<AllUserData> {
+export async function getUserData(): Promise<AllUserData | null> {
   const githubCodeRegEx = /\?code=(.*)/;
   const githubCodeMatch = githubCodeRegEx.exec(window.location.href);
   let githubCode = '';
@@ -196,13 +200,20 @@ export async function getUserData(): Promise<AllUserData> {
 
     return data;
   }
-  const url = `${fetchData.baseServerUrl}/api/users`;
-  const res = await fetch(url, {
-    method: 'GET',
-    credentials: 'include',
-  });
-  const data = (await res.json()) as AllUserData;
-  return data;
+
+  // Try to get from the server with a session cookie if the user has one
+  try {
+    const url = `${fetchData.baseServerUrl}/api/users`;
+    const res = await fetch(url, {
+      method: 'GET',
+      credentials: 'include',
+    });
+    const data = (await res.json()) as AllUserData;
+    return data;
+  } catch {
+    // Return null if there isn't any data, meaning they need to login first.
+    return null;
+  }
 }
 
 /**

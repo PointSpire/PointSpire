@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -54,18 +54,10 @@ export interface TopMenuBarProps extends WithStyles<typeof styles> {
   githubClientId: string;
   appTheme: Theme;
   setTheme: (theme: Theme) => void;
-  loggedIn: boolean;
 }
 
 function TopMenuBar(props: TopMenuBarProps): JSX.Element {
-  const {
-    alert,
-    loggedIn,
-    setTheme,
-    appTheme,
-    githubClientId,
-    classes,
-  } = props;
+  const { alert, setTheme, appTheme, githubClientId, classes } = props;
   /**
    * The items for the drawer that pops out of the left hand side.
    */
@@ -83,6 +75,22 @@ function TopMenuBar(props: TopMenuBarProps): JSX.Element {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(!!ClientData.getUser().settings);
+
+  const listenerId = `TopMenuBar`;
+
+  /**
+   * Subscribe to changes in the user object.
+   */
+  useEffect(() => {
+    ClientData.addUserListener(listenerId, user => {
+      setLoggedIn(!!user);
+    });
+
+    return () => {
+      ClientData.removeUserListener(listenerId);
+    };
+  }, []);
 
   /**
    * Represents the component for the top menu and title bar, ass well as the
