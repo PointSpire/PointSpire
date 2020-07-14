@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -22,13 +22,9 @@ import SettingsIcon from '@material-ui/icons/Settings';
 import HelpIcon from '@material-ui/icons/Help';
 import SettingsDialog from './SettingsDialog/SettingsDialog';
 import LoginDialog from './LoginDialog';
-import {
-  AlertFunction,
-  UpdateSettingsFunction,
-  UpdateUserOnServerFunction,
-} from '../App';
-import { UserSettings } from '../logic/dbTypes';
+import { AlertFunction } from '../App';
 import { logout } from '../logic/fetchMethods';
+import ClientData from '../logic/ClientData';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */
@@ -55,38 +51,17 @@ function styles(theme: Theme) {
 
 export interface TopMenuBarProps extends WithStyles<typeof styles> {
   alert: AlertFunction;
-  userSettings?: UserSettings;
-  updateSettings?: UpdateSettingsFunction;
-  sendUpdatedUserToServer: UpdateUserOnServerFunction;
-  baseServerUrl: string;
   githubClientId: string;
   appTheme: Theme;
   setTheme: (theme: Theme) => void;
-  loggedIn: boolean;
 }
 
-export interface TopMenuBarState {
-  /**
-   * Determines if the left drawer is open for the menu.
-   */
-  drawerOpen: boolean;
-
-  /**
-   * Determines if the SettingsDialog is open.
-   */
-  settingsOpen: boolean;
-  loginOpen: boolean;
-}
-
-/**
- * Represents the component for the top menu and title bar, ass well as the
- * drawer that can pop out from the left hand side.
- */
-class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
+function TopMenuBar(props: TopMenuBarProps): JSX.Element {
+  const { alert, setTheme, appTheme, githubClientId, classes } = props;
   /**
    * The items for the drawer that pops out of the left hand side.
    */
-  static menuItems = {
+  const menuItems = {
     settings: {
       text: 'Settings',
       icon: <SettingsIcon />,
@@ -97,45 +72,37 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
     },
   };
 
-  constructor(props: TopMenuBarProps) {
-    super(props);
-    this.state = {
-      drawerOpen: false,
-      settingsOpen: false,
-      loginOpen: false,
-    };
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(!!ClientData.getUser().settings);
 
-    this.createSetSettingsOpenHandler = this.createSetSettingsOpenHandler.bind(
-      this
-    );
-    this.setSettingsOpen = this.setSettingsOpen.bind(this);
-    this.createSetLoginOpenHandler = this.createSetLoginOpenHandler.bind(this);
-    this.setLoginOpen = this.setLoginOpen.bind(this);
-    this.toggleDrawer = this.toggleDrawer.bind(this);
-  }
+  const listenerId = `TopMenuBar`;
 
   /**
-   * Sets the `settingsOpen` state indicating if the SettingsDialog is open
-   * or not.
-   *
-   * @param {boolean} open true if it should be open and false if not
+   * Subscribe to changes in the user object.
    */
-  setSettingsOpen(open: boolean) {
-    const { userSettings, alert } = this.props;
+  useEffect(() => {
+    ClientData.addUserListener(listenerId, user => {
+      setLoggedIn(!!user);
+    });
+
+    return () => {
+      ClientData.removeUserListener(listenerId);
+    };
+  }, []);
+
+  /**
+   * Represents the component for the top menu and title bar, ass well as the
+   * drawer that can pop out from the left hand side.
+   */
+  function checkAndSetSettingsOpen(open: boolean) {
+    const userSettings = ClientData.getUser().settings;
     if (!userSettings) {
       alert('error', 'You must login first to access settings');
     } else {
-      this.setState({ settingsOpen: open });
+      setSettingsOpen(open);
     }
-  }
-
-  /**
-   * Sets the `loginOpen` state indicating if the LoginDialog is open or not.
-   *
-   * @param {boolean} open
-   */
-  setLoginOpen(open: boolean) {
-    this.setState({ loginOpen: open });
   }
 
   /**
@@ -144,7 +111,7 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
    * @param {boolean} open true if this should set the SettingsDialog to open,
    * and false if not
    */
-  createSetSettingsOpenHandler(open: boolean) {
+  function createSetSettingsOpenHandler(open: boolean) {
     return (event: React.KeyboardEvent | React.MouseEvent) => {
       if (
         event.type === 'keydown' &&
@@ -154,7 +121,7 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
         return;
       }
 
-      this.setSettingsOpen(open);
+      setSettingsOpen(open);
     };
   }
 
@@ -163,7 +130,7 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
    *
    * @param {boolean} open
    */
-  createSetLoginOpenHandler(open: boolean) {
+  function createSetLoginOpenHandler(open: boolean) {
     return (event: React.KeyboardEvent | React.MouseEvent) => {
       if (
         event.type === 'keydown' &&
@@ -173,138 +140,107 @@ class TopMenuBar extends React.Component<TopMenuBarProps, TopMenuBarState> {
         return;
       }
 
-      this.setLoginOpen(open);
+      setLoginOpen(open);
     };
+  }
+
+  function createDrawerOpenHandler(open: boolean) {
+    return (event: React.KeyboardEvent | React.MouseEvent) => {
+      if (
+        event.type === 'keydown' &&
+        ((event as React.KeyboardEvent).key === 'Tab' ||
+          (event as React.KeyboardEvent).key === 'Shift')
+      ) {
+        return;
+      }
+
+      setDrawerOpen(open);
+    };
+  }
+
+  let settingsDialog: JSX.Element;
+  if (ClientData.getUser().settings) {
+    settingsDialog = (
+      <SettingsDialog
+        open={settingsOpen}
+        setOpen={checkAndSetSettingsOpen}
+        alert={alert}
+        appTheme={appTheme}
+        setTheme={setTheme}
+      />
+    );
+  } else {
+    settingsDialog = <div />;
   }
 
   /**
-   * Handles opening of the menu drawer.
-   *
-   * @param {boolean} open true if it should be open and false if not
+   * The list of items in the menu rendered in JSX.
    */
-  toggleDrawer(open: boolean) {
-    return (event: React.KeyboardEvent | React.MouseEvent) => {
-      if (
-        event.type === 'keydown' &&
-        ((event as React.KeyboardEvent).key === 'Tab' ||
-          (event as React.KeyboardEvent).key === 'Shift')
-      ) {
-        return;
-      }
+  const menuList = (
+    <div
+      className={classes.list}
+      role="presentation"
+      onClick={createDrawerOpenHandler(false)}
+      onKeyDown={createDrawerOpenHandler(false)}
+    >
+      <List>
+        {Object.values(menuItems).map(menuItem => (
+          <ListItem
+            key={menuItem.text}
+            button
+            onClick={
+              menuItem.text === menuItems.settings.text
+                ? createSetSettingsOpenHandler(true)
+                : undefined
+            }
+          >
+            <ListItemIcon>{menuItem.icon}</ListItemIcon>
+            <ListItemText primary={menuItem.text} />
+          </ListItem>
+        ))}
+      </List>
+    </div>
+  );
 
-      this.setState({ drawerOpen: open });
-    };
-  }
-
-  render(): JSX.Element {
-    const { menuItems: optionsItems } = TopMenuBar;
-    const {
-      state,
-      setSettingsOpen,
-      setLoginOpen,
-      toggleDrawer,
-      createSetSettingsOpenHandler,
-    } = this;
-    const {
-      classes,
-      alert,
-      userSettings,
-      updateSettings,
-      sendUpdatedUserToServer,
-      githubClientId,
-      appTheme,
-      setTheme,
-      loggedIn,
-    } = this.props;
-
-    // Set up the settingsDialog based on existence of user info
-    let settingsDialog: JSX.Element;
-    if (userSettings !== undefined && updateSettings !== undefined) {
-      settingsDialog = (
-        <SettingsDialog
-          sendUpdatedUserToServer={sendUpdatedUserToServer}
-          updateSettings={updateSettings}
-          open={state.settingsOpen}
-          setOpen={setSettingsOpen}
-          alert={alert}
-          settings={userSettings}
-          appTheme={appTheme}
-          setTheme={setTheme}
-        />
-      );
-    } else {
-      settingsDialog = <div />;
-    }
-
-    /**
-     * The list of items in the menu rendered in JSX.
-     */
-    const menuList = (
-      <div
-        className={classes.list}
-        role="presentation"
-        onClick={toggleDrawer(false)}
-        onKeyDown={toggleDrawer(false)}
+  return (
+    <div className={classes.root}>
+      <AppBar position="static">
+        <Toolbar>
+          <IconButton
+            edge="start"
+            className={classes.menuButton}
+            color="inherit"
+            aria-label="menu"
+            onClick={createDrawerOpenHandler(true)}
+          >
+            <MenuIcon />
+          </IconButton>
+          <Typography variant="h6" className={classes.title}>
+            PointSpire
+          </Typography>
+          <Button
+            color="inherit"
+            onClick={loggedIn ? logout : createSetLoginOpenHandler(true)}
+          >
+            {loggedIn ? 'Logout' : 'Login'}
+          </Button>
+        </Toolbar>
+      </AppBar>
+      <Drawer
+        anchor="left"
+        open={drawerOpen}
+        onClose={createDrawerOpenHandler(false)}
       >
-        <List>
-          {Object.values(optionsItems).map(optionItem => (
-            <ListItem
-              key={optionItem.text}
-              button
-              onClick={
-                optionItem.text === optionsItems.settings.text
-                  ? createSetSettingsOpenHandler(true)
-                  : undefined
-              }
-            >
-              <ListItemIcon>{optionItem.icon}</ListItemIcon>
-              <ListItemText primary={optionItem.text} />
-            </ListItem>
-          ))}
-        </List>
-      </div>
-    );
-
-    return (
-      <div className={classes.root}>
-        <AppBar position="static">
-          <Toolbar>
-            <IconButton
-              edge="start"
-              className={classes.menuButton}
-              color="inherit"
-              aria-label="menu"
-              onClick={toggleDrawer(true)}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography variant="h6" className={classes.title}>
-              PointSpire
-            </Typography>
-            <Button
-              color="inherit"
-              onClick={loggedIn ? logout : this.createSetLoginOpenHandler(true)}
-            >
-              {loggedIn ? 'Logout' : 'Login'}
-            </Button>
-          </Toolbar>
-        </AppBar>
-        <Drawer
-          anchor="left"
-          open={state.drawerOpen}
-          onClose={toggleDrawer(false)}
-        >
-          {menuList}
-        </Drawer>
-        <LoginDialog
-          githubClientId={githubClientId}
-          open={state.loginOpen}
-          setOpen={setLoginOpen}
-        />
-        {settingsDialog}
-      </div>
-    );
-  }
+        {menuList}
+      </Drawer>
+      <LoginDialog
+        githubClientId={githubClientId}
+        open={loginOpen}
+        setOpen={setLoginOpen}
+      />
+      {settingsDialog}
+    </div>
+  );
 }
 
 export default withStyles(styles, { withTheme: true })(TopMenuBar);

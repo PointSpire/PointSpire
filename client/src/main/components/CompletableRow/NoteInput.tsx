@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { TextField } from '@material-ui/core';
-import { resetTimer } from '../logic/savingTimer';
+import { resetTimer } from '../../logic/savingTimer';
+import ClientData from '../../logic/ClientData';
+import { CompletableType } from '../../logic/dbTypes';
 
 export type NoteInputProps = {
-  saveNote: (note: string) => void;
-  note: string;
+  completableType: CompletableType;
+  completableId: string;
   label: string;
 };
 
@@ -15,8 +17,12 @@ export type NoteInputProps = {
  * @param {NoteInputProps} props the props
  */
 function NoteInput(props: NoteInputProps): JSX.Element {
-  const { note: initialNote, label } = props;
-  const [note, setNote] = useState(initialNote);
+  const { completableId, completableType, label } = props;
+  const initialCompletable = ClientData.getCompletable(
+    completableType,
+    completableId
+  );
+  const [note, setNote] = useState(initialCompletable.note);
 
   function handleNoteChange(event: React.ChangeEvent<HTMLInputElement>): void {
     setNote(event.target.value);
@@ -24,10 +30,16 @@ function NoteInput(props: NoteInputProps): JSX.Element {
   }
 
   function handleLoseFocus(): void {
-    if (note !== initialNote) {
-      props.saveNote(note);
+    if (initialCompletable.note !== note) {
+      ClientData.setAndSaveCompletableProperty(
+        completableType,
+        completableId,
+        'note',
+        note
+      );
     }
   }
+
   return (
     <TextField
       size="small"

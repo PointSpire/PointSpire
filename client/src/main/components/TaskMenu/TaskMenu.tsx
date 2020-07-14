@@ -78,8 +78,8 @@ function TaskMenu(props: TaskMenuProps): JSX.Element {
         <MenuItem onClick={handleDelete}>Delete</MenuItem>
         {openPrereqTaskDialog ? (
           <MenuItem
-            onClick={e => {
-              openPrereqTaskDialog(e, null);
+            onClick={event => {
+              openPrereqTaskDialog(event, null);
               setAnchorEl(null);
             }}
           >

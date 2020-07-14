@@ -14,45 +14,33 @@ import {
   ListItem,
 } from '@material-ui/core';
 import { Theme } from '@material-ui/core/styles';
-import {
-  AlertFunction,
-  UpdateSettingsFunction,
-  UpdateUserOnServerFunction,
-} from '../../App';
-import { UserSettings } from '../../logic/dbTypes';
+import { AlertFunction } from '../../App';
 import FontSizeSetting from './FontSizeSetting';
 import baseThemeOptions from '../../AppTheme';
 import { setCookie, ClientCookies } from '../../logic/clientCookies';
+import ClientData from '../../logic/ClientData';
 
 type SettingsDialogProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
   alert: AlertFunction;
-  settings: UserSettings;
   appTheme: Theme;
   setTheme: (updatedTheme: Theme) => void;
-  updateSettings: UpdateSettingsFunction;
-  sendUpdatedUserToServer: UpdateUserOnServerFunction;
 };
 
 /**
  * Represents the settings dialog for a user.
  */
 function SettingsDialog(props: SettingsDialogProps): JSX.Element {
-  const {
-    setOpen,
-    open,
-    alert,
-    sendUpdatedUserToServer,
-    settings,
-    updateSettings,
-    appTheme,
-    setTheme,
-  } = props;
+  const { setOpen, open, alert, appTheme, setTheme } = props;
 
   const [pendingClientSettings, setPendingClientSettings] = useState<{
     fontSize: number;
   }>({ fontSize: appTheme.typography.fontSize });
+
+  const [userSettings, setUserSettings] = useState({
+    ...ClientData.getUser().settings,
+  });
 
   /**
    * Handles closing of the SettingsDialog.
@@ -79,18 +67,8 @@ function SettingsDialog(props: SettingsDialogProps): JSX.Element {
     saveClientSettings();
 
     // Save their settings on the server
-    sendUpdatedUserToServer()
-      .then(success => {
-        if (success) {
-          // Show the success snackbar 😀
-          alert('success', 'Successfully saved settings!');
-        } else {
-          alert('error', 'Failed to save settings on the server');
-        }
-      })
-      .catch(() => {
-        alert('error', 'There was an error while saving the settings');
-      });
+    ClientData.setAndSaveUserProperty('settings', userSettings);
+    alert('success', 'Successfully saved settings!');
   }
 
   /**
@@ -115,10 +93,9 @@ function SettingsDialog(props: SettingsDialogProps): JSX.Element {
     event: React.ChangeEvent<HTMLInputElement>
   ): void {
     const { name, checked } = event.target;
-    if (settings && updateSettings) {
-      settings[name] = checked;
-      updateSettings(settings);
-    }
+    const newUserSettings = { ...userSettings };
+    newUserSettings[name] = checked;
+    setUserSettings(newUserSettings);
   }
 
   return (
@@ -140,7 +117,7 @@ function SettingsDialog(props: SettingsDialogProps): JSX.Element {
                 label="Yellow and Green Tasks"
                 control={
                   <Checkbox
-                    checked={settings.yellowGreenTasks}
+                    checked={userSettings.yellowGreenTasks}
                     color="primary"
                     name="yellowGreenTasks"
                     onChange={handleCheckboxChange}
@@ -153,6 +130,25 @@ function SettingsDialog(props: SettingsDialogProps): JSX.Element {
                 option is disabled, then tasks that have a pre-requisite are
                 grayed out, and tasks that can be worked on have a normal white
                 background.
+              </Typography>
+            </FormGroup>
+          </ListItem>
+          <ListItem>
+            <FormGroup row={false}>
+              <FormControlLabel
+                label="Notes Expanded by Default"
+                control={
+                  <Checkbox
+                    checked={userSettings.notesExpanded}
+                    color="primary"
+                    name="notesExpanded"
+                    onChange={handleCheckboxChange}
+                  />
+                }
+              />
+              <Typography variant="caption" display="block" component="span">
+                Enabling this keeps notes expanded when you open the
+                application.
               </Typography>
             </FormGroup>
           </ListItem>

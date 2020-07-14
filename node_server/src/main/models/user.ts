@@ -7,6 +7,9 @@ const ObjectId = mongoose.Types.ObjectId;
 /**
  * The mongoose schema for a User in the database. There can be duplicate
  * usernames in the DB, because uniqueness is determined by the `_id` value.
+ *
+ * Changes to this schema also need to be reflected in the UserDoc type and
+ * the `swagger.ts` file under the asssociated part of the user object.
  */
 const userSchema = new Schema({
   userName: {
@@ -25,6 +28,10 @@ const userSchema = new Schema({
   ],
   settings: {
     yellowGreenTasks: {
+      type: Boolean,
+      default: false,
+    },
+    notesExpanded: {
       type: Boolean,
       default: false,
     },
@@ -49,6 +56,7 @@ export interface UserDoc extends Document {
   projects: Array<typeof ObjectId>;
   settings: {
     yellowGreenTasks: boolean;
+    notesExpanded: boolean;
   };
 }
 

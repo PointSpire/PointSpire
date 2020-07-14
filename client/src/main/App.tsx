@@ -5,23 +5,11 @@ import MuiAlert from '@material-ui/lab/Alert';
 
 import { Snackbar } from '@material-ui/core';
 import TopMenuBar from './components/TopMenuBar';
-import {
-  User,
-  AllUserData,
-  ProjectObjects,
-  TaskObjects,
-  UserSettings,
-  Project,
-  Task,
-} from './logic/dbTypes';
+import { AllUserData } from './logic/dbTypes';
 import ProjectTable from './components/ProjectTable';
-import {
-  postNewProject,
-  getUserData,
-  getTestUserData,
-  baseServerUrl,
-} from './logic/fetchMethods';
+import { getUserData, getTestUserData } from './logic/fetchMethods';
 import baseThemeOptions from './AppTheme';
+import ClientData from './logic/ClientData';
 
 /**
  * Used to determine the severity of an alert for the snackbar of the app.
@@ -45,19 +33,9 @@ type AppState = {
   snackBarText: string;
 
   /**
-   * The primary user object in memory for the client.
+   * State for the projectIds which is just used to show the ProjectTable
    */
-  user?: User;
-
-  /**
-   * All of the projects associated with the user.
-   */
-  projects?: ProjectObjects;
-
-  /**
-   * All of the tasks associated with the user.
-   */
-  tasks?: TaskObjects;
+  projectIds: Array<string> | null;
 
   appTheme: Theme;
 };
@@ -82,22 +60,14 @@ class App extends React.Component<AppProps, AppState> {
       snackBarOpen: false,
       snackBarSeverity: 'error',
       snackBarText: 'unknown',
-      user: undefined,
-      projects: {},
-      tasks: {},
       appTheme: createMuiTheme(baseThemeOptions),
+      projectIds: null,
     };
 
     this.handleSnackBarClose = this.handleSnackBarClose.bind(this);
     this.alert = this.alert.bind(this);
-    this.updateSettings = this.updateSettings.bind(this);
-    this.sendUpdatedUserToServer = this.sendUpdatedUserToServer.bind(this);
-    this.setProjects = this.setProjects.bind(this);
-    this.setProject = this.setProject.bind(this);
-    this.setTasks = this.setTasks.bind(this);
-    this.setTask = this.setTask.bind(this);
-    this.setUser = this.setUser.bind(this);
     this.setTheme = this.setTheme.bind(this);
+    this.setProjectIds = this.setProjectIds.bind(this);
   }
 
   /**
@@ -105,93 +75,29 @@ class App extends React.Component<AppProps, AppState> {
    */
   async componentDidMount(): Promise<void> {
     // Get the data for the user
-    let userData: AllUserData;
+    let userData: AllUserData | null;
     if (process.env.REACT_APP_ENV === 'LOCAL_DEV') {
       userData = await getTestUserData();
     } else {
       userData = await getUserData();
     }
-    this.setState({
-      user: userData.user,
-      projects: userData.projects,
-      tasks: userData.tasks,
-    });
-  }
 
-  // #region Project Functions
-  /**
-   * Updates the projects state on the app.
-   *
-   * @param {Project} updatedProjects the new ProjectObjects object to set for
-   * projects on the app
-   */
-  setProjects(updatedProjects: ProjectObjects): void {
-    this.setState({
-      projects: updatedProjects,
-    });
-  }
-
-  /**
-   * Updates the given project in the app's projects state.
-   * @param {Project} updatedProject the updated project
-   */
-  setProject(updatedProject: Project): void {
-    const { projects } = this.state;
-    if (projects) {
-      // eslint-disable-next-line no-underscore-dangle
-      projects[updatedProject._id] = updatedProject;
-      this.setProjects(projects);
+    if (userData) {
+      ClientData.setProjects(userData.projects);
+      ClientData.setTasks(userData.tasks);
+      ClientData.setUser(userData.user);
+      this.setProjectIds(userData.user.projects);
     }
   }
 
-  /**
-   * Updates a particular task in the tasks state of the app.
-   *
-   * @param {Task} updatedTask the Task object to update in the tasks state
-   */
-  setTask(updatedTask: Task): void {
-    const { tasks } = this.state;
-    if (tasks) {
-      tasks[updatedTask._id] = updatedTask;
-      this.setTasks(tasks);
-    }
-  }
-
-  setUserProjects(newProject: Project): void {
-    const { user } = this.state;
-    if (user) {
-      const temp = user.projects;
-      temp.push(newProject._id);
-      user.projects = temp;
-      this.setState({
-        user,
-      });
-    }
-  }
-  // #endregion
-
-  setUser(updatedUser: User): void {
+  setProjectIds(updatedProjectIds: Array<string>): void {
     this.setState({
-      user: updatedUser,
+      projectIds: updatedProjectIds,
     });
   }
 
   /**
-   * Updates the tasks state on the app.
-   *
-   * @param {Task} updatedTasks the new TaskObjects object to set for tasks on
-   * the app
-   */
-  setTasks(updatedTasks: TaskObjects): void {
-    this.setState({
-      tasks: updatedTasks,
-    });
-  }
-
-  /**
-   * Updates the theme for the application. This should only be updated by
-   * modifying particular variables and not replacing the theme fresh because
-   * it is quite large.
+   * Updates the theme for the application.
    *
    * @param {Theme} updatedTheme the updated theme object
    */
@@ -201,58 +107,10 @@ class App extends React.Component<AppProps, AppState> {
     });
   }
 
-  async addProject(newTitle: string): Promise<void> {
-    const { projects, user } = this.state;
-    if (user && projects) {
-      const newProject = await postNewProject(user._id, newTitle);
-      this.setProject(newProject);
-      this.setUserProjects(newProject);
-    }
-  }
-
   handleSnackBarClose(): void {
     this.setState({
       snackBarOpen: false,
     });
-  }
-
-  /**
-   * Sends the current `user` stored in the app's state to the server as a
-   * patch request. This can be passed down to any component that modifies
-   * some part of the `user` object in the app's state.
-   *
-   * @returns {boolean} true if successful and false if not
-   */
-  async sendUpdatedUserToServer(): Promise<boolean> {
-    const { user } = this.state;
-    if (user) {
-      const res = await fetch(`${baseServerUrl}/api/users/${user._id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(user),
-      });
-      return res.status === 200;
-    }
-    return false;
-  }
-
-  /**
-   * Updates the settings for the user on the client side. This does not send
-   * the updated settings to the server. For that, use
-   * `sendUpdatedUserToServer`. This can be passed down to components that
-   * modify settings for the user.
-   *
-   * @param {UserSettings} updatedSettings the updated settings object to save
-   * to the user state
-   */
-  updateSettings(updatedSettings: UserSettings): void {
-    const { user } = this.state;
-    if (user) {
-      user.settings = updatedSettings;
-      this.setUser(user);
-    }
   }
 
   /**
@@ -277,52 +135,20 @@ class App extends React.Component<AppProps, AppState> {
       snackBarOpen,
       snackBarSeverity,
       snackBarText,
-      user,
-      projects,
-      tasks,
       appTheme,
+      projectIds,
     } = this.state;
-    const {
-      handleSnackBarClose,
-      alert,
-      updateSettings,
-      sendUpdatedUserToServer,
-      setProjects,
-      setProject,
-      setUser,
-      setTask,
-      setTasks,
-      setTheme,
-    } = this;
+    const { handleSnackBarClose, alert, setTheme } = this;
     return (
       <div className="App">
         <ThemeProvider theme={appTheme}>
           <TopMenuBar
             githubClientId={githubClientId}
-            baseServerUrl={baseServerUrl}
-            sendUpdatedUserToServer={sendUpdatedUserToServer}
             alert={alert}
-            userSettings={user ? user.settings : undefined}
-            updateSettings={updateSettings}
             appTheme={appTheme}
             setTheme={setTheme}
-            loggedIn={!!user}
           />
-          {/* If projects and tasks exist, show project table */}
-          {projects && tasks && user ? (
-            <ProjectTable
-              setUser={setUser}
-              setProjects={setProjects}
-              setProject={setProject}
-              setTask={setTask}
-              setTasks={setTasks}
-              projects={projects}
-              tasks={tasks}
-              user={user}
-            />
-          ) : (
-            ''
-          )}
+          {projectIds ? <ProjectTable /> : <></>}
           <Snackbar
             open={snackBarOpen}
             autoHideDuration={3000}
@@ -347,40 +173,5 @@ class App extends React.Component<AppProps, AppState> {
  * the functions type when passing it down as a prop to other components.
  */
 export type AlertFunction = typeof App.prototype.alert;
-
-/**
- * The type of the method 'updateSettings' on the App class.
- */
-export type UpdateSettingsFunction = typeof App.prototype.updateSettings;
-
-/**
- * The type of the method 'sendUpdatedUserToServer' on the App class.
- */
-export type UpdateUserOnServerFunction = typeof App.prototype.sendUpdatedUserToServer;
-
-/**
- * The type of the method 'setProjects' on the App class.
- */
-export type SetProjectsFunction = typeof App.prototype.setProjects;
-
-/**
- * The type of the method 'setProject' on the App class.
- */
-export type SetProjectFunction = typeof App.prototype.setProject;
-
-/**
- * The type of the method 'setUser' on the App class.
- */
-export type SetUserFunction = typeof App.prototype.setUser;
-
-/**
- * The type of the method 'setTask' on the App class.
- */
-export type SetTaskFunction = typeof App.prototype.setTask;
-
-/**
- * The type of the method 'setTasks' on the App class.
- */
-export type SetTasksFunction = typeof App.prototype.setTasks;
 
 export default App;

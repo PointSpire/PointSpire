@@ -27,10 +27,10 @@ function SortInput(props: SortInputProps): JSX.Element {
       <FormControl>
         <InputLabel id="sort-label">Sort By</InputLabel>
         <Select labelId="sort-label" value={sortBy} onChange={handleChange}>
-          {Object.keys(sortingFunctions).map(sortType => {
+          {Object.entries(sortingFunctions).map(([key, value]) => {
             return (
-              <MenuItem key={sortType} value={sortType}>
-                {sortType}
+              <MenuItem key={key} value={key}>
+                {value.labelName}
               </MenuItem>
             );
           })}

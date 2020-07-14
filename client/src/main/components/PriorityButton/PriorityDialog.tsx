@@ -1,16 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { DialogActions, Button } from '@material-ui/core';
 import PriorityInput from './PriorityInput';
+import { CompletableType } from '../../logic/dbTypes';
+import ClientData from '../../logic/ClientData';
 
 type PriorityDialogProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
-  savePriority: (priority: number) => void;
-  priority: number;
-  projectOrTaskTitle: string;
+  completableId: string;
+  completableType: CompletableType;
 };
 
 /**
@@ -22,7 +23,21 @@ type PriorityDialogProps = {
 export default function PriorityDialog(
   props: PriorityDialogProps
 ): JSX.Element {
-  const { setOpen, open, savePriority, priority, projectOrTaskTitle } = props;
+  const { setOpen, open, completableId, completableType } = props;
+
+  const initialPriority = ClientData.getCompletable(
+    completableType,
+    completableId
+  ).priority;
+  let priority: string;
+  if (!initialPriority) {
+    priority = '0';
+  } else {
+    priority = initialPriority.toString();
+  }
+  const [input, setInput] = useState<string>(priority);
+  const [error, setError] = useState(false);
+  const [helperText, setHelperText] = useState('');
 
   /**
    * Handles the closing of the PriorityDialog
@@ -31,11 +46,45 @@ export default function PriorityDialog(
     setOpen(false);
   }
 
+  function validateInput(value: string): void {
+    if (value.length === 0) {
+      setError(true);
+      setHelperText('Please enter a priority number');
+    } else if (!Number.isNaN(Number.parseInt(value, 10))) {
+      setError(false);
+      setHelperText('');
+    } else {
+      setError(true);
+      setHelperText('Please enter a non-decimal integer');
+    }
+  }
+
+  function savePriority(): void {
+    ClientData.setAndSaveCompletableProperty(
+      completableType,
+      completableId,
+      'priority',
+      Number.parseInt(input, 10)
+    );
+  }
+
+  function saveIfNoError(): void {
+    if (!error) {
+      savePriority();
+    }
+  }
+
   function handleKeyUp(event: React.KeyboardEvent<HTMLDivElement>): void {
     if (event.key === 'Enter') {
+      saveIfNoError();
       handleClose();
     }
   }
+
+  const completableTitle = ClientData.getCompletable(
+    completableType,
+    completableId
+  ).title;
 
   return (
     <Dialog
@@ -45,10 +94,16 @@ export default function PriorityDialog(
       aria-labelledby="priority-dialog-title"
     >
       <DialogTitle id="priority-dialog-title">
-        {`Set priority for "${projectOrTaskTitle}"`}
+        {`Set priority for "${completableTitle}"`}
       </DialogTitle>
       <DialogContent>
-        <PriorityInput savePriority={savePriority} priority={priority} />
+        <PriorityInput
+          input={input}
+          helperText={helperText}
+          setInput={setInput}
+          validateInput={validateInput}
+          error={error}
+        />
       </DialogContent>
       <DialogActions>
         <Button
