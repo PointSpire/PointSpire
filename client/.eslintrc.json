@@ -68,7 +68,12 @@
           {
             "extensions": [".tsx", ".jsx"]
           }
-        ]
+        ],
+
+        /* Disabled because sometimes we want to have useEffect use no
+        properties so that it runs only on component mount and dismount, even
+        though it might use some of the internal variables of the component*/
+        "react-hooks/exhaustive-deps": false
       }
     }
   ]
