@@ -10,6 +10,7 @@ import ProjectTable from './components/ProjectTable';
 import { getUserData, getTestUserData } from './logic/fetchMethods';
 import baseThemeOptions from './AppTheme';
 import ClientData from './logic/ClientData';
+import { PendingChanges } from './logic/savingTimer';
 
 /**
  * Used to determine the severity of an alert for the snackbar of the app.
@@ -38,6 +39,11 @@ type AppState = {
   projectIds: Array<string> | null;
 
   appTheme: Theme;
+
+  /**
+   * Indicates if user initiated changes are pending to be saved
+   */
+  pendingChanges: PendingChanges;
 };
 
 type AppProps = unknown;
@@ -51,6 +57,13 @@ if (process.env.REACT_APP_AUTH === 'LOCAL') {
 }
 
 /**
+ * A somewhat hacky way to set the state of the app in external functions.
+ * There must be a better way to do this! See componentDidMount for `setState`
+ * binding.
+ */
+export const GlobalState: { [key: string]: Function } = {};
+
+/**
  * Represents the main application window.
  */
 class App extends React.Component<AppProps, AppState> {
@@ -62,6 +75,7 @@ class App extends React.Component<AppProps, AppState> {
       snackBarText: 'unknown',
       appTheme: createMuiTheme(baseThemeOptions),
       projectIds: null,
+      pendingChanges: PendingChanges.Saved,
     };
 
     this.handleSnackBarClose = this.handleSnackBarClose.bind(this);
@@ -88,6 +102,11 @@ class App extends React.Component<AppProps, AppState> {
       ClientData.setUser(userData.user);
       this.setProjectIds(userData.user.projects);
     }
+
+    // Global state access hack
+    GlobalState.setState = (state: AppState) => {
+      this.setState(state);
+    };
   }
 
   setProjectIds(updatedProjectIds: Array<string>): void {
@@ -137,6 +156,7 @@ class App extends React.Component<AppProps, AppState> {
       snackBarText,
       appTheme,
       projectIds,
+      pendingChanges,
     } = this.state;
     const { handleSnackBarClose, alert, setTheme } = this;
     return (
@@ -147,6 +167,7 @@ class App extends React.Component<AppProps, AppState> {
             alert={alert}
             appTheme={appTheme}
             setTheme={setTheme}
+            pendingChanges={pendingChanges}
           />
           {projectIds ? <ProjectTable /> : <></>}
           <Snackbar

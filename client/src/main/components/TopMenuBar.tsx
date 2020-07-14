@@ -25,6 +25,7 @@ import LoginDialog from './LoginDialog';
 import { AlertFunction } from '../App';
 import { logout } from '../logic/fetchMethods';
 import ClientData from '../logic/ClientData';
+import { PendingChanges, manualSave } from '../logic/savingTimer';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */
@@ -54,10 +55,18 @@ export interface TopMenuBarProps extends WithStyles<typeof styles> {
   githubClientId: string;
   appTheme: Theme;
   setTheme: (theme: Theme) => void;
+  pendingChanges: PendingChanges;
 }
 
 function TopMenuBar(props: TopMenuBarProps): JSX.Element {
-  const { alert, setTheme, appTheme, githubClientId, classes } = props;
+  const {
+    alert,
+    setTheme,
+    appTheme,
+    githubClientId,
+    classes,
+    pendingChanges,
+  } = props;
   /**
    * The items for the drawer that pops out of the left hand side.
    */
@@ -218,6 +227,11 @@ function TopMenuBar(props: TopMenuBarProps): JSX.Element {
           <Typography variant="h6" className={classes.title}>
             PointSpire
           </Typography>
+          {loggedIn && (
+            <Button color="inherit" onClick={manualSave}>
+              {pendingChanges}
+            </Button>
+          )}
           <Button
             color="inherit"
             onClick={loggedIn ? logout : createSetLoginOpenHandler(true)}

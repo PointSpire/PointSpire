@@ -3,6 +3,8 @@
  * amount of time has passed.
  */
 
+import { GlobalState } from '../App';
+
 /**
  * The latest timer ID that was scheduled.
  */
@@ -20,12 +22,23 @@ const timeToWait = 10 * 1000;
 let callbacks: { [key: string]: Function } = {};
 
 /**
+ * pendingChanges state enum
+ */
+export enum PendingChanges {
+  Save = 'Save',
+  Saving = 'Saving',
+  Saved = 'Saved',
+}
+
+/**
  * Runs all the callbacks stored and then clears the callbacks object.
  */
 function runAllCallbacks() {
+  GlobalState.setState({ pendingChanges: PendingChanges.Saving });
   Object.values(callbacks).forEach(callback => {
     callback();
   });
+  GlobalState.setState({ pendingChanges: PendingChanges.Saved });
   callbacks = {};
 }
 
@@ -37,6 +50,24 @@ function runAllCallbacks() {
 export function resetTimer(): void {
   clearTimeout(currentTimerId);
   currentTimerId = setTimeout(runAllCallbacks, timeToWait);
+}
+
+/**
+ * Cancels the current timer to prevent double saving during a user initiated
+ * save.
+ */
+function cancelTimer(): void {
+  clearTimeout(currentTimerId);
+}
+
+/**
+ * Clears the current timer, runs all callback and resets the timer.
+ * Used to manually save all changes, primarily used in the user save button.
+ */
+export function manualSave(): void {
+  cancelTimer();
+  runAllCallbacks();
+  resetTimer();
 }
 
 /**
@@ -59,6 +90,7 @@ export default function scheduleCallback(
   key: string,
   callback: Function
 ): void {
+  GlobalState.setState({ pendingChanges: PendingChanges.Save });
   callbacks[key] = callback;
   resetTimer();
 }
