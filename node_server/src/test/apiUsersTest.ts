@@ -189,12 +189,59 @@ describe('DELETE /id/tags/tagId', () => {
       color: 'SomeColor',
     };
 
-    const userRes = await Globals.requester
-      .post(`/api/users/${testUser._id}`)
+    const userPatchRes = await Globals.requester
+      .patch(`/api/users/${testUser._id}`)
       .send({
         currentTags: testUser.currentTags,
       });
-    assert.equal(userRes.status, 200);
+    assert.equal(userPatchRes.status, 200);
+    assert.deepEqual(userPatchRes.body, testUser);
+
+    // Create a project with the tag
+    const addProjectRes = await Globals.requester
+      .post(`/api/users/${testUser._id}/projects`)
+      .send({
+        title: 'Some test project',
+        tags: ['someId'],
+      });
+    assert.equal(addProjectRes.status, 201);
+    assert.deepEqual(addProjectRes.body.tags, ['someId']);
+    const testProject: ProjectDoc = addProjectRes.body;
+
+    // Create a task with the tag
+    const addTaskRes = await Globals.requester
+      .post(`/api/projects/${testProject._id}/subtasks`)
+      .send({
+        title: 'Some test task',
+        tags: ['someId'],
+      });
+    assert.equal(addTaskRes.status, 201);
+    assert.deepEqual(addTaskRes.body.tags, ['someId']);
+    const testTask: ProjectDoc = addTaskRes.body;
+
+    // Delete the tag
+    const deleteTagRes = await Globals.requester.delete(
+      `/api/users/${testUser._id}/tags/someId`
+    );
+    assert.equal(deleteTagRes.status, 200);
+
+    // Make sure the tag is gone from the user
+    const userGetRes = await Globals.requester.get(
+      `/api/users/${testUser._id}`
+    );
+    assert.deepEqual(userGetRes.body.user.currentTags, {});
+
+    // Make sure the tag is gone from the project
+    const projectGetRes = await Globals.requester.get(
+      `/api/projects/${testProject._id}`
+    );
+    assert.deepEqual(projectGetRes.body.tags, []);
+
+    // Make sure the tag is gone from the task
+    const taskGetRes = await Globals.requester.get(
+      `/api/tasks/${testTask._id}`
+    );
+    assert.deepEqual(taskGetRes.body.tags, []);
 
     // Remove the test user
     await removeUser(testUser._id);

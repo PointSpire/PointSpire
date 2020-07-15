@@ -433,9 +433,12 @@ function createUsersRouter(db: typeof mongoose): Router {
 
         // Delete the tag from the user, and any projects or tasks
         await Promise.all([
-          User.findByIdAndUpdate(req.params.userId, {
-            currentTags: newTags,
-          }).exec(),
+          User.findOneAndUpdate(
+            { _id: req.params.userId },
+            {
+              currentTags: newTags,
+            }
+          ).exec(),
           Project.updateMany(
             {
               _id: {

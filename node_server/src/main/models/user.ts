@@ -11,36 +11,40 @@ const ObjectId = mongoose.Types.ObjectId;
  * Changes to this schema also need to be reflected in the UserDoc type and
  * the `swagger.ts` file under the asssociated part of the user object.
  */
-const userSchema = new Schema({
-  userName: {
-    type: String,
-    required: true,
-  },
-  firstName: String,
-  lastName: String,
-  githubId: String,
-  dateCreated: { type: Date, default: Date.now },
-  projects: [
-    {
-      type: ObjectId,
-      ref: 'Project',
+const userSchema = new Schema(
+  {
+    userName: {
+      type: String,
+      required: true,
     },
-  ],
-  settings: {
-    yellowGreenTasks: {
-      type: Boolean,
-      default: false,
+    firstName: String,
+    lastName: String,
+    githubId: String,
+    dateCreated: { type: Date, default: Date.now },
+    projects: [
+      {
+        type: ObjectId,
+        ref: 'Project',
+      },
+    ],
+    settings: {
+      yellowGreenTasks: {
+        type: Boolean,
+        default: false,
+      },
+      notesExpanded: {
+        type: Boolean,
+        default: false,
+      },
     },
-    notesExpanded: {
-      type: Boolean,
-      default: false,
+    currentTags: {
+      type: Object,
+      default: {},
     },
   },
-  currentTags: {
-    type: Object,
-    default: {},
-  },
-});
+  // Setting minimize to false makes it so empty objects will save
+  { minimize: false }
+);
 
 export type AllUserData = {
   user: UserDoc;

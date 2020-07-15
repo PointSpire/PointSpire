@@ -12,12 +12,15 @@ chai.use(chaiHttp);
 const assert = chai.assert;
 
 /**
- * Generates a testProject ProjectDoc by making a request to the server. It
- * also asserts that the returned item came back correctly.
+ * Generates a test project with the provided userId as the basis.
+ *
+ * @param {string} userId the ID of the user to attach the project to
  */
-async function generateTestProject(): Promise<ProjectDoc> {
+export async function generateTestProjectWithId(
+  userId: string
+): Promise<ProjectDoc> {
   const res = await Globals.requester
-    .post(`/api/users/${Globals.testUser._id}/projects`)
+    .post(`/api/users/${userId}/projects`)
     .send({
       title: 'testProject',
     });
@@ -26,6 +29,14 @@ async function generateTestProject(): Promise<ProjectDoc> {
   assert.equal(res.body.title, 'testProject');
   const testProject: ProjectDoc = res.body;
   return testProject;
+}
+
+/**
+ * Generates a testProject ProjectDoc by making a request to the server. It
+ * also asserts that the returned item came back correctly.
+ */
+async function generateTestProject(): Promise<ProjectDoc> {
+  return generateTestProjectWithId(Globals.testUser._id);
 }
 
 describe('GET', () => {
