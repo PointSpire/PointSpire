@@ -9,7 +9,7 @@ import { AllUserData } from './utils/dbTypes';
 import ProjectTable from './components/ProjectTable';
 import { getUserData, getTestUserData } from './utils/fetchMethods';
 import baseThemeOptions from './AppTheme';
-import UserData from './ClientData/UserData';
+import UserData from './clientData/UserData';
 
 /**
  * Used to determine the severity of an alert for the snackbar of the app.

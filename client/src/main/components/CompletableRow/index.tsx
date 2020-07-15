@@ -19,7 +19,7 @@ import PriorityButton from '../PriorityButton';
 import TaskExpanderButton from './TaskExpanderButton';
 import NoteButton from './NoteButton';
 import CompletedCheckbox from './CompletedCheckbox';
-import UserData from '../../ClientData/UserData';
+import UserData from '../../clientData/UserData';
 
 function styles(theme: Theme) {
   return createStyles({

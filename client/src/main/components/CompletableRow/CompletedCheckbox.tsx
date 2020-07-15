@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Checkbox } from '@material-ui/core';
 import { CompletableType, Completable } from '../../utils/dbTypes';
-import UserData from '../../ClientData/UserData';
+import UserData from '../../clientData/UserData';
 
 export type CompletedCheckboxProps = {
   className?: string;

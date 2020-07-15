@@ -24,9 +24,9 @@ import SettingsDialog from './SettingsDialog';
 import LoginDialog from './LoginDialog';
 import { AlertFunction } from '../App';
 import { logout } from '../utils/fetchMethods';
-import UserData from '../ClientData/UserData';
+import UserData from '../clientData/UserData';
 import { manualSave, windowUnloadListener } from '../utils/savingTimer';
-import { AppSaveStatus } from '../ClientData/AppSaveStatus';
+import { AppSaveStatus } from '../clientData/AppSaveStatus';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */

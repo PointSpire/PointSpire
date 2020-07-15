@@ -1,6 +1,6 @@
 import moment from 'moment';
 import { CompletableType } from './dbTypes';
-import UserData from '../ClientData/UserData';
+import UserData from '../clientData/UserData';
 
 function getCompletables(type: CompletableType) {
   if (type === 'project') {
