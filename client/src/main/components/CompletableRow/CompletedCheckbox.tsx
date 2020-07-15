@@ -7,10 +7,11 @@ export type CompletedCheckboxProps = {
   className?: string;
   completable: Completable;
   completableType: CompletableType;
+  clickProp?: boolean;
 };
 
 function CompletedCheckbox(props: CompletedCheckboxProps) {
-  const { className, completable, completableType } = props;
+  const { className, completable, completableType, clickProp = true } = props;
 
   /* Convert the project's completed boolean if needed. This isn't a very
   efficient way to do this, but it only happens once for each project
@@ -55,12 +56,20 @@ function CompletedCheckbox(props: CompletedCheckboxProps) {
     );
   }
 
+  // Prevent click propagation for mobile UI
+  function handleClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+    if (!clickProp) {
+      event.stopPropagation();
+    }
+  }
+
   return (
     <Checkbox
       key={completable._id}
       className={className}
       checked={checked}
       onChange={handleChange}
+      onClick={handleClick}
       color="primary"
       size="medium"
     />

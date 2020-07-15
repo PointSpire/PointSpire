@@ -12,6 +12,7 @@ export type TaskMenuProps = {
     e: MouseEvent<HTMLElement>,
     prereqTasks: string[] | null
   ) => void;
+  clickProp?: boolean;
 };
 
 /**
@@ -27,6 +28,7 @@ function TaskMenu(props: TaskMenuProps): JSX.Element {
     sortBy,
     setSortBy,
     openPrereqTaskDialog,
+    clickProp = true,
   } = props;
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -37,10 +39,15 @@ function TaskMenu(props: TaskMenuProps): JSX.Element {
   }
 
   function handleClick(event: React.MouseEvent<HTMLButtonElement>): void {
+    event.stopPropagation();
     setAnchorEl(event.currentTarget);
   }
 
   function handleSortMenuClick(event: React.MouseEvent<HTMLLIElement>): void {
+    if (!clickProp) {
+      // Prevent click event propagation
+      event.stopPropagation();
+    }
     setSortAnchorEl(event.currentTarget);
   }
 

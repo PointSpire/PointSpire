@@ -52,6 +52,7 @@ export interface CompletableRowProps extends WithStyles<typeof styles> {
   completableType: CompletableType;
   completableId: string;
   deleteThisCompletable: () => void;
+  mobile: boolean;
 }
 
 /**
@@ -65,6 +66,7 @@ const CompletableRow = (props: CompletableRowProps) => {
     completableType,
     classes,
     deleteThisCompletable,
+    mobile = false,
   } = props;
 
   const [sortBy, setSortBy] = useState('priority');
@@ -241,14 +243,22 @@ const CompletableRow = (props: CompletableRowProps) => {
     };
   }
 
+  function completableClickHandler(
+    event: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ): void {
+    console.log(event);
+  }
+
   return (
     <>
       <div className={classes.root}>
-        <TaskExpanderButton
-          open={subTasksOpen}
-          setOpen={setSubTasksOpen}
-          parent={completable}
-        />
+        {!mobile && (
+          <TaskExpanderButton
+            open={subTasksOpen}
+            setOpen={setSubTasksOpen}
+            parent={completable}
+          />
+        )}
         <Card className={`${classes.card}`} raised key={completable._id}>
           <Grid container justify="flex-start" alignItems="center">
             <Grid
@@ -263,17 +273,20 @@ const CompletableRow = (props: CompletableRowProps) => {
                   completableType={completableType}
                   className={classes.checkbox}
                   completable={completable}
+                  clickProp={!mobile}
                 />
               </Grid>
-              <Grid item>
-                <NoteButton
-                  noteIsEmpty={
-                    !completable.note || completable.note.length === 0
-                  }
-                  setNoteOpen={setNoteOpen}
-                  noteOpen={noteOpen}
-                />
-              </Grid>
+              {!mobile && (
+                <Grid item>
+                  <NoteButton
+                    noteIsEmpty={
+                      !completable.note || completable.note.length === 0
+                    }
+                    setNoteOpen={setNoteOpen}
+                    noteOpen={noteOpen}
+                  />
+                </Grid>
+              )}
               <Grid
                 item
                 className={classes.root}
@@ -288,40 +301,46 @@ const CompletableRow = (props: CompletableRowProps) => {
                   completableType={completableType}
                   completableId={completableId}
                   completablePropertyName="title"
+                  onClick={completableClickHandler}
+                  mobile={mobile}
                 />
               </Grid>
-              <Grid item>
-                <PriorityButton
-                  completableType={completableType}
-                  completableId={completableId}
-                />
-              </Grid>
-              <Grid item>
-                <DateInput
-                  completablePropertyName="startDate"
-                  completableId={completableId}
-                  completableType={completableType}
-                  label="Start Date"
-                />
-              </Grid>
-              <Grid item>
-                <DateInput
-                  completablePropertyName="dueDate"
-                  completableId={completableId}
-                  completableType={completableType}
-                  label="Due Date"
-                />
-              </Grid>
+              {!mobile && (
+                <>
+                  <Grid item>
+                    <PriorityButton
+                      completableType={completableType}
+                      completableId={completableId}
+                    />
+                  </Grid>
+                  <Grid item>
+                    <DateInput
+                      completablePropertyName="startDate"
+                      completableId={completableId}
+                      completableType={completableType}
+                      label="Start Date"
+                    />
+                  </Grid>
+                  <Grid item>
+                    <DateInput
+                      completablePropertyName="dueDate"
+                      completableId={completableId}
+                      completableType={completableType}
+                      label="Due Date"
+                    />
+                  </Grid>
+                </>
+              )}
               <Grid item>
                 <TaskMenu
                   sortBy={sortBy}
                   setSortBy={updateSortBy}
                   deleteTask={deleteThisCompletable}
                   addSubTask={addSubTask}
+                  clickProp={!mobile}
                 />
               </Grid>
             </Grid>
-
             <Grid
               item
               className={classes.flexGrow}
@@ -338,21 +357,28 @@ const CompletableRow = (props: CompletableRowProps) => {
           </Grid>
         </Card>
       </div>
-      <div className={classes.nested}>
-        <Collapse in={subTasksOpen} timeout="auto" className={classes.flexGrow}>
-          {completable.subtasks
-            .sort(sortingFunctions[sortBy].function('task'))
-            .map(taskId => (
-              <CompletableRow
-                deleteThisCompletable={deleteSubTask(taskId)}
-                completableType="task"
-                key={taskId}
-                completableId={taskId}
-                classes={classes}
-              />
-            ))}
-        </Collapse>
-      </div>
+      {!mobile && (
+        <div className={classes.nested}>
+          <Collapse
+            in={subTasksOpen}
+            timeout="auto"
+            className={classes.flexGrow}
+          >
+            {completable.subtasks
+              .sort(sortingFunctions[sortBy].function('task'))
+              .map(taskId => (
+                <CompletableRow
+                  deleteThisCompletable={deleteSubTask(taskId)}
+                  completableType="task"
+                  key={taskId}
+                  completableId={taskId}
+                  classes={classes}
+                  mobile={mobile}
+                />
+              ))}
+          </Collapse>
+        </div>
+      )}
     </>
   );
 };

@@ -189,6 +189,7 @@ function ProjectTable(props: ProjectTableProps) {
               completableType="project"
               key={projectId}
               completableId={projectId}
+              mobile
             />
           ))}
       </div>
