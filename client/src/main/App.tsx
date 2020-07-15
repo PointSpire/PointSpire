@@ -9,8 +9,7 @@ import { AllUserData } from './logic/dbTypes';
 import ProjectTable from './components/ProjectTable';
 import { getUserData, getTestUserData } from './logic/fetchMethods';
 import baseThemeOptions from './AppTheme';
-import ClientData from './logic/ClientData';
-import { PendingChanges } from './logic/savingTimer';
+import ClientData from './logic/ClientData/ClientData';
 
 /**
  * Used to determine the severity of an alert for the snackbar of the app.
@@ -39,11 +38,6 @@ type AppState = {
   projectIds: Array<string> | null;
 
   appTheme: Theme;
-
-  /**
-   * Indicates if user initiated changes are pending to be saved
-   */
-  pendingChanges: PendingChanges;
 };
 
 type AppProps = unknown;
@@ -75,7 +69,6 @@ class App extends React.Component<AppProps, AppState> {
       snackBarText: 'unknown',
       appTheme: createMuiTheme(baseThemeOptions),
       projectIds: null,
-      pendingChanges: PendingChanges.Saved,
     };
 
     this.handleSnackBarClose = this.handleSnackBarClose.bind(this);
@@ -102,23 +95,6 @@ class App extends React.Component<AppProps, AppState> {
       ClientData.setUser(userData.user);
       this.setProjectIds(userData.user.projects);
     }
-
-    // Global state access hack
-    GlobalState.setState = (state: AppState) => {
-      this.setState(state);
-    };
-
-    // Prevent unload of the app if the user has any unsaved changes
-    window.addEventListener('beforeunload', e => {
-      const { pendingChanges } = this.state;
-      if (pendingChanges !== PendingChanges.Saved) {
-        // Prevent unload
-        e.preventDefault();
-        e.returnValue = '';
-      }
-      // Allow unload
-      delete e.returnValue;
-    });
   }
 
   setProjectIds(updatedProjectIds: Array<string>): void {
@@ -168,7 +144,6 @@ class App extends React.Component<AppProps, AppState> {
       snackBarText,
       appTheme,
       projectIds,
-      pendingChanges,
     } = this.state;
     const { handleSnackBarClose, alert, setTheme } = this;
     return (
@@ -179,7 +154,6 @@ class App extends React.Component<AppProps, AppState> {
             alert={alert}
             appTheme={appTheme}
             setTheme={setTheme}
-            pendingChanges={pendingChanges}
           />
           {projectIds ? <ProjectTable /> : <></>}
           <Snackbar

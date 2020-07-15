@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import { DatePicker } from '@material-ui/pickers';
-import ClientData from '../../logic/ClientData';
+import ClientData from '../../logic/ClientData/ClientData';
 import { CompletableType } from '../../logic/dbTypes';
 
 export type DateInputProps = {

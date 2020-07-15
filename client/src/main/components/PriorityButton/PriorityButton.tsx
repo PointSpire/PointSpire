@@ -8,7 +8,7 @@ import {
 } from '@material-ui/core';
 import PriorityDialog from './PriorityDialog';
 import { CompletableType } from '../../logic/dbTypes';
-import ClientData from '../../logic/ClientData';
+import ClientData from '../../logic/ClientData/ClientData';
 
 function styles() {
   return createStyles({

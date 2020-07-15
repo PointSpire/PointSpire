@@ -3,7 +3,7 @@
  * amount of time has passed.
  */
 
-import { GlobalState } from '../App';
+import { AppSaveStatus, SavedStatus } from './ClientData/AppSaveStatus';
 
 /**
  * The latest timer ID that was scheduled.
@@ -22,23 +22,30 @@ const timeToWait = 10 * 1000;
 let callbacks: { [key: string]: Function } = {};
 
 /**
- * pendingChanges state enum
+ * Asks the user first before closing out of the application if there are still
+ * changes to be saved.
+ *
+ * @param {BeforeUnloadEvent} e the event passed in from the window
  */
-export enum PendingChanges {
-  Save = 'Save',
-  Saving = 'Saving',
-  Saved = 'Saved',
+export function windowUnloadListener(e: BeforeUnloadEvent) {
+  if (AppSaveStatus.getStatus() !== SavedStatus.Saved) {
+    // Prevent unload
+    e.preventDefault();
+    e.returnValue = '';
+  }
+  // Allow unload
+  delete e.returnValue;
 }
 
 /**
  * Runs all the callbacks stored and then clears the callbacks object.
  */
 function runAllCallbacks() {
-  GlobalState.setState({ pendingChanges: PendingChanges.Saving });
+  AppSaveStatus.setStatus(SavedStatus.Saving);
   Object.values(callbacks).forEach(callback => {
     callback();
   });
-  GlobalState.setState({ pendingChanges: PendingChanges.Saved });
+  AppSaveStatus.setStatus(SavedStatus.Saved);
   callbacks = {};
 }
 
@@ -90,7 +97,7 @@ export default function scheduleCallback(
   key: string,
   callback: Function
 ): void {
-  GlobalState.setState({ pendingChanges: PendingChanges.Save });
+  AppSaveStatus.setStatus(SavedStatus.Save);
   callbacks[key] = callback;
   resetTimer();
 }

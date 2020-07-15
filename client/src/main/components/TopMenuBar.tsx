@@ -24,8 +24,9 @@ import SettingsDialog from './SettingsDialog/SettingsDialog';
 import LoginDialog from './LoginDialog';
 import { AlertFunction } from '../App';
 import { logout } from '../logic/fetchMethods';
-import ClientData from '../logic/ClientData';
-import { PendingChanges, manualSave } from '../logic/savingTimer';
+import ClientData from '../logic/ClientData/ClientData';
+import { manualSave, windowUnloadListener } from '../logic/savingTimer';
+import { AppSaveStatus } from '../logic/ClientData/AppSaveStatus';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */
@@ -55,18 +56,10 @@ export interface TopMenuBarProps extends WithStyles<typeof styles> {
   githubClientId: string;
   appTheme: Theme;
   setTheme: (theme: Theme) => void;
-  pendingChanges: PendingChanges;
 }
 
 function TopMenuBar(props: TopMenuBarProps): JSX.Element {
-  const {
-    alert,
-    setTheme,
-    appTheme,
-    githubClientId,
-    classes,
-    pendingChanges,
-  } = props;
+  const { alert, setTheme, appTheme, githubClientId, classes } = props;
   /**
    * The items for the drawer that pops out of the left hand side.
    */
@@ -85,6 +78,7 @@ function TopMenuBar(props: TopMenuBarProps): JSX.Element {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [loggedIn, setLoggedIn] = useState(!!ClientData.getUser().settings);
+  const [savedStatus, setSavedStatus] = useState(AppSaveStatus.getStatus());
 
   const listenerId = `TopMenuBar`;
 
@@ -98,6 +92,32 @@ function TopMenuBar(props: TopMenuBarProps): JSX.Element {
 
     return () => {
       ClientData.removeUserListener(listenerId);
+    };
+  }, []);
+
+  /**
+   * Subscribe to changes in the saved status
+   */
+  useEffect(() => {
+    AppSaveStatus.addSavedStatusListener(listenerId, updatedStatus => {
+      setSavedStatus(updatedStatus);
+    });
+
+    return () => {
+      AppSaveStatus.removeSavedStatusListener(listenerId);
+    };
+  }, []);
+
+  /**
+   * Load up the window listener for pending changes.
+   */
+  useEffect(() => {
+    // Prevent unload of the app if the user has any unsaved changes
+    window.addEventListener('beforeunload', windowUnloadListener);
+
+    // Remove the window listener when the component unmounts
+    return () => {
+      window.removeEventListener('beforeunload', windowUnloadListener);
     };
   }, []);
 
@@ -229,7 +249,7 @@ function TopMenuBar(props: TopMenuBarProps): JSX.Element {
           </Typography>
           {loggedIn && (
             <Button color="inherit" onClick={manualSave}>
-              {pendingChanges}
+              {savedStatus}
             </Button>
           )}
           <Button

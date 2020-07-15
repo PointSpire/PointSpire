@@ -9,7 +9,7 @@ import {
 import sortingFunctions from '../logic/sortingFunctions';
 import SortInput from './SortInput';
 import CompletableRow from './CompletableRow/CompletableRow';
-import ClientData from '../logic/ClientData';
+import ClientData from '../logic/ClientData/ClientData';
 // import arraysAreShallowEqual from '../logic/comparisonFunctions';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 

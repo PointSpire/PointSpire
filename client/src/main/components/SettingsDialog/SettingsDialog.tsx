@@ -18,7 +18,7 @@ import { AlertFunction } from '../../App';
 import FontSizeSetting from './FontSizeSetting';
 import baseThemeOptions from '../../AppTheme';
 import { setCookie, ClientCookies } from '../../logic/clientCookies';
-import ClientData from '../../logic/ClientData';
+import ClientData from '../../logic/ClientData/ClientData';
 
 type SettingsDialogProps = {
   open: boolean;

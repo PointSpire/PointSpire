@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { TextField } from '@material-ui/core';
 import { resetTimer } from '../../logic/savingTimer';
-import ClientData from '../../logic/ClientData';
+import ClientData from '../../logic/ClientData/ClientData';
 import { CompletableType } from '../../logic/dbTypes';
 
 export type NoteInputProps = {
