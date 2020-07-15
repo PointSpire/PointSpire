@@ -47,6 +47,10 @@ export const taskSchema = new Schema({
     type: Date,
     default: null,
   },
+  tags: {
+    type: [String],
+    default: [],
+  },
 });
 
 /**
@@ -64,6 +68,11 @@ export interface TaskDoc extends Document {
   completed: boolean;
   completedDate: Date | null;
   prereqTasks: Array<typeof ObjectId>;
+
+  /**
+   * Holds an array of tag IDs for the task that correspond to the user's tags.
+   */
+  tags: Array<string>;
 }
 
 /**

@@ -36,6 +36,10 @@ const userSchema = new Schema({
       default: false,
     },
   },
+  currentTags: {
+    type: Object,
+    default: {},
+  },
 });
 
 export type AllUserData = {
@@ -57,6 +61,12 @@ export interface UserDoc extends Document {
   settings: {
     yellowGreenTasks: boolean;
     notesExpanded: boolean;
+  };
+  currentTags: {
+    [tagId: string]: {
+      color: string;
+      name: string;
+    };
   };
 }
 
