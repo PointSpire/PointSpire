@@ -51,13 +51,6 @@ if (process.env.REACT_APP_AUTH === 'LOCAL') {
 }
 
 /**
- * A somewhat hacky way to set the state of the app in external functions.
- * There must be a better way to do this! See componentDidMount for `setState`
- * binding.
- */
-export const GlobalState: { [key: string]: Function } = {};
-
-/**
  * Represents the main application window.
  */
 class App extends React.Component<AppProps, AppState> {
