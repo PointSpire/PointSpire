@@ -73,6 +73,25 @@ const definition = {
           settings: {
             $ref: '#/components/schemas/userObjectSettings',
           },
+          currentTags: {
+            $ref: '#/components/schemas/userObjectTags',
+          },
+        },
+      },
+      userObjectTags: {
+        type: 'object',
+        description:
+          'An object with key value pairs where the key is the tag ID and the value is the properties of the tag',
+        additionalProperties: {
+          type: 'object',
+          properties: {
+            color: {
+              type: 'string',
+            },
+            name: {
+              type: 'string',
+            },
+          },
         },
       },
       userObjectSettings: {
@@ -132,6 +151,9 @@ const definition = {
               'A Date string representing the date this user was created. This can be used as a valid Date object in JavaScript.',
             type: 'string',
           },
+          currentTags: {
+            $ref: '#/components/schemas/userObjectTags',
+          },
           _id: {
             type: 'string',
           },
@@ -163,6 +185,13 @@ const definition = {
           },
         ],
       },
+      completableTags: {
+        type: 'array',
+        description: 'An array of tagIds for this completable',
+        items: {
+          type: 'string',
+        },
+      },
       projectObjectRequestBody: {
         type: 'object',
         required: ['title'],
@@ -187,6 +216,9 @@ const definition = {
             nullable: true,
             description:
               'A Date string that represents when this project is due',
+          },
+          tags: {
+            $ref: '#/components/schemas/completableTags',
           },
         },
         example: {
@@ -222,6 +254,9 @@ const definition = {
             type: 'object',
             description:
               'A Date object representing the date this project was created.',
+          },
+          tags: {
+            $ref: '#/components/schemas/completableTags',
           },
         },
       },
@@ -270,6 +305,9 @@ const definition = {
             nullable: true,
             description: 'A Date string that represents when this task is due',
           },
+          tags: {
+            $ref: '#/components/schemas/completableTags',
+          },
         },
         example: {
           title: 'Get geared up for next battle',
@@ -304,6 +342,9 @@ const definition = {
             type: 'string',
             nullable: true,
             description: 'A Date string that represents when this task is due',
+          },
+          tags: {
+            $ref: '#/components/schemas/completableTags',
           },
         },
       },
