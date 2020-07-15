@@ -19,7 +19,7 @@ import PriorityButton from '../PriorityButton/PriorityButton';
 import TaskExpanderButton from './TaskExpanderButton';
 import NoteButton from './NoteButton';
 import CompletedCheckbox from './CompletedCheckbox';
-import ClientData from '../../logic/ClientData';
+import ClientData from '../../logic/ClientData/ClientData';
 
 function styles(theme: Theme) {
   return createStyles({

@@ -6,8 +6,8 @@ import {
   User,
   Project,
   Task,
-} from './dbTypes';
-import scheduleCallback from './savingTimer';
+} from '../dbTypes';
+import scheduleCallback from '../savingTimer';
 import {
   patchProject,
   patchTask,
@@ -16,7 +16,7 @@ import {
   deleteTaskById,
   postNewProject,
   postNewTask,
-} from './fetchMethods';
+} from '../fetchMethods';
 
 /**
  * The callback which will be called if any changes are made to a Completable.

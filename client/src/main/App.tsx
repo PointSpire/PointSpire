@@ -9,7 +9,7 @@ import { AllUserData } from './logic/dbTypes';
 import ProjectTable from './components/ProjectTable';
 import { getUserData, getTestUserData } from './logic/fetchMethods';
 import baseThemeOptions from './AppTheme';
-import ClientData from './logic/ClientData';
+import ClientData from './logic/ClientData/ClientData';
 
 /**
  * Used to determine the severity of an alert for the snackbar of the app.

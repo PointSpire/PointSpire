@@ -5,7 +5,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import { DialogActions, Button } from '@material-ui/core';
 import PriorityInput from './PriorityInput';
 import { CompletableType } from '../../logic/dbTypes';
-import ClientData from '../../logic/ClientData';
+import ClientData from '../../logic/ClientData/ClientData';
 
 type PriorityDialogProps = {
   open: boolean;

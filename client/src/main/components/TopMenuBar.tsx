@@ -24,7 +24,9 @@ import SettingsDialog from './SettingsDialog/SettingsDialog';
 import LoginDialog from './LoginDialog';
 import { AlertFunction } from '../App';
 import { logout } from '../logic/fetchMethods';
-import ClientData from '../logic/ClientData';
+import ClientData from '../logic/ClientData/ClientData';
+import { manualSave, windowUnloadListener } from '../logic/savingTimer';
+import { AppSaveStatus } from '../logic/ClientData/AppSaveStatus';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */
@@ -76,6 +78,7 @@ function TopMenuBar(props: TopMenuBarProps): JSX.Element {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [loggedIn, setLoggedIn] = useState(!!ClientData.getUser().settings);
+  const [savedStatus, setSavedStatus] = useState(AppSaveStatus.getStatus());
 
   const listenerId = `TopMenuBar`;
 
@@ -89,6 +92,32 @@ function TopMenuBar(props: TopMenuBarProps): JSX.Element {
 
     return () => {
       ClientData.removeUserListener(listenerId);
+    };
+  }, []);
+
+  /**
+   * Subscribe to changes in the saved status
+   */
+  useEffect(() => {
+    AppSaveStatus.addSavedStatusListener(listenerId, updatedStatus => {
+      setSavedStatus(updatedStatus);
+    });
+
+    return () => {
+      AppSaveStatus.removeSavedStatusListener(listenerId);
+    };
+  }, []);
+
+  /**
+   * Load up the window listener for pending changes.
+   */
+  useEffect(() => {
+    // Prevent unload of the app if the user has any unsaved changes
+    window.addEventListener('beforeunload', windowUnloadListener);
+
+    // Remove the window listener when the component unmounts
+    return () => {
+      window.removeEventListener('beforeunload', windowUnloadListener);
     };
   }, []);
 
@@ -218,6 +247,11 @@ function TopMenuBar(props: TopMenuBarProps): JSX.Element {
           <Typography variant="h6" className={classes.title}>
             PointSpire
           </Typography>
+          {loggedIn && (
+            <Button color="inherit" onClick={manualSave}>
+              {savedStatus}
+            </Button>
+          )}
           <Button
             color="inherit"
             onClick={loggedIn ? logout : createSetLoginOpenHandler(true)}
