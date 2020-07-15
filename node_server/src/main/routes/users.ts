@@ -400,6 +400,82 @@ function createUsersRouter(db: typeof mongoose): Router {
     }
   });
 
+  /**
+   * @swagger
+   * /users/{userId}/tags/{tagId}:
+   *  delete:
+   *    summary: Deletes a tag from a user
+   *    description: Deletes the given tagId from the user with the userId and any of their projects or tasks that have that tag.
+   *    tags:
+   *      - User
+   *    responses:
+   *      200:
+   *        description: Successfully deleted the tag from the user and the user's projects and tasks
+   *      400:
+   *        description: The user was not found or there was an error while finding the user
+   *  parameters:
+   *  - $ref: '#/components/parameters/userIdParam'
+   *  - $ref: '#/components/parameters/tagIdParam'
+   */
+  router.delete(`/:userId/tags/:tagId`, async (req, res) => {
+    try {
+      const userData = await graphQueryUser(req.params.userId);
+      const projectIds = Object.keys(userData.projects);
+      const taskIds = Object.keys(userData.tasks);
+
+      const tagId = req.params.tagId;
+      const newTags = userData.user.currentTags;
+
+      // See if the user has that tag first
+      if (Object.keys(newTags).includes(tagId)) {
+        // Delete the tag locally
+        delete newTags[tagId];
+
+        // Delete the tag from the user, and any projects or tasks
+        await Promise.all([
+          User.findByIdAndUpdate(req.params.userId, {
+            currentTags: newTags,
+          }).exec(),
+          Project.updateMany(
+            {
+              _id: {
+                $in: projectIds,
+              },
+            },
+            {
+              $pull: {
+                tags: tagId,
+              },
+            }
+          ),
+          Task.updateMany(
+            {
+              _id: {
+                $in: taskIds,
+              },
+            },
+            {
+              $pull: {
+                tags: tagId,
+              },
+            }
+          ).exec(),
+        ]);
+      } else {
+        throw new Error(`Tag with ID: ${tagId} not found.`);
+      }
+
+      res
+        .status(200)
+        .send(
+          `Successfully deleted tag with ID: ${tagId} from ` +
+            `user and any projects or tasks that had that tag.`
+        );
+    } catch (err) {
+      res.status(400).send(err);
+    }
+  });
+
   return router;
 }
 

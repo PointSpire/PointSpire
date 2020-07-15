@@ -53,6 +53,14 @@ const definition = {
           type: 'string',
         },
       },
+      tagIdParam: {
+        name: 'tagId',
+        in: 'path',
+        required: true,
+        schema: {
+          type: 'string',
+        },
+      },
     },
     schemas: {
       userObjectPatchBody: {
