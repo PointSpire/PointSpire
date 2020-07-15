@@ -46,6 +46,12 @@ export interface User extends Document {
   dateCreated: Date;
   userName: string;
   settings: UserSettings;
+  currentTags: {
+    [tagId: string]: {
+      color: string;
+      name: string;
+    };
+  };
 }
 
 export type AllUserData = {
@@ -67,6 +73,11 @@ export interface Task extends Document {
   priority: number;
   completed: boolean;
   completedDate: Date | null;
+
+  /**
+   * Holds an array of tag IDs for the task that correspond to the user's tags.
+   */
+  tags: Array<string>;
 }
 
 export type TaskObjects = {
