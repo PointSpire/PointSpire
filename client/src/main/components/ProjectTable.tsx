@@ -6,10 +6,10 @@ import {
   withStyles,
   WithStyles,
 } from '@material-ui/core/styles';
-import sortingFunctions from '../logic/sortingFunctions';
+import sortingFunctions from '../utils/sortingFunctions';
 import SortInput from './SortInput';
-import CompletableRow from './CompletableRow/CompletableRow';
-import ClientData from '../logic/ClientData/ClientData';
+import CompletableRow from './CompletableRow';
+import UserData from '../ClientData/UserData';
 // import arraysAreShallowEqual from '../logic/comparisonFunctions';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
@@ -48,7 +48,7 @@ export type ProjectTableState = unknown;
 function ProjectTable(props: ProjectTableProps) {
   const { classes } = props;
   const [projectIds, setProjectIds] = useState([
-    ...ClientData.getUser().projects,
+    ...UserData.getUser().projects,
   ]);
   const [sortBy, setSortBy] = useState('priority');
 
@@ -60,7 +60,7 @@ function ProjectTable(props: ProjectTableProps) {
    */
   function removeSortByListeners() {
     projectIds.forEach(projectId => {
-      ClientData.removeCompletablePropertyListener(
+      UserData.removeCompletablePropertyListener(
         'project',
         projectId,
         listenerId,
@@ -78,14 +78,14 @@ function ProjectTable(props: ProjectTableProps) {
    * listeners
    */
   function addSortByListener(projectId: string, updatedSortBy: string) {
-    ClientData.addCompletablePropertyListener(
+    UserData.addCompletablePropertyListener(
       'project',
       projectId,
       listenerId,
       updatedSortBy,
       () => {
         // Simply trigger a re-render so it re-sorts the projects list
-        const newProjects = [...ClientData.getUser().projects];
+        const newProjects = [...UserData.getUser().projects];
         setProjectIds(newProjects);
       }
     );
@@ -129,7 +129,7 @@ function ProjectTable(props: ProjectTableProps) {
     return () => {
       // Delete the project from ClientData. Listeners do not need to be
       // deleted because deleting the completable removes all listeners.
-      ClientData.deleteCompletable('project', projectId);
+      UserData.deleteCompletable('project', projectId);
     };
   }
 
@@ -137,13 +137,13 @@ function ProjectTable(props: ProjectTableProps) {
    * Subscribe to changes in the projects array on the user.
    */
   useEffect(() => {
-    ClientData.addUserPropertyListener(listenerId, 'projects', () => {
-      const newProjects = [...ClientData.getUser().projects];
+    UserData.addUserPropertyListener(listenerId, 'projects', () => {
+      const newProjects = [...UserData.getUser().projects];
       setProjectIds(newProjects);
     });
 
     return function cleanup() {
-      ClientData.removeUserPropertyListener('projects', listenerId);
+      UserData.removeUserPropertyListener('projects', listenerId);
     };
   }, []);
 
@@ -167,7 +167,7 @@ function ProjectTable(props: ProjectTableProps) {
    * Adds a new project with a default title.
    */
   async function addProject(): Promise<void> {
-    const newProject = await ClientData.addProject('Untitled');
+    const newProject = await UserData.addProject('Untitled');
 
     // Add the sorting listener
     addSortByListener(newProject._id, sortBy);

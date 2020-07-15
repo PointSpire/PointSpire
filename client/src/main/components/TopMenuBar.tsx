@@ -20,13 +20,13 @@ import {
 import MenuIcon from '@material-ui/icons/Menu';
 import SettingsIcon from '@material-ui/icons/Settings';
 import HelpIcon from '@material-ui/icons/Help';
-import SettingsDialog from './SettingsDialog/SettingsDialog';
+import SettingsDialog from './SettingsDialog';
 import LoginDialog from './LoginDialog';
 import { AlertFunction } from '../App';
-import { logout } from '../logic/fetchMethods';
-import ClientData from '../logic/ClientData/ClientData';
-import { manualSave, windowUnloadListener } from '../logic/savingTimer';
-import { AppSaveStatus } from '../logic/ClientData/AppSaveStatus';
+import { logout } from '../utils/fetchMethods';
+import UserData from '../ClientData/UserData';
+import { manualSave, windowUnloadListener } from '../utils/savingTimer';
+import { AppSaveStatus } from '../ClientData/AppSaveStatus';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */
@@ -77,7 +77,7 @@ function TopMenuBar(props: TopMenuBarProps): JSX.Element {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
-  const [loggedIn, setLoggedIn] = useState(!!ClientData.getUser().settings);
+  const [loggedIn, setLoggedIn] = useState(!!UserData.getUser().settings);
   const [savedStatus, setSavedStatus] = useState(AppSaveStatus.getStatus());
 
   const listenerId = `TopMenuBar`;
@@ -86,12 +86,12 @@ function TopMenuBar(props: TopMenuBarProps): JSX.Element {
    * Subscribe to changes in the user object.
    */
   useEffect(() => {
-    ClientData.addUserListener(listenerId, user => {
+    UserData.addUserListener(listenerId, user => {
       setLoggedIn(!!user);
     });
 
     return () => {
-      ClientData.removeUserListener(listenerId);
+      UserData.removeUserListener(listenerId);
     };
   }, []);
 
@@ -126,7 +126,7 @@ function TopMenuBar(props: TopMenuBarProps): JSX.Element {
    * drawer that can pop out from the left hand side.
    */
   function checkAndSetSettingsOpen(open: boolean) {
-    const userSettings = ClientData.getUser().settings;
+    const userSettings = UserData.getUser().settings;
     if (!userSettings) {
       alert('error', 'You must login first to access settings');
     } else {
@@ -188,7 +188,7 @@ function TopMenuBar(props: TopMenuBarProps): JSX.Element {
   }
 
   let settingsDialog: JSX.Element;
-  if (ClientData.getUser().settings) {
+  if (UserData.getUser().settings) {
     settingsDialog = (
       <SettingsDialog
         open={settingsOpen}

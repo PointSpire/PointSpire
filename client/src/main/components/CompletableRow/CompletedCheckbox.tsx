@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Checkbox } from '@material-ui/core';
-import { CompletableType, Completable } from '../../logic/dbTypes';
-import ClientData from '../../logic/ClientData/ClientData';
+import { CompletableType, Completable } from '../../utils/dbTypes';
+import UserData from '../../ClientData/UserData';
 
 export type CompletedCheckboxProps = {
   className?: string;
@@ -17,7 +17,7 @@ function CompletedCheckbox(props: CompletedCheckboxProps) {
   that doesn't have a valid `completed` property yet. */
   if (typeof completable.completed !== 'boolean') {
     completable.completed = false;
-    ClientData.setAndSaveCompletable(completableType, completable);
+    UserData.setAndSaveCompletable(completableType, completable);
   }
 
   const listenerId = `${completable._id}.CompletedCheckbox`;
@@ -25,7 +25,7 @@ function CompletedCheckbox(props: CompletedCheckboxProps) {
   const [checked, setChecked] = useState(completable.completed);
 
   useEffect(() => {
-    ClientData.addCompletablePropertyListener(
+    UserData.addCompletablePropertyListener(
       completableType,
       completable._id,
       listenerId,
@@ -37,7 +37,7 @@ function CompletedCheckbox(props: CompletedCheckboxProps) {
 
     // This will be ran when the component is unmounted
     return function cleanup() {
-      ClientData.removeCompletablePropertyListener(
+      UserData.removeCompletablePropertyListener(
         completableType,
         completable._id,
         listenerId,
@@ -47,7 +47,7 @@ function CompletedCheckbox(props: CompletedCheckboxProps) {
   }, []);
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
-    ClientData.setAndSaveCompletableProperty(
+    UserData.setAndSaveCompletableProperty(
       completableType,
       completable._id,
       'completed',

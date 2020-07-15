@@ -7,8 +7,8 @@ import {
   InputLabel,
 } from '@material-ui/core';
 import PriorityDialog from './PriorityDialog';
-import { CompletableType } from '../../logic/dbTypes';
-import ClientData from '../../logic/ClientData/ClientData';
+import { CompletableType } from '../../utils/dbTypes';
+import UserData from '../../ClientData/UserData';
 
 function styles() {
   return createStyles({
@@ -38,7 +38,7 @@ function PriorityButton(props: PriorityButtonProps): JSX.Element {
   const { classes, completableId, completableType } = props;
   const [open, setOpen] = useState(false);
 
-  const initialCompletable = ClientData.getCompletable(
+  const initialCompletable = UserData.getCompletable(
     completableType,
     completableId
   );
@@ -60,7 +60,7 @@ function PriorityButton(props: PriorityButtonProps): JSX.Element {
    * the priority button when the completable is completed.
    */
   useEffect(() => {
-    ClientData.addCompletablePropertyListener(
+    UserData.addCompletablePropertyListener(
       completableType,
       completableId,
       listenerId,
@@ -72,7 +72,7 @@ function PriorityButton(props: PriorityButtonProps): JSX.Element {
 
     // This will be ran when the component is unmounted
     return function cleanup() {
-      ClientData.removeCompletablePropertyListener(
+      UserData.removeCompletablePropertyListener(
         completableType,
         completableId,
         listenerId,
@@ -85,7 +85,7 @@ function PriorityButton(props: PriorityButtonProps): JSX.Element {
    * Add the property listener for the priority value.
    */
   useEffect(() => {
-    ClientData.addCompletablePropertyListener(
+    UserData.addCompletablePropertyListener(
       completableType,
       completableId,
       listenerId,
@@ -97,7 +97,7 @@ function PriorityButton(props: PriorityButtonProps): JSX.Element {
 
     // This will be ran when the component is unmounted
     return function cleanup() {
-      ClientData.removeCompletablePropertyListener(
+      UserData.removeCompletablePropertyListener(
         completableType,
         completableId,
         listenerId,

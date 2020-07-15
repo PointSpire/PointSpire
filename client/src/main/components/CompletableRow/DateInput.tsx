@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import { DatePicker } from '@material-ui/pickers';
-import ClientData from '../../logic/ClientData/ClientData';
-import { CompletableType } from '../../logic/dbTypes';
+import UserData from '../../ClientData/UserData';
+import { CompletableType } from '../../utils/dbTypes';
 
 export type DateInputProps = {
   completableType: CompletableType;
@@ -24,12 +24,12 @@ function DateInput(props: DateInputProps): JSX.Element {
     completablePropertyName,
   } = props;
   const [date, setDate] = useState<Date | null>(
-    ClientData.getCompletable(completableType, completableId)[
+    UserData.getCompletable(completableType, completableId)[
       completablePropertyName
     ]
   );
   const [disabled, setDisabled] = useState(
-    ClientData.getCompletable(completableType, completableId).completed
+    UserData.getCompletable(completableType, completableId).completed
   );
 
   /**
@@ -42,7 +42,7 @@ function DateInput(props: DateInputProps): JSX.Element {
    * the date input when the completable is completed.
    */
   useEffect(() => {
-    ClientData.addCompletablePropertyListener(
+    UserData.addCompletablePropertyListener(
       completableType,
       completableId,
       listenerId,
@@ -54,7 +54,7 @@ function DateInput(props: DateInputProps): JSX.Element {
 
     // This will be ran when the component is unmounted
     return function cleanup() {
-      ClientData.removeCompletablePropertyListener(
+      UserData.removeCompletablePropertyListener(
         completableType,
         completableId,
         listenerId,
@@ -69,7 +69,7 @@ function DateInput(props: DateInputProps): JSX.Element {
    * to be changed by other components as well.
    */
   useEffect(() => {
-    ClientData.addCompletablePropertyListener(
+    UserData.addCompletablePropertyListener(
       completableType,
       completableId,
       listenerId,
@@ -83,7 +83,7 @@ function DateInput(props: DateInputProps): JSX.Element {
 
     // This will be ran when the component is unmounted
     return function cleanup() {
-      ClientData.removeCompletablePropertyListener(
+      UserData.removeCompletablePropertyListener(
         completableType,
         completableId,
         listenerId,
@@ -94,14 +94,14 @@ function DateInput(props: DateInputProps): JSX.Element {
 
   function handleChange(newDate: MaterialUiPickersDate): void {
     if (newDate) {
-      ClientData.setAndSaveCompletableProperty(
+      UserData.setAndSaveCompletableProperty(
         completableType,
         completableId,
         completablePropertyName,
         newDate.toDate()
       );
     } else {
-      ClientData.setAndSaveCompletableProperty(
+      UserData.setAndSaveCompletableProperty(
         completableType,
         completableId,
         completablePropertyName,

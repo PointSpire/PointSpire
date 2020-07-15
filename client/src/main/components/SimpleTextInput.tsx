@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { TextField } from '@material-ui/core';
-import { resetTimer } from '../logic/savingTimer';
-import ClientData from '../logic/ClientData/ClientData';
-import { CompletableType } from '../logic/dbTypes';
+import { resetTimer } from '../utils/savingTimer';
+import UserData from '../ClientData/UserData';
+import { CompletableType } from '../utils/dbTypes';
 
 export type SimpleTextInputProps = {
   completableType: CompletableType;
@@ -21,12 +21,12 @@ function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
     completablePropertyName,
   } = props;
   const [value, setValue] = useState(
-    ClientData.getCompletable(completableType, completableId)[
+    UserData.getCompletable(completableType, completableId)[
       completablePropertyName
     ]
   );
   const [disabled, setDisabled] = useState(
-    ClientData.getCompletable(completableType, completableId).completed
+    UserData.getCompletable(completableType, completableId).completed
   );
 
   /**
@@ -39,7 +39,7 @@ function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
    * the text input when the completable is completed.
    */
   useEffect(() => {
-    ClientData.addCompletablePropertyListener(
+    UserData.addCompletablePropertyListener(
       completableType,
       completableId,
       listenerId,
@@ -51,7 +51,7 @@ function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
 
     // This will be ran when the component is unmounted
     return function cleanup() {
-      ClientData.removeCompletablePropertyListener(
+      UserData.removeCompletablePropertyListener(
         completableType,
         completableId,
         listenerId,
@@ -67,11 +67,11 @@ function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
 
   function handleLoseFocus(): void {
     if (
-      ClientData.getCompletable(completableType, completableId)[
+      UserData.getCompletable(completableType, completableId)[
         completablePropertyName
       ] !== value
     ) {
-      ClientData.setAndSaveCompletableProperty(
+      UserData.setAndSaveCompletableProperty(
         completableType,
         completableId,
         completablePropertyName,

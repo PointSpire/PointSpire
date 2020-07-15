@@ -3,7 +3,7 @@
  * amount of time has passed.
  */
 
-import { AppSaveStatus, SavedStatus } from './ClientData/AppSaveStatus';
+import { AppSaveStatus, SavedStatus } from '../ClientData/AppSaveStatus';
 
 /**
  * The latest timer ID that was scheduled.

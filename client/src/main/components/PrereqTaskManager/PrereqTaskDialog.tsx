@@ -10,8 +10,8 @@ import {
   WithStyles,
   withStyles,
 } from '@material-ui/core';
-import { Task, TaskObjects, ProjectObjects } from '../../logic/dbTypes';
-import PrereqTaskManager from './PrereqTaskManager';
+import { Task, TaskObjects, ProjectObjects } from '../../utils/dbTypes';
+import PrereqTaskManager from '.';
 
 function styles(theme: Theme) {
   return createStyles({
