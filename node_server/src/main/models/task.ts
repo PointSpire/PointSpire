@@ -5,7 +5,7 @@ const ObjectId = mongoose.Types.ObjectId;
 /**
  * The mongoose schema for a Task in the database.
  */
-const taskSchema = new Schema({
+export const taskSchema = new Schema({
   title: String,
   note: String,
   dateCreated: { type: Date, default: Date.now },
