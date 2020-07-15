@@ -1,15 +1,15 @@
 import React from 'react';
 import './App.css';
 import { createMuiTheme, ThemeProvider, Theme } from '@material-ui/core/styles';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import MuiAlert from '@material-ui/lab/Alert';
-
 import { Snackbar } from '@material-ui/core';
 import TopMenuBar from './components/TopMenuBar';
 import { AllUserData } from './logic/dbTypes';
-import ProjectTable from './components/ProjectTable';
 import { getUserData, getTestUserData } from './logic/fetchMethods';
 import baseThemeOptions from './AppTheme';
 import ClientData from './logic/ClientData/ClientData';
+import { IndexRoute } from './routes';
 
 /**
  * Used to determine the severity of an alert for the snackbar of the app.
@@ -142,26 +142,32 @@ class App extends React.Component<AppProps, AppState> {
     return (
       <div className="App">
         <ThemeProvider theme={appTheme}>
-          <TopMenuBar
-            githubClientId={githubClientId}
-            alert={alert}
-            appTheme={appTheme}
-            setTheme={setTheme}
-          />
-          {projectIds ? <ProjectTable /> : <></>}
-          <Snackbar
-            open={snackBarOpen}
-            autoHideDuration={3000}
-            onClose={handleSnackBarClose}
-          >
-            <MuiAlert
-              elevation={6}
-              variant="filled"
-              severity={snackBarSeverity}
+          <Router>
+            <TopMenuBar
+              githubClientId={githubClientId}
+              alert={alert}
+              appTheme={appTheme}
+              setTheme={setTheme}
+            />
+            <Switch>
+              <Route path="/">
+                <IndexRoute projectIds={projectIds} />
+              </Route>
+            </Switch>
+            <Snackbar
+              open={snackBarOpen}
+              autoHideDuration={3000}
+              onClose={handleSnackBarClose}
             >
-              {snackBarText}
-            </MuiAlert>
-          </Snackbar>
+              <MuiAlert
+                elevation={6}
+                variant="filled"
+                severity={snackBarSeverity}
+              >
+                {snackBarText}
+              </MuiAlert>
+            </Snackbar>
+          </Router>
         </ThemeProvider>
       </div>
     );
