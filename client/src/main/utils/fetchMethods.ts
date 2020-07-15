@@ -395,3 +395,22 @@ export async function logout() {
     window.location.replace(window.location.pathname);
   }
 }
+
+/**
+ * Deletes the given tag ID from the user and from the projects and tasks of
+ * that user on the DB.
+ *
+ * @param {string} userId the ID of the user
+ * @param {string} tagId the ID of the tag to delete
+ */
+export async function deleteTag(
+  userId: string,
+  tagId: string
+): Promise<boolean> {
+  const url = `${baseServerUrl}/api/users/${userId}/tags/${tagId}`;
+  const res = await fetch(url, {
+    method: 'DELETE',
+    headers: fetchData.basicHeader,
+  });
+  return res.status === 200;
+}
