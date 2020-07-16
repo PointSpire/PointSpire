@@ -17,8 +17,8 @@ import { Theme } from '@material-ui/core/styles';
 import { AlertFunction } from '../../App';
 import FontSizeSetting from './FontSizeSetting';
 import baseThemeOptions from '../../AppTheme';
-import { setCookie, ClientCookies } from '../../logic/clientCookies';
-import ClientData from '../../logic/ClientData/ClientData';
+import { setCookie, ClientCookies } from '../../utils/clientCookies';
+import UserData from '../../clientData/UserData';
 
 type SettingsDialogProps = {
   open: boolean;
@@ -39,7 +39,7 @@ function SettingsDialog(props: SettingsDialogProps): JSX.Element {
   }>({ fontSize: appTheme.typography.fontSize });
 
   const [userSettings, setUserSettings] = useState({
-    ...ClientData.getUser().settings,
+    ...UserData.getUser().settings,
   });
 
   /**
@@ -67,7 +67,7 @@ function SettingsDialog(props: SettingsDialogProps): JSX.Element {
     saveClientSettings();
 
     // Save their settings on the server
-    ClientData.setAndSaveUserProperty('settings', userSettings);
+    UserData.setAndSaveUserProperty('settings', userSettings);
     alert('success', 'Successfully saved settings!');
   }
 

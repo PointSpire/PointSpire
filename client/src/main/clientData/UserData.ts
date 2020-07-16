@@ -6,8 +6,8 @@ import {
   User,
   Project,
   Task,
-} from '../dbTypes';
-import scheduleCallback from '../savingTimer';
+} from '../utils/dbTypes';
+import scheduleCallback from '../utils/savingTimer';
 import {
   patchProject,
   patchTask,
@@ -16,7 +16,7 @@ import {
   deleteTaskById,
   postNewProject,
   postNewTask,
-} from '../fetchMethods';
+} from '../utils/fetchMethods';
 
 /**
  * The callback which will be called if any changes are made to a Completable.
@@ -54,10 +54,10 @@ type UserListeners = {
 
 /**
  * Holds the data and operations on the data that needs to be held in RAM for
- * the client but should not be held in state. It also provides methods of
+ * the user but should not be held in state. It also provides methods of
  * adding listeners to this data.
  */
-class ClientData {
+class UserData {
   // #region Private Variables
   private static projects: ProjectObjects;
 
@@ -666,4 +666,4 @@ class ClientData {
   // #endregion
 }
 
-export default ClientData;
+export default UserData;

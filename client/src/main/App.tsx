@@ -5,11 +5,11 @@ import MuiAlert from '@material-ui/lab/Alert';
 
 import { Snackbar } from '@material-ui/core';
 import TopMenuBar from './components/TopMenuBar';
-import { AllUserData } from './logic/dbTypes';
+import { AllUserData } from './utils/dbTypes';
 import ProjectTable from './components/ProjectTable';
-import { getUserData, getTestUserData } from './logic/fetchMethods';
+import { getUserData, getTestUserData } from './utils/fetchMethods';
 import baseThemeOptions from './AppTheme';
-import ClientData from './logic/ClientData/ClientData';
+import UserData from './clientData/UserData';
 
 /**
  * Used to determine the severity of an alert for the snackbar of the app.
@@ -83,9 +83,9 @@ class App extends React.Component<AppProps, AppState> {
     }
 
     if (userData) {
-      ClientData.setProjects(userData.projects);
-      ClientData.setTasks(userData.tasks);
-      ClientData.setUser(userData.user);
+      UserData.setProjects(userData.projects);
+      UserData.setTasks(userData.tasks);
+      UserData.setUser(userData.user);
       this.setProjectIds(userData.user.projects);
     }
   }

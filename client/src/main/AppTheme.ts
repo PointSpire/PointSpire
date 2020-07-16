@@ -1,5 +1,5 @@
 import blue from '@material-ui/core/colors/blue';
-import { getCookie, ClientCookies } from './logic/clientCookies';
+import { getCookie, ClientCookies } from './utils/clientCookies';
 
 const fontSizeCookie = getCookie(ClientCookies.fontSize);
 const fontSize =
