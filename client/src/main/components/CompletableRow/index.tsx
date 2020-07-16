@@ -20,6 +20,7 @@ import TaskExpanderButton from './TaskExpanderButton';
 import NoteButton from './NoteButton';
 import CompletedCheckbox from './CompletedCheckbox';
 import UserData from '../../clientData/UserData';
+import TagRow from '../TagRow';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -321,7 +322,12 @@ const CompletableRow = (props: CompletableRowProps) => {
                 />
               </Grid>
             </Grid>
-
+            <Grid container item className={classes.flexGrow}>
+              <TagRow
+                completableType={completableType}
+                completableId={completableId}
+              />
+            </Grid>
             <Grid
               item
               className={classes.flexGrow}

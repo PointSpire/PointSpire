@@ -38,6 +38,15 @@ export type UserSettings = {
   [settingName: string]: boolean;
 };
 
+export interface UserTag {
+  color: string;
+  name: string;
+}
+
+export interface UserTags {
+  [tagId: string]: UserTag;
+}
+
 export interface User extends Document {
   projects: Array<string>;
   firstName: string;
@@ -46,12 +55,7 @@ export interface User extends Document {
   dateCreated: Date;
   userName: string;
   settings: UserSettings;
-  currentTags: {
-    [tagId: string]: {
-      color: string;
-      name: string;
-    };
-  };
+  currentTags: UserTags;
 }
 
 export type AllUserData = {
