@@ -27,6 +27,7 @@ import { logout } from '../logic/fetchMethods';
 import ClientData from '../logic/ClientData/ClientData';
 import { manualSave, windowUnloadListener } from '../logic/savingTimer';
 import { AppSaveStatus } from '../logic/ClientData/AppSaveStatus';
+import UnstyledLink from './UnstyledLink';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */
@@ -245,7 +246,7 @@ function TopMenuBar(props: TopMenuBarProps): JSX.Element {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" className={classes.title}>
-            PointSpire
+            <UnstyledLink to="/">PointSpire</UnstyledLink>
           </Typography>
           {loggedIn && (
             <Button color="inherit" onClick={manualSave}>
@@ -254,7 +255,15 @@ function TopMenuBar(props: TopMenuBarProps): JSX.Element {
           )}
           <Button
             color="inherit"
-            onClick={loggedIn ? logout : createSetLoginOpenHandler(true)}
+            onClick={
+              loggedIn
+                ? () => {
+                    logout(() => {
+                      window.location.replace(window.location.origin);
+                    });
+                  }
+                : createSetLoginOpenHandler(true)
+            }
           >
             {loggedIn ? 'Logout' : 'Login'}
           </Button>

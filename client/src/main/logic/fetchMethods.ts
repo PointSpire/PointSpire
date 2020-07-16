@@ -380,8 +380,10 @@ export async function deleteTaskById(taskId: string): Promise<Task> {
 
 /**
  * Handles logout of app
+ *
+ * @param callback callback function ran after a successful logout
  */
-export async function logout() {
+export async function logout(callback: Function) {
   const { basicHeader } = fetchData;
   const url = `${baseServerUrl}/logout`;
   const res = await fetch(url, {
@@ -391,7 +393,6 @@ export async function logout() {
   });
   deleteAllCookies();
   if (res.status === 200) {
-    // reload application
-    window.location.replace(window.location.pathname);
+    callback();
   }
 }

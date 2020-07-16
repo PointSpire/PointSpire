@@ -9,7 +9,8 @@ import { AllUserData } from './logic/dbTypes';
 import { getUserData, getTestUserData } from './logic/fetchMethods';
 import baseThemeOptions from './AppTheme';
 import ClientData from './logic/ClientData/ClientData';
-import { IndexRoute } from './routes';
+import IndexRoute from './routes/IndexRoute';
+import CompletableDetailsRoute from './routes/CompletableDetailsRoute';
 
 /**
  * Used to determine the severity of an alert for the snackbar of the app.
@@ -150,8 +151,11 @@ class App extends React.Component<AppProps, AppState> {
               setTheme={setTheme}
             />
             <Switch>
-              <Route path="/">
+              <Route exact path="/">
                 <IndexRoute projectIds={projectIds} />
+              </Route>
+              <Route path="/c/:completableType/:completableId">
+                <CompletableDetailsRoute />
               </Route>
             </Switch>
             <Snackbar

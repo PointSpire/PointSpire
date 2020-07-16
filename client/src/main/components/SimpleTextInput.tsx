@@ -10,8 +10,9 @@ export type SimpleTextInputProps = {
   completablePropertyName: string;
   label: string;
   className?: string;
-  onClick: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
-  mobile: boolean;
+  onClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+  mobile?: boolean;
+  fullWidth?: boolean;
 };
 
 function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
@@ -22,7 +23,8 @@ function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
     completableType,
     completablePropertyName,
     onClick,
-    mobile,
+    mobile = false,
+    fullWidth = false,
   } = props;
   const [value, setValue] = useState(
     ClientData.getCompletable(completableType, completableId)[
@@ -99,7 +101,7 @@ function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
           className={className}
           disabled={disabled}
           size="small"
-          fullWidth
+          fullWidth={fullWidth}
           label={label}
           value={value}
           onChange={handleChange}

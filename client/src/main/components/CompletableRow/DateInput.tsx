@@ -119,6 +119,7 @@ function DateInput(props: DateInputProps): JSX.Element {
       value={date}
       clearable
       onChange={handleChange}
+      fullWidth
     />
   );
 }

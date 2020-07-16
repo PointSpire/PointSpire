@@ -8,6 +8,7 @@ import {
   Card,
   Collapse,
 } from '@material-ui/core';
+import { useHistory } from 'react-router-dom';
 import { CompletableType } from '../../logic/dbTypes';
 import { postNewTask, deleteTaskById } from '../../logic/fetchMethods';
 import NoteInput from './NoteInput';
@@ -243,10 +244,15 @@ const CompletableRow = (props: CompletableRowProps) => {
     };
   }
 
-  function completableClickHandler(
-    event: React.MouseEvent<HTMLDivElement, MouseEvent>
-  ): void {
-    console.log(event);
+  // Hook used for programatic routing in react-router
+  const history = useHistory();
+
+  /**
+   * Clicking on the completable row on mobile routes to the
+   * CompletableDetailsRoute
+   */
+  function completableClickHandler(): void {
+    history.push(`/c/${completableType}/${completableId}`);
   }
 
   return (

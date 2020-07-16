@@ -8,6 +8,7 @@ export type NoteInputProps = {
   completableType: CompletableType;
   completableId: string;
   label: string;
+  rows?: number;
 };
 
 /**
@@ -17,7 +18,7 @@ export type NoteInputProps = {
  * @param {NoteInputProps} props the props
  */
 function NoteInput(props: NoteInputProps): JSX.Element {
-  const { completableId, completableType, label } = props;
+  const { completableId, completableType, label, rows } = props;
   const initialCompletable = ClientData.getCompletable(
     completableType,
     completableId
@@ -49,6 +50,7 @@ function NoteInput(props: NoteInputProps): JSX.Element {
       onChange={handleNoteChange}
       fullWidth
       onBlur={handleLoseFocus}
+      rows={rows}
     />
   );
 }
