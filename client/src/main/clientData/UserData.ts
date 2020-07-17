@@ -16,6 +16,7 @@ import {
   deleteTaskById,
   postNewProject,
   postNewTask,
+  deleteTag,
 } from '../utils/fetchMethods';
 
 /**
@@ -477,6 +478,50 @@ class UserData {
     this.setUserProperty('projects', newProjectIds);
 
     return newProject;
+  }
+
+  /**
+   * Removes the tag with the given ID from the user, and any projects or tasks
+   * of the user. This saves those changes the server and triggers listeners
+   * for all associated properties of the projects, tasks, and the user.
+   *
+   * @param {string} tagId the ID of the tag to remove
+   */
+  static removeUserTagAndSave(tagId: string): void {
+    if (this.user.currentTags[tagId]) {
+      delete this.user.currentTags[tagId];
+    }
+
+    // Change the user property
+    this.setUserProperty('currentTags', { ...this.user.currentTags });
+
+    // Find all projects with the tag and change them
+    Object.values(this.projects).forEach(project => {
+      const tagIndex = project.tags.findIndex(id => id === tagId);
+      if (tagIndex !== -1) {
+        project.tags.splice(tagIndex, 1);
+        this.setCompletableProperty(
+          'project',
+          project._id,
+          'tags',
+          project.tags
+        );
+      }
+    });
+
+    // Find all tasks with the tag and change them
+    Object.values(this.tasks).forEach(task => {
+      const tagIndex = task.tags.findIndex(id => id === tagId);
+      if (tagIndex !== -1) {
+        task.tags.splice(tagIndex, 1);
+        this.setCompletableProperty('task', task._id, 'tags', task.tags);
+      }
+    });
+
+    // Schedule the deletion request for the server
+    scheduleCallback(`${this.user._id}.deleteTag.${tagId}`, () => {
+      deleteTag(this.user._id, tagId);
+    });
   }
 
   /**

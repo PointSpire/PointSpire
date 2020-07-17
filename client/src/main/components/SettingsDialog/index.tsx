@@ -19,6 +19,7 @@ import FontSizeSetting from './FontSizeSetting';
 import baseThemeOptions from '../../AppTheme';
 import { setCookie, ClientCookies } from '../../utils/clientCookies';
 import UserData from '../../clientData/UserData';
+import TagsSetting from './TagsSetting';
 
 type SettingsDialogProps = {
   open: boolean;
@@ -157,6 +158,9 @@ function SettingsDialog(props: SettingsDialogProps): JSX.Element {
               fontSize={appTheme.typography.fontSize}
               setFontSize={setFontSize}
             />
+          </ListItem>
+          <ListItem>
+            <TagsSetting />
           </ListItem>
         </List>
       </DialogContent>
