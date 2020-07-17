@@ -73,6 +73,7 @@ function FontSizeSetting(props: FontSizeSettingProps): JSX.Element {
       <div className={classes.root}>
         {Object.entries(userTags).map(([tagId, userTag]) => (
           <SettingsTagChip
+            userTagId={tagId}
             key={tagId}
             deleteTag={createDeleteFunction(tagId)}
             className={classes.tag}

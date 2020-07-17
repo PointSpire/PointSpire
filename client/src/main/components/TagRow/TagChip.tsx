@@ -1,5 +1,5 @@
 import React from 'react';
-import { Chip, ThemeProvider, createMuiTheme } from '@material-ui/core';
+import { Chip, ThemeProvider, createMuiTheme, colors } from '@material-ui/core';
 import { UserTag } from '../../utils/dbTypes';
 
 export interface TagChipProps {
@@ -17,7 +17,7 @@ function TagChip(props: TagChipProps) {
   const theme = createMuiTheme({
     palette: {
       primary: {
-        main: userTag && userTag.color ? userTag.color : '#fff',
+        main: userTag && userTag.color ? userTag.color : colors.yellow[700],
       },
     },
   });

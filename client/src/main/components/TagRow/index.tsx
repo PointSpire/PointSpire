@@ -4,6 +4,7 @@ import {
   createStyles,
   withStyles,
   TextField,
+  colors,
 } from '@material-ui/core';
 import { ObjectID } from 'bson';
 import { Autocomplete } from '@material-ui/lab';
@@ -100,7 +101,7 @@ function TagRow(props: TagRowProps) {
 
       // Save the new tag
       userTags[tagId] = {
-        color: '#FFC300',
+        color: colors.yellow[700],
         name: newTagName,
       };
       UserData.setAndSaveUserProperty('currentTags', userTags);
@@ -120,7 +121,12 @@ function TagRow(props: TagRowProps) {
   }
 
   function getTagNamesOnCompletable(): string[] {
-    return tags.map(tagId => userTags[tagId].name);
+    return tags.map(tagId => {
+      if (userTags[tagId]) {
+        return userTags[tagId].name;
+      }
+      return '';
+    });
   }
 
   function getTagIdsFromTagNames(tagNames: string[]): string[] {
