@@ -159,6 +159,11 @@ function SettingsDialog(props: SettingsDialogProps): JSX.Element {
               setFontSize={setFontSize}
             />
           </ListItem>
+        </List>
+        <Typography variant="h5" component="span">
+          User
+        </Typography>
+        <List>
           <ListItem>
             <TagsSetting />
           </ListItem>

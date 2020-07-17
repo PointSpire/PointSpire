@@ -14,6 +14,11 @@ function styles(theme: Theme) {
   return createStyles({
     root: {
       display: 'flex',
+      flexDirection: 'column',
+      flexWrap: 'wrap',
+    },
+    tagChips: {
+      display: 'flex',
       flexDirection: 'row',
       flexWrap: 'wrap',
     },
@@ -69,8 +74,8 @@ function FontSizeSetting(props: FontSizeSettingProps): JSX.Element {
 
   return (
     <div className={classes.root}>
-      <Typography variant="body1">User Tags</Typography>
-      <div className={classes.root}>
+      <Typography variant="body1">Tags</Typography>
+      <div className={classes.tagChips}>
         {Object.entries(userTags).map(([tagId, userTag]) => (
           <SettingsTagChip
             userTagId={tagId}
