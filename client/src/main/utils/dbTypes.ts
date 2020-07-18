@@ -43,6 +43,15 @@ export interface UserTag {
   name: string;
 }
 
+/**
+ * The filters that the user has set.
+ */
+export interface UserFilters {
+  showFutureStartDates: boolean;
+  showCompletedTasks: boolean;
+  tagIdsToShow: Array<string>;
+}
+
 export interface UserTags {
   [tagId: string]: UserTag;
 }
@@ -56,6 +65,7 @@ export interface User extends Document {
   userName: string;
   settings: UserSettings;
   currentTags: UserTags;
+  filters: UserFilters;
 }
 
 export type AllUserData = {
