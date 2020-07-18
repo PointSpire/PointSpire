@@ -425,11 +425,18 @@ function createUsersRouter(db: typeof mongoose): Router {
 
       const tagId = req.params.tagId;
       const newTags = userData.user.currentTags;
+      const newFilters = userData.user.filters;
 
       // See if the user has that tag first
       if (Object.keys(newTags).includes(tagId)) {
         // Delete the tag locally
         delete newTags[tagId];
+
+        // Delete the tag from the filters if it is there
+        const filterTagIndex = newFilters.tagIdsToShow.indexOf(tagId);
+        if (filterTagIndex !== -1) {
+          newFilters.tagIdsToShow.splice(filterTagIndex, 1);
+        }
 
         // Delete the tag from the user, and any projects or tasks
         await Promise.all([
@@ -437,6 +444,7 @@ function createUsersRouter(db: typeof mongoose): Router {
             { _id: req.params.userId },
             {
               currentTags: newTags,
+              filters: newFilters,
             }
           ).exec(),
           Project.updateMany(
