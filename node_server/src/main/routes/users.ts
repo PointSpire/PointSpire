@@ -483,6 +483,7 @@ function createUsersRouter(db: typeof mongoose): Router {
             `user and any projects or tasks that had that tag.`
         );
     } catch (err) {
+      console.error(err);
       res.status(400).send(err);
     }
   });

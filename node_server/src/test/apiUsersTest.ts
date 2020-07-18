@@ -223,6 +223,7 @@ describe('DELETE /id/tags/tagId', () => {
     const deleteTagRes = await Globals.requester.delete(
       `/api/users/${testUser._id}/tags/someId`
     );
+
     assert.equal(deleteTagRes.status, 200);
 
     // Make sure the tag is gone from the user
@@ -242,6 +243,44 @@ describe('DELETE /id/tags/tagId', () => {
       `/api/tasks/${testTask._id}`
     );
     assert.deepEqual(taskGetRes.body.tags, []);
+
+    // Remove the test user
+    await removeUser(testUser._id);
+  });
+
+  it('should delete a tag from the filters of the user if it is set', async () => {
+    const testUser = await generateTestUser();
+
+    // Add a tag to the user
+    testUser.currentTags.someId = {
+      name: 'SomeTag',
+      color: 'SomeColor',
+    };
+
+    testUser.filters.tagIdsToShow.push('someId');
+
+    // Set the new tags for the user and the filter
+    const userPatchRes = await Globals.requester
+      .patch(`/api/users/${testUser._id}`)
+      .send({
+        currentTags: testUser.currentTags,
+        filters: testUser.filters,
+      });
+    assert.equal(userPatchRes.status, 200);
+    assert.deepEqual(userPatchRes.body, testUser);
+
+    // Delete the tag
+    const deleteTagRes = await Globals.requester.delete(
+      `/api/users/${testUser._id}/tags/someId`
+    );
+    assert.equal(deleteTagRes.status, 200);
+
+    // Make sure the tag is gone from the user and from the filter
+    const userGetRes = await Globals.requester.get(
+      `/api/users/${testUser._id}`
+    );
+    assert.deepEqual(userGetRes.body.user.currentTags, {});
+    assert.deepEqual(userGetRes.body.user.filters.tagIdsToShow, []);
 
     // Remove the test user
     await removeUser(testUser._id);

@@ -50,7 +50,7 @@ const userSchema = new Schema(
         type: Boolean,
         default: false,
       },
-      tagsIdsToShow: {
+      tagIdsToShow: {
         type: [String],
         default: [],
       },
