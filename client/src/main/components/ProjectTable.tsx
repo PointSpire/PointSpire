@@ -11,6 +11,7 @@ import SortInput from './SortInput';
 import CompletableRow from './CompletableRow';
 import UserData from '../clientData/UserData';
 import FilterButton from '../FilterButton';
+import isFiltered from '../utils/filterFunctions';
 // import arraysAreShallowEqual from '../logic/comparisonFunctions';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
@@ -194,14 +195,19 @@ function ProjectTable(props: ProjectTableProps) {
       <div className={classes.root}>
         {projectIds
           .sort(sortingFunctions[sortBy].function('project'))
-          .map(projectId => (
-            <CompletableRow
-              deleteThisCompletable={deleteProject(projectId)}
-              completableType="project"
-              key={projectId}
-              completableId={projectId}
-            />
-          ))}
+          .map(projectId => {
+            if (isFiltered('project', projectId)) {
+              return <></>;
+            }
+            return (
+              <CompletableRow
+                deleteThisCompletable={deleteProject(projectId)}
+                completableType="project"
+                key={projectId}
+                completableId={projectId}
+              />
+            );
+          })}
       </div>
       <Button
         className={classes.addProjectButton}

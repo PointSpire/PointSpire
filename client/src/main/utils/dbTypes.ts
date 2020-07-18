@@ -46,7 +46,7 @@ export interface UserTag {
 /**
  * The filters that the user has set.
  */
-export interface UserFilters {
+export interface UserFilters extends IndexableProperties {
   showFutureStartDates: boolean;
   showCompletedTasks: boolean;
   tagIdsToShow: Array<string>;

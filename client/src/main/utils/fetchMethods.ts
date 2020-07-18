@@ -162,6 +162,24 @@ export async function patchUser(user: User): Promise<boolean> {
 }
 
 /**
+ * Handles logout of app
+ */
+export async function logout() {
+  const { basicHeader } = fetchData;
+  const url = `${baseServerUrl}/logout`;
+  const res = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+    headers: basicHeader,
+  });
+  deleteAllCookies();
+  if (res.status === 200) {
+    // reload application
+    window.location.replace(window.location.pathname);
+  }
+}
+
+/**
  * Gets the user data from the server by using the current code in the user's
  * url path. If the code isn't there, then it makes a request to `/api/users`
  * expecting the user to have a cookie with a valid session ID in it, so the
@@ -376,24 +394,6 @@ export async function deleteTaskById(taskId: string): Promise<Task> {
   });
   const returnedTask = (await res.json()) as Task;
   return returnedTask;
-}
-
-/**
- * Handles logout of app
- */
-export async function logout() {
-  const { basicHeader } = fetchData;
-  const url = `${baseServerUrl}/logout`;
-  const res = await fetch(url, {
-    method: 'GET',
-    credentials: 'include',
-    headers: basicHeader,
-  });
-  deleteAllCookies();
-  if (res.status === 200) {
-    // reload application
-    window.location.replace(window.location.pathname);
-  }
 }
 
 /**
