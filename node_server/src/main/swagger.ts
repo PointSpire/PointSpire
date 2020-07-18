@@ -120,8 +120,17 @@ const definition = {
         type: 'object',
         description: 'The filters that the user has set',
         properties: {
-          someProp: {
-            type: 'string',
+          showFutureStartDates: {
+            type: 'boolean',
+          },
+          showCompletedTasks: {
+            type: 'boolean',
+          },
+          tagIdsToShow: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
           },
         },
       },
@@ -160,14 +169,14 @@ const definition = {
             description:
               'The key is the ID for the project to make access faster',
             additionalProperties: {
-              $ref: '#/components/schemas/projectObjectWithIds',
+              $ref: '#/components/schemas/completableObjectResponse',
             },
           },
           tasks: {
             type: 'object',
             description: 'The key is the ID for the task to make access faster',
             additionalProperties: {
-              $ref: '#/components/schemas/taskObjectWithIds',
+              $ref: '#/components/schemas/completableObjectResponse',
             },
           },
         },
