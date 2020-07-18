@@ -74,8 +74,10 @@ function createUsersRouter(db: typeof mongoose): Router {
     if (req.session && req.session.userId) {
       res.redirect(`/api/users/${req.session.userId}`);
     } else {
-      res.status(405);
-      res.send(errorDescriptions.userIdNotSpecified);
+      // Clear their cookies if they don't have a session
+      res.clearCookie('connect.sid');
+      res.clearCookie('userId');
+      res.status(405).send(errorDescriptions.userIdNotSpecified);
     }
   });
 
