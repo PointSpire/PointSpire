@@ -41,6 +41,20 @@ const userSchema = new Schema(
       type: Object,
       default: {},
     },
+    filters: {
+      showFutureStartDates: {
+        type: Boolean,
+        default: false,
+      },
+      showCompletedTasks: {
+        type: Boolean,
+        default: false,
+      },
+      tagsIdsToShow: {
+        type: [String],
+        default: [],
+      },
+    },
   },
   // Setting minimize to false makes it so empty objects will save
   { minimize: false }
@@ -71,6 +85,11 @@ export interface UserDoc extends Document {
       color: string;
       name: string;
     };
+  };
+  filters: {
+    showFutureStartDates: boolean;
+    showCompletedTasks: boolean;
+    tagIdsToShow: Array<string>;
   };
 }
 

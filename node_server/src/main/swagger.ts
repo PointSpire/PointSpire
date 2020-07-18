@@ -63,7 +63,18 @@ const definition = {
       },
     },
     schemas: {
-      userObjectPatchBody: {
+      document: {
+        type: 'object',
+        properties: {
+          _id: {
+            type: 'string',
+          },
+          __v: {
+            type: 'integer',
+          },
+        },
+      },
+      userObjectBasis: {
         type: 'object',
         properties: {
           userName: {
@@ -84,6 +95,9 @@ const definition = {
           currentTags: {
             $ref: '#/components/schemas/userObjectTags',
           },
+          filters: {
+            $ref: '#/components/schemas/userObjectFilters',
+          },
         },
       },
       userObjectTags: {
@@ -102,6 +116,15 @@ const definition = {
           },
         },
       },
+      userObjectFilters: {
+        type: 'object',
+        description: 'The filters that the user has set',
+        properties: {
+          someProp: {
+            type: 'string',
+          },
+        },
+      },
       userObjectSettings: {
         type: 'object',
         properties: {
@@ -110,6 +133,19 @@ const definition = {
           },
           notesExpanded: {
             type: 'boolean',
+          },
+        },
+      },
+      userObjectProjectIds: {
+        type: 'object',
+        properties: {
+          projects: {
+            type: 'array',
+            description:
+              'An array of ObjectIds associated with the projects under this user.',
+            items: {
+              type: 'string',
+            },
           },
         },
       },
@@ -136,62 +172,61 @@ const definition = {
           },
         },
       },
-      userObjectBasis: {
-        type: 'object',
-        properties: {
-          userName: {
-            type: 'string',
+      userObjectResponseBasis: {
+        allOf: [
+          {
+            $ref: '#/components/schemas/document',
           },
-          firstName: {
-            type: 'string',
+          {
+            $ref: '#/components/schemas/userObjectBasis',
           },
-          lastName: {
-            type: 'string',
-          },
-          githubId: {
-            type: 'string',
-          },
-          settings: {
-            $ref: '#/components/schemas/userObjectSettings',
-          },
-          dateCreated: {
-            description:
-              'A Date string representing the date this user was created. This can be used as a valid Date object in JavaScript.',
-            type: 'string',
-          },
-          currentTags: {
-            $ref: '#/components/schemas/userObjectTags',
-          },
-          _id: {
-            type: 'string',
-          },
-          __v: {
-            type: 'integer',
-          },
-        },
-      },
-      userObjectProjectIds: {
-        type: 'object',
-        properties: {
-          projects: {
-            type: 'array',
-            description:
-              'An array of ObjectIds associated with the projects under this user.',
-            items: {
-              type: 'string',
+          {
+            type: 'object',
+            properties: {
+              dateCreated: {
+                description:
+                  'A Date string representing the date this user was created. This can be used as a valid Date object in JavaScript.',
+                type: 'string',
+              },
             },
           },
-        },
+        ],
       },
       userObjectWithIds: {
         allOf: [
           {
-            $ref: '#/components/schemas/userObjectBasis',
+            $ref: '#/components/schemas/userObjectResponseBasis',
           },
           {
             $ref: '#/components/schemas/userObjectProjectIds',
           },
         ],
+      },
+      completableObjectBasis: {
+        type: 'object',
+        properties: {
+          note: {
+            type: 'string',
+          },
+          priority: {
+            type: 'number',
+          },
+          startDate: {
+            type: 'string',
+            nullable: true,
+            description:
+              'A Date string that represents when this completable should be started',
+          },
+          dueDate: {
+            type: 'string',
+            nullable: true,
+            description:
+              'A Date string that represents when this completable is due',
+          },
+          tags: {
+            $ref: '#/components/schemas/completableTags',
+          },
+        },
       },
       completableTags: {
         type: 'array',
@@ -200,75 +235,24 @@ const definition = {
           type: 'string',
         },
       },
-      projectObjectRequestBody: {
+      completableTitle: {
+        type: 'object',
+        properties: {
+          title: {
+            type: 'string',
+          },
+        },
+      },
+      completableRequiredTitle: {
         type: 'object',
         required: ['title'],
         properties: {
           title: {
             type: 'string',
           },
-          note: {
-            type: 'string',
-          },
-          priority: {
-            type: 'number',
-          },
-          startDate: {
-            type: 'string',
-            nullable: true,
-            description:
-              'A Date string that represents when this project should be started',
-          },
-          dueDate: {
-            type: 'string',
-            nullable: true,
-            description:
-              'A Date string that represents when this project is due',
-          },
-          tags: {
-            $ref: '#/components/schemas/completableTags',
-          },
-        },
-        example: {
-          title: 'Fix the fence',
-          note: 'Need to visit the store to see what kind of wood they have',
         },
       },
-      projectObjectBasis: {
-        type: 'object',
-        properties: {
-          title: {
-            type: 'string',
-          },
-          note: {
-            type: 'string',
-          },
-          priority: {
-            type: 'number',
-          },
-          startDate: {
-            type: 'string',
-            nullable: true,
-            description:
-              'A Date string that represents when this project should be started',
-          },
-          dueDate: {
-            type: 'string',
-            nullable: true,
-            description:
-              'A Date string that represents when this project is due',
-          },
-          dateCreated: {
-            type: 'object',
-            description:
-              'A Date object representing the date this project was created.',
-          },
-          tags: {
-            $ref: '#/components/schemas/completableTags',
-          },
-        },
-      },
-      projectObjectTaskIds: {
+      completableObjectTaskIds: {
         type: 'object',
         properties: {
           subtasks: {
@@ -279,115 +263,39 @@ const definition = {
           },
         },
       },
-      projectObjectWithIds: {
+      completableObjectPostBody: {
         allOf: [
           {
-            $ref: '#/components/schemas/projectObjectBasis',
+            $ref: '#/components/schemas/completableRequiredTitle',
           },
           {
-            $ref: '#/components/schemas/projectObjectTaskIds',
+            $ref: '#/components/schemas/completableObjectBasis',
           },
         ],
       },
-      taskObjectRequestBody: {
-        type: 'object',
-        required: ['title'],
-        properties: {
-          title: {
-            type: 'string',
-          },
-          note: {
-            type: 'string',
-          },
-          priority: {
-            type: 'number',
-          },
-          startDate: {
-            type: 'string',
-            nullable: true,
-            description:
-              'A Date string that represents when this task should be started',
-          },
-          dueDate: {
-            type: 'string',
-            nullable: true,
-            description: 'A Date string that represents when this task is due',
-          },
-          tags: {
-            $ref: '#/components/schemas/completableTags',
-          },
-        },
-        example: {
-          title: 'Get geared up for next battle',
-          note: 'Should get:\n- Helment\n- New Sword\n- New Shield',
-          priority: 2,
-        },
-      },
-      taskObjectBasis: {
-        type: 'object',
-        properties: {
-          title: {
-            type: 'string',
-          },
-          note: {
-            type: 'string',
-          },
-          priority: {
-            type: 'number',
-          },
-          dateCreated: {
-            type: 'object',
-            description:
-              'A Date object representing the date this task was created.',
-          },
-          startDate: {
-            type: 'string',
-            nullable: true,
-            description:
-              'A Date string that represents when this task should be started',
-          },
-          dueDate: {
-            type: 'string',
-            nullable: true,
-            description: 'A Date string that represents when this task is due',
-          },
-          tags: {
-            $ref: '#/components/schemas/completableTags',
-          },
-        },
-      },
-      taskObjectTaskIds: {
-        type: 'object',
-        properties: {
-          subtasks: {
-            type: 'array',
-            items: {
-              type: 'string',
-            },
-          },
-        },
-      },
-      taskObjectPrereqIds: {
-        type: 'object',
-        properties: {
-          prereqTasks: {
-            type: 'array',
-            items: {
-              type: 'string',
-            },
-          },
-        },
-      },
-      taskObjectWithIds: {
+      completableObjectPatchBody: {
         allOf: [
           {
-            $ref: '#/components/schemas/taskObjectBasis',
+            $ref: '#/components/schemas/completableTitle',
           },
           {
-            $ref: '#/components/schemas/taskObjectTaskIds',
+            $ref: '#/components/schemas/completableObjectBasis',
+          },
+        ],
+      },
+      completableObjectResponse: {
+        allOf: [
+          {
+            $ref: '#/components/schemas/document',
           },
           {
-            $ref: '#/components/schemas/taskObjectPrereqIds',
+            $ref: '#/components/schemas/completableTitle',
+          },
+          {
+            $ref: '#/components/schemas/completableObjectBasis',
+          },
+          {
+            $ref: '#/components/schemas/completableObjectTaskIds',
           },
         ],
       },

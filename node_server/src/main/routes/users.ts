@@ -269,7 +269,7 @@ function createUsersRouter(db: typeof mongoose): Router {
    *       content:
    *         'application/json':
    *           schema:
-   *             $ref: '#/components/schemas/projectObjectRequestBody'
+   *             $ref: '#/components/schemas/completableObjectPostBody'
    *     responses:
    *       '400':
    *         description: 'The userId was not found or there was an error while searching it'
@@ -310,7 +310,7 @@ function createUsersRouter(db: typeof mongoose): Router {
    *       content:
    *         'application/json':
    *           schema:
-   *             $ref: '#/components/schemas/userObjectPatchBody'
+   *             $ref: '#/components/schemas/userObjectBasis'
    *     responses:
    *       200:
    *         description: The user was successfully overwritten with the provided data.
