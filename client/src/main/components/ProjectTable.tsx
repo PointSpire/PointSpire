@@ -10,6 +10,7 @@ import sortingFunctions from '../utils/sortingFunctions';
 import SortInput from './SortInput';
 import CompletableRow from './CompletableRow';
 import UserData from '../clientData/UserData';
+import FilterButton from '../FilterButton';
 // import arraysAreShallowEqual from '../logic/comparisonFunctions';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
@@ -31,6 +32,12 @@ function styles(theme: Theme) {
       marginTop: theme.spacing(1),
       marginBottom: theme.spacing(1),
       marginLeft: theme.spacing(3),
+    },
+    tableOptions: {
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
     },
   });
 }
@@ -175,11 +182,15 @@ function ProjectTable(props: ProjectTableProps) {
 
   return (
     <>
-      <SortInput
-        className={classes.sortInput}
-        sortBy={sortBy}
-        setSortBy={updateSortBy}
-      />
+      <div className={classes.tableOptions}>
+        <SortInput
+          className={classes.sortInput}
+          sortBy={sortBy}
+          setSortBy={updateSortBy}
+        />
+        <FilterButton />
+      </div>
+
       <div className={classes.root}>
         {projectIds
           .sort(sortingFunctions[sortBy].function('project'))
