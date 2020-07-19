@@ -8,7 +8,7 @@ export type TaskMenuProps = {
   addSubTask: (title: string) => Promise<void>;
   sortBy: string;
   setSortBy: (sortBy: string) => void;
-  openPrereqTaskDialog?: (
+  openPrereqTaskDialog: (
     e: MouseEvent<HTMLElement>,
     prereqTasks: string[] | null
   ) => void;
@@ -76,18 +76,14 @@ function TaskMenu(props: TaskMenuProps): JSX.Element {
         </MenuItem>
         <MenuItem onClick={handleAddSubTask}>Add SubTask</MenuItem>
         <MenuItem onClick={handleDelete}>Delete</MenuItem>
-        {openPrereqTaskDialog ? (
-          <MenuItem
-            onClick={event => {
-              openPrereqTaskDialog(event, null);
-              setAnchorEl(null);
-            }}
-          >
-            Prerequisites
-          </MenuItem>
-        ) : (
-          ''
-        )}
+        <MenuItem
+          onClick={event => {
+            openPrereqTaskDialog(event, null);
+            setAnchorEl(null);
+          }}
+        >
+          Prerequisites
+        </MenuItem>
       </Menu>
       <SortMenu
         sortBy={sortBy}

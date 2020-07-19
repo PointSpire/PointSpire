@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, MouseEvent } from 'react';
 import {
   WithStyles,
   createStyles,
@@ -20,6 +20,7 @@ import TaskExpanderButton from './TaskExpanderButton';
 import NoteButton from './NoteButton';
 import CompletedCheckbox from './CompletedCheckbox';
 import ClientData from '../../logic/ClientData/ClientData';
+import PrereqTaskDialog from '../PrereqTaskComponents/PrereqTaskDialog';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -48,6 +49,8 @@ function styles(theme: Theme) {
   });
 }
 
+const saveButtonId = 'prereqTask-save-button';
+
 export interface CompletableRowProps extends WithStyles<typeof styles> {
   completableType: CompletableType;
   completableId: string;
@@ -75,6 +78,7 @@ const CompletableRow = (props: CompletableRowProps) => {
   const [completable, setCompletable] = useState(
     ClientData.getCompletable(completableType, completableId)
   );
+  const [prereTasksOpen, setPrereqTasksOpen] = useState(false);
 
   const listenerId = `${completableId}.CompletableRow`;
 
@@ -241,6 +245,21 @@ const CompletableRow = (props: CompletableRowProps) => {
     };
   }
 
+  const handleOpenPrereqTaskDialog = (
+    e: MouseEvent<HTMLElement>,
+    subTasks: string[] | null
+  ) => {
+    console.log(e);
+    console.log(subTasks);
+    console.log();
+    if (subTasks) {
+      if (e.currentTarget.id === saveButtonId)
+        setPrereqTasksOpen(!prereTasksOpen);
+    } else {
+      setPrereqTasksOpen(!prereTasksOpen);
+    }
+  };
+
   return (
     <>
       <div className={classes.root}>
@@ -318,10 +337,17 @@ const CompletableRow = (props: CompletableRowProps) => {
                   setSortBy={updateSortBy}
                   deleteTask={deleteThisCompletable}
                   addSubTask={addSubTask}
+                  openPrereqTaskDialog={handleOpenPrereqTaskDialog}
+                />
+                <PrereqTaskDialog
+                  closeDialog={handleOpenPrereqTaskDialog}
+                  completableId={completableId}
+                  completableType={completableType}
+                  openDialog={prereTasksOpen}
+                  savePrereqId={saveButtonId}
                 />
               </Grid>
             </Grid>
-
             <Grid
               item
               className={classes.flexGrow}

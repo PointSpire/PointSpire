@@ -15,7 +15,8 @@ import {
   Select,
 } from '@material-ui/core';
 import { Search as SearchIcon, Clear as ClearIcon } from '@material-ui/icons';
-import { Task, TaskObjects, ProjectObjects } from '../../logic/dbTypes';
+import { Task, CompletableType } from '../../logic/dbTypes';
+import ClientData from '../../logic/ClientData/ClientData';
 import PrereqTaskList from './PrereqTaskList';
 import PrereqProjectTaskList from './PrereqProjectTaskList';
 
@@ -69,9 +70,8 @@ function styles(theme: Theme) {
 
 export interface PrereqTaskManagerProps extends WithStyles<typeof styles> {
   savePrereqId: string;
-  parentTask: Task;
-  allTasks: TaskObjects;
-  allProjects: ProjectObjects;
+  completableId: string;
+  completableType: CompletableType;
   closeDialog: (
     e: MouseEvent<HTMLElement>,
     prereqTasks: string[] | null
@@ -91,14 +91,16 @@ interface Selection {
 const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
   const {
     classes,
-    parentTask,
-    allTasks,
-    allProjects,
+    completableId,
+    completableType,
     savePrereqId,
     closeDialog,
   } = props;
+  const completable = ClientData.getCompletable(completableType, completableId);
+  // const allProjects = ClientData.getProjects();
+  const allTasks = ClientData.getTasks();
   const [currentPrereqTasks, setCurrentPrereqTasks] = useState<string[]>(
-    parentTask.prereqTasks
+    completable.prereqTasks
   );
   const [selectedFilter, setFilter] = useState<string>('Projects');
   const [searchText, setSearchText] = useState<string>('');
@@ -169,8 +171,8 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
       if (selectedFilter === 'Projects') {
         return (
           <PrereqProjectTaskList
-            projects={allProjects}
-            tasks={allTasks}
+            // projects={allProjects}
+            // tasks={allTasks}
             handlePrereqTaskChange={handlePrereqTasksChange}
           />
         );
@@ -179,7 +181,7 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
         <PrereqTaskList
           isMainList
           taskList={allTaskIds}
-          tasks={allTasks}
+          // tasks={allTasks}
           handlePrereqTaskChange={handlePrereqTasksChange}
         />
       );
@@ -191,7 +193,7 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
     <Grid container direction="row">
       <Grid item xs={4} className={classes.gridItem}>
         <Paper className={classes.areaPaper}>
-          <Typography align="center">{`Task: ${parentTask.title}`}</Typography>
+          <Typography align="center">{`Task: ${completable.title}`}</Typography>
           <Select value={selectedFilter} onChange={handleSelectEvent}>
             <MenuItem value="Projects">Projects</MenuItem>
             <MenuItem value="Tasks">Tasks</MenuItem>
@@ -268,7 +270,7 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
           {currentPrereqTasks && currentPrereqTasks.length > 0 ? (
             <PrereqTaskList
               taskList={currentPrereqTasks}
-              tasks={allTasks}
+              // tasks={allTasks}
               handlePrereqTaskChange={handlePrereqTasksChange}
             />
           ) : (

@@ -11,7 +11,7 @@ import {
   ListSubheader,
   ListItemText,
 } from '@material-ui/core';
-import { ProjectObjects, TaskObjects } from '../../logic/dbTypes';
+import ClientData from '../../logic/ClientData/ClientData';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -30,8 +30,6 @@ function styles(theme: Theme) {
 }
 
 export interface PrereqTaskListProps extends WithStyles<typeof styles> {
-  tasks: TaskObjects;
-  projects: ProjectObjects;
   handlePrereqTaskChange: (e: MouseEvent<HTMLElement>) => void;
 }
 
@@ -40,9 +38,11 @@ export interface PrereqTaskListProps extends WithStyles<typeof styles> {
  * @param {PrereqTaskListProps} props PrereqTaskList properties.
  */
 const PrereqProjectTaskList = (props: PrereqTaskListProps): JSX.Element => {
-  const { classes, projects, tasks, handlePrereqTaskChange } = props;
+  const { classes, handlePrereqTaskChange } = props;
 
-  const projectList = Object.values(projects);
+  const projectList = Object.values(ClientData.getProjects());
+  const tasks = ClientData.getTasks();
+
   return (
     <Grid item>
       <List subheader={<li />} dense>

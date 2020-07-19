@@ -10,7 +10,7 @@ import {
   WithStyles,
   withStyles,
 } from '@material-ui/core';
-import { TaskObjects } from '../../logic/dbTypes';
+import ClientData from '../../logic/ClientData/ClientData';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -26,7 +26,7 @@ function styles(theme: Theme) {
 export interface PrereqTaskListProps extends WithStyles<typeof styles> {
   isMainList?: boolean;
   taskList: string[];
-  tasks: TaskObjects;
+  // tasks: TaskObjects;
   handlePrereqTaskChange: (e: MouseEvent<HTMLElement>) => void;
 }
 
@@ -39,9 +39,12 @@ const PrereqTaskList = (props: PrereqTaskListProps): JSX.Element => {
     classes,
     isMainList,
     taskList,
-    tasks,
+    // tasks,
     handlePrereqTaskChange,
   } = props;
+
+  const tasks = ClientData.getTasks();
+
   return (
     <Grid item>
       {taskList.map(t => {

@@ -10,8 +10,9 @@ import {
   WithStyles,
   withStyles,
 } from '@material-ui/core';
-import { Task, TaskObjects, ProjectObjects } from '../../logic/dbTypes';
+import { CompletableType } from '../../logic/dbTypes';
 import PrereqTaskManager from './PrereqTaskManager';
+import ClientData from '../../logic/ClientData/ClientData';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -29,9 +30,11 @@ function styles(theme: Theme) {
 
 export interface PrereqTaskDialogProps extends WithStyles<typeof styles> {
   savePrereqId: string;
-  projects: ProjectObjects;
-  tasks: TaskObjects;
-  parentTask: Task;
+  // projects: ProjectObjects;
+  // tasks: TaskObjects;
+  // parentTask: Task;
+  completableId: string;
+  completableType: CompletableType;
   openDialog: boolean;
   closeDialog: (
     e: React.MouseEvent<HTMLElement>,
@@ -46,13 +49,13 @@ export interface PrereqTaskDialogProps extends WithStyles<typeof styles> {
 const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
   const {
     classes,
-    projects,
-    tasks,
     openDialog,
-    parentTask,
+    completableId,
+    completableType,
     savePrereqId,
     closeDialog,
   } = props;
+  const completable = ClientData.getCompletable(completableType, completableId);
 
   return (
     <Dialog
@@ -64,12 +67,11 @@ const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
         Prerequisite Tasks Menu
       </DialogTitle>
       <DialogContent className={classes.content}>
-        <Typography align="center">{parentTask.title}</Typography>
+        <Typography align="center">{completable.title}</Typography>
         <PrereqTaskManager
-          allProjects={projects}
           savePrereqId={savePrereqId}
-          parentTask={parentTask}
-          allTasks={tasks}
+          completableId={completableId}
+          completableType={completableType}
           closeDialog={closeDialog}
         />
       </DialogContent>
