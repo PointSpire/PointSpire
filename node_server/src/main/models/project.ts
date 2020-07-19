@@ -26,6 +26,13 @@ const projectSchema = new Schema({
   },
   dateCreated: { type: Date, default: Date.now },
   subtasks: [{ type: ObjectId, ref: 'Task', default: [] }],
+  prereqTasks: [
+    {
+      type: ObjectId,
+      ref: 'Task',
+      default: new Array<typeof ObjectId>(),
+    },
+  ],
   completed: {
     type: Boolean,
     default: false,

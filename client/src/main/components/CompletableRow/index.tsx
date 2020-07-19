@@ -21,6 +21,8 @@ import NoteButton from './NoteButton';
 import CompletedCheckbox from './CompletedCheckbox';
 import PrereqTaskDialog from '../PrereqTaskManager/PrereqTaskDialog';
 import UserData from '../../clientData/UserData';
+// import PrereqTaskDisplay from '../PrereqTaskManager/PrereqTaskDisplay';
+import PrereqTaskDisplay from '../PrereqTaskManager/PrereqTaskDisplay_2';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -247,11 +249,16 @@ const CompletableRow = (props: CompletableRowProps) => {
 
   const handleOpenPrereqTaskDialog = (
     e: MouseEvent<HTMLElement>,
-    subTasks: string[] | null
+    prereqs: string[] | null
   ) => {
-    if (subTasks) {
-      if (e.currentTarget.id === saveButtonId)
+    if (prereqs) {
+      if (e.currentTarget.id === saveButtonId) {
+        const tempCompletable = completable;
+        tempCompletable.prereqTasks = prereqs;
+        UserData.setAndSaveCompletable(completableType, tempCompletable);
+        setCompletable(tempCompletable);
         setPrereqTasksOpen(!prereTasksOpen);
+      }
     } else {
       setPrereqTasksOpen(!prereTasksOpen);
     }
@@ -304,6 +311,13 @@ const CompletableRow = (props: CompletableRowProps) => {
                   completableType={completableType}
                   completableId={completableId}
                   completablePropertyName="title"
+                />
+              </Grid>
+              <Grid item>
+                <PrereqTaskDisplay
+                  completableId={completableId}
+                  completableType={completableType}
+                  openPrereqTaskDialog={handleOpenPrereqTaskDialog}
                 />
               </Grid>
               <Grid item>
