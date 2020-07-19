@@ -11,7 +11,7 @@ import {
   ListSubheader,
   ListItemText,
 } from '@material-ui/core';
-import ClientData from '../../logic/ClientData/ClientData';
+import UserData from '../../clientData/UserData';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -40,8 +40,8 @@ export interface PrereqTaskListProps extends WithStyles<typeof styles> {
 const PrereqProjectTaskList = (props: PrereqTaskListProps): JSX.Element => {
   const { classes, handlePrereqTaskChange } = props;
 
-  const projectList = Object.values(ClientData.getProjects());
-  const tasks = ClientData.getTasks();
+  const projectList = Object.values(UserData.getProjects());
+  const tasks = UserData.getTasks();
 
   return (
     <Grid item>
@@ -55,13 +55,11 @@ const PrereqProjectTaskList = (props: PrereqTaskListProps): JSX.Element => {
               <ul>
                 <ListSubheader>{prj.title}</ListSubheader>
                 {prj.subtasks?.map(t => (
-                  <Paper className={classes.itemPrimary}>
-                    <ListItem
-                      key={`task-${prj._id}-${t}`}
-                      id={t}
-                      button
-                      onClick={handlePrereqTaskChange}
-                    >
+                  <Paper
+                    className={classes.itemPrimary}
+                    key={`task-${prj._id}-${t}`}
+                  >
+                    <ListItem id={t} button onClick={handlePrereqTaskChange}>
                       <ListItemText primary={tasks[t]?.title} />
                     </ListItem>
                   </Paper>

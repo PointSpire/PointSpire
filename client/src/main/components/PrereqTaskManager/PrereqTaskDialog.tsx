@@ -10,9 +10,10 @@ import {
   WithStyles,
   withStyles,
 } from '@material-ui/core';
-import { CompletableType } from '../../logic/dbTypes';
-import PrereqTaskManager from './PrereqTaskManager';
-import ClientData from '../../logic/ClientData/ClientData';
+import { CompletableType } from '../../utils/dbTypes';
+import UserData from '../../clientData/UserData';
+// import { Task, TaskObjects, ProjectObjects } from '../../utils/dbTypes';
+import PrereqTaskManager from '.';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -55,7 +56,7 @@ const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
     savePrereqId,
     closeDialog,
   } = props;
-  const completable = ClientData.getCompletable(completableType, completableId);
+  const completable = UserData.getCompletable(completableType, completableId);
 
   return (
     <Dialog

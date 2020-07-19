@@ -15,8 +15,8 @@ import {
   Select,
 } from '@material-ui/core';
 import { Search as SearchIcon, Clear as ClearIcon } from '@material-ui/icons';
-import { Task, CompletableType } from '../../logic/dbTypes';
-import ClientData from '../../logic/ClientData/ClientData';
+import { Task, CompletableType } from '../../utils/dbTypes';
+import UserData from '../../clientData/UserData';
 import PrereqTaskList from './PrereqTaskList';
 import PrereqProjectTaskList from './PrereqProjectTaskList';
 
@@ -96,9 +96,8 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
     savePrereqId,
     closeDialog,
   } = props;
-  const completable = ClientData.getCompletable(completableType, completableId);
-  // const allProjects = ClientData.getProjects();
-  const allTasks = ClientData.getTasks();
+  const completable = UserData.getCompletable(completableType, completableId);
+  const allTasks = UserData.getTasks();
   const [currentPrereqTasks, setCurrentPrereqTasks] = useState<string[]>(
     completable.prereqTasks
   );
@@ -171,8 +170,6 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
       if (selectedFilter === 'Projects') {
         return (
           <PrereqProjectTaskList
-            // projects={allProjects}
-            // tasks={allTasks}
             handlePrereqTaskChange={handlePrereqTasksChange}
           />
         );
@@ -181,7 +178,6 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
         <PrereqTaskList
           isMainList
           taskList={allTaskIds}
-          // tasks={allTasks}
           handlePrereqTaskChange={handlePrereqTasksChange}
         />
       );
@@ -270,7 +266,6 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
           {currentPrereqTasks && currentPrereqTasks.length > 0 ? (
             <PrereqTaskList
               taskList={currentPrereqTasks}
-              // tasks={allTasks}
               handlePrereqTaskChange={handlePrereqTasksChange}
             />
           ) : (

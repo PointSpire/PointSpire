@@ -10,7 +10,7 @@ import {
   WithStyles,
   withStyles,
 } from '@material-ui/core';
-import ClientData from '../../logic/ClientData/ClientData';
+import UserData from '../../clientData/UserData';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -43,7 +43,7 @@ const PrereqTaskList = (props: PrereqTaskListProps): JSX.Element => {
     handlePrereqTaskChange,
   } = props;
 
-  const tasks = ClientData.getTasks();
+  const tasks = UserData.getTasks();
 
   return (
     <Grid item>

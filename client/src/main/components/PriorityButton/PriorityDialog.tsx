@@ -4,8 +4,8 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { DialogActions, Button } from '@material-ui/core';
 import PriorityInput from './PriorityInput';
-import { CompletableType } from '../../logic/dbTypes';
-import ClientData from '../../logic/ClientData/ClientData';
+import { CompletableType } from '../../utils/dbTypes';
+import UserData from '../../clientData/UserData';
 
 type PriorityDialogProps = {
   open: boolean;
@@ -25,7 +25,7 @@ export default function PriorityDialog(
 ): JSX.Element {
   const { setOpen, open, completableId, completableType } = props;
 
-  const initialPriority = ClientData.getCompletable(
+  const initialPriority = UserData.getCompletable(
     completableType,
     completableId
   ).priority;
@@ -60,7 +60,7 @@ export default function PriorityDialog(
   }
 
   function savePriority(): void {
-    ClientData.setAndSaveCompletableProperty(
+    UserData.setAndSaveCompletableProperty(
       completableType,
       completableId,
       'priority',
@@ -81,7 +81,7 @@ export default function PriorityDialog(
     }
   }
 
-  const completableTitle = ClientData.getCompletable(
+  const completableTitle = UserData.getCompletable(
     completableType,
     completableId
   ).title;

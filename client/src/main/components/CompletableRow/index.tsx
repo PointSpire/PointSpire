@@ -8,19 +8,19 @@ import {
   Card,
   Collapse,
 } from '@material-ui/core';
-import { CompletableType } from '../../logic/dbTypes';
-import { postNewTask, deleteTaskById } from '../../logic/fetchMethods';
+import { CompletableType } from '../../utils/dbTypes';
+import { postNewTask, deleteTaskById } from '../../utils/fetchMethods';
 import NoteInput from './NoteInput';
 import DateInput from './DateInput';
 import SimpleTextInput from '../SimpleTextInput';
-import TaskMenu from '../TaskMenu/TaskMenu';
-import sortingFunctions from '../../logic/sortingFunctions';
-import PriorityButton from '../PriorityButton/PriorityButton';
+import TaskMenu from '../TaskMenu';
+import sortingFunctions from '../../utils/sortingFunctions';
+import PriorityButton from '../PriorityButton';
 import TaskExpanderButton from './TaskExpanderButton';
 import NoteButton from './NoteButton';
 import CompletedCheckbox from './CompletedCheckbox';
-import ClientData from '../../logic/ClientData/ClientData';
-import PrereqTaskDialog from '../PrereqTaskComponents/PrereqTaskDialog';
+import PrereqTaskDialog from '../PrereqTaskManager/PrereqTaskDialog';
+import UserData from '../../clientData/UserData';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -73,10 +73,10 @@ const CompletableRow = (props: CompletableRowProps) => {
   const [sortBy, setSortBy] = useState('priority');
   const [subTasksOpen, setSubTasksOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(
-    ClientData.getUser().settings.notesExpanded
+    UserData.getUser().settings.notesExpanded
   );
   const [completable, setCompletable] = useState(
-    ClientData.getCompletable(completableType, completableId)
+    UserData.getCompletable(completableType, completableId)
   );
   const [prereTasksOpen, setPrereqTasksOpen] = useState(false);
 
@@ -88,7 +88,7 @@ const CompletableRow = (props: CompletableRowProps) => {
    */
   function removeSortByListeners() {
     completable.subtasks.forEach(taskId => {
-      ClientData.removeCompletablePropertyListener(
+      UserData.removeCompletablePropertyListener(
         'task',
         taskId,
         listenerId,
@@ -98,7 +98,7 @@ const CompletableRow = (props: CompletableRowProps) => {
   }
 
   function addSortByListener(taskId: string, updatedSortBy: string) {
-    ClientData.addCompletablePropertyListener(
+    UserData.addCompletablePropertyListener(
       'task',
       taskId,
       listenerId,
@@ -162,7 +162,7 @@ const CompletableRow = (props: CompletableRowProps) => {
    * See also: https://reactjs.org/docs/hooks-effect.html#tip-optimizing-performance-by-skipping-effects
    */
   useEffect(() => {
-    ClientData.addCompletableListener(
+    UserData.addCompletableListener(
       completableType,
       completableId,
       listenerId,
@@ -189,7 +189,7 @@ const CompletableRow = (props: CompletableRowProps) => {
 
     // This will be ran when the compoennt is unmounted
     return function cleanup() {
-      ClientData.removeCompletableListener(
+      UserData.removeCompletableListener(
         completableType,
         completableId,
         listenerId
@@ -208,14 +208,14 @@ const CompletableRow = (props: CompletableRowProps) => {
     const newTask = await postNewTask(completableType, completableId, newTitle);
 
     // Add the new task to the task objects
-    const tasks = ClientData.getTasks();
+    const tasks = UserData.getTasks();
     tasks[newTask._id] = newTask;
-    ClientData.setTasks(tasks);
+    UserData.setTasks(tasks);
 
     // Add the new sub task to the completable
     const updatedCompletable = { ...completable };
     updatedCompletable.subtasks.push(newTask._id);
-    ClientData.setAndSaveCompletable(completableType, updatedCompletable);
+    UserData.setAndSaveCompletable(completableType, updatedCompletable);
 
     // Set this completable as a listener of the new one
     addSortByListener(newTask._id, sortBy);
@@ -230,7 +230,7 @@ const CompletableRow = (props: CompletableRowProps) => {
   function deleteSubTask(taskId: string) {
     return async () => {
       // Delete the task from ClientData first
-      ClientData.deleteCompletable('task', taskId);
+      UserData.deleteCompletable('task', taskId);
 
       // Set this completables subtasks info on ClientData which triggers state
       const updatedCompletable = { ...completable };
@@ -238,7 +238,7 @@ const CompletableRow = (props: CompletableRowProps) => {
         completable.subtasks.indexOf(taskId),
         1
       );
-      ClientData.setAndSaveCompletable(completableType, updatedCompletable);
+      UserData.setAndSaveCompletable(completableType, updatedCompletable);
 
       // Make the request to delete the task
       await deleteTaskById(taskId);
@@ -249,9 +249,6 @@ const CompletableRow = (props: CompletableRowProps) => {
     e: MouseEvent<HTMLElement>,
     subTasks: string[] | null
   ) => {
-    console.log(e);
-    console.log(subTasks);
-    console.log();
     if (subTasks) {
       if (e.currentTarget.id === saveButtonId)
         setPrereqTasksOpen(!prereTasksOpen);
