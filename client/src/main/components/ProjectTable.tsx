@@ -11,8 +11,7 @@ import SortInput from './SortInput';
 import CompletableRow from './CompletableRow';
 import UserData from '../clientData/UserData';
 import FilterButton from '../FilterButton';
-import isFiltered from '../utils/filterFunctions';
-// import arraysAreShallowEqual from '../logic/comparisonFunctions';
+import HiddenItemsCaption from './HiddenItemsCaption';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */
@@ -39,6 +38,12 @@ function styles(theme: Theme) {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
+    },
+    bottomArea: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      marginTop: theme.spacing(2),
     },
   });
 }
@@ -157,10 +162,6 @@ function ProjectTable(props: ProjectTableProps) {
 
   /**
    * Subscribe to changes in the children for sorting purposes.
-   *
-   * This could potentially be made more efficient by comparing to see if the
-   * sorted array is different than the original array. Not sure if that is
-   * more efficient than just pushing the change or not though.
    */
   useEffect(() => {
     addSortByListeners(sortBy);
@@ -170,6 +171,37 @@ function ProjectTable(props: ProjectTableProps) {
       removeSortByListeners();
     };
   }, []);
+
+  // #region [rgba(0, 205, 30, 0.1)] Filtering
+  const [hiddenProjectIds, setHiddenProjectIds] = useState<Array<string>>([]);
+
+  /**
+   * Subscribe to changes in the filters.
+   */
+  useEffect(() => {
+    UserData.addUserPropertyListener(listenerId, 'filters', () => {
+      setHiddenProjectIds([]);
+      setProjectIds([...projectIds]);
+    });
+
+    return () => {
+      UserData.removeUserPropertyListener('filters', listenerId);
+    };
+  }, []);
+
+  /**
+   * Creates a function which will hide the given project completely (no
+   * breadcrumb).
+   *
+   * @param {string} projectId the ID of the project to hide
+   */
+  function hideProject(projectId: string) {
+    return () => {
+      hiddenProjectIds.push(projectId);
+      setHiddenProjectIds([...hiddenProjectIds]);
+    };
+  }
+  // #endregion
 
   /**
    * Adds a new project with a default title.
@@ -195,27 +227,33 @@ function ProjectTable(props: ProjectTableProps) {
       <div className={classes.root}>
         {projectIds
           .sort(sortingFunctions[sortBy].function('project'))
-          .map(projectId => {
-            if (isFiltered('project', projectId)) {
-              return <></>;
-            }
-            return (
+          .map(projectId =>
+            hiddenProjectIds.includes(projectId) ? (
+              ''
+            ) : (
               <CompletableRow
+                hideThisCompletable={hideProject(projectId)}
                 deleteThisCompletable={deleteProject(projectId)}
                 completableType="project"
                 key={projectId}
                 completableId={projectId}
               />
-            );
-          })}
+            )
+          )}
       </div>
-      <Button
-        className={classes.addProjectButton}
-        variant="outlined"
-        onClick={addProject}
-      >
-        Add Project
-      </Button>
+      <div className={classes.bottomArea}>
+        <HiddenItemsCaption
+          completableType="project"
+          numHiddenItems={hiddenProjectIds.length}
+        />
+        <Button
+          className={classes.addProjectButton}
+          variant="outlined"
+          onClick={addProject}
+        >
+          Add Project
+        </Button>
+      </div>
     </>
   );
 }
