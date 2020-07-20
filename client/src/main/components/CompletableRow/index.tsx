@@ -186,6 +186,12 @@ const CompletableRow = (props: CompletableRowProps) => {
     }
   }, []);
 
+  /**
+   * Checks if this completable should be filtered. If it does, then it checks
+   * if the children are all hidden as well. If all children are hidden, then
+   * it signals to this completables parent that this completable should be
+   * hidden.
+   */
   function checkAndSetFiltered() {
     const shouldBeFiltered = isFiltered(completableType, completableId);
     if (
@@ -244,25 +250,11 @@ const CompletableRow = (props: CompletableRowProps) => {
    */
   useEffect(() => {
     UserData.addUserPropertyListener(listenerId, 'filters', () => {
-      // Check if this completable should be hidden again
-      const thisShouldBeFiltered = isFiltered(completableType, completableId);
-      if (
-        completable.subtasks.length === hiddenSubtaskIds.length &&
-        thisShouldBeFiltered
-      ) {
-        hideThisCompletable();
-      } else {
-        // Set if this completable should be filtered
-        setThisIsFiltered(thisShouldBeFiltered);
+      /* Clear the hidden subtasks so that they retry their own filtering
+      conditions and report back to this completable */
+      setHiddenSubtaskIds([]);
 
-        // Clear the hidden subtasks
-        setHiddenSubtaskIds([]);
-
-        // Trigger a re-render
-        setCompletable({
-          ...UserData.getCompletable(completableType, completableId),
-        });
-      }
+      checkAndSetFiltered();
     });
 
     return () => {
@@ -281,9 +273,17 @@ const CompletableRow = (props: CompletableRowProps) => {
   function hideSubTask(subTaskId: string) {
     return () => {
       hiddenSubtaskIds.push(subTaskId);
+
+      /* This needs to be created here instead of using state because state
+      doesn't seem to be coming through in this function. It doesn't seem
+      to have a performance hit so it looks okay. */
+      const thisCompletableShouldBeFiltered = isFiltered(
+        completableType,
+        completableId
+      );
       if (
         hiddenSubtaskIds.length === completable.subtasks.length &&
-        thisIsFiltered
+        thisCompletableShouldBeFiltered
       ) {
         hideThisCompletable();
       }
