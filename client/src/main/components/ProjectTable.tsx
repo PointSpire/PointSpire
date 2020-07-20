@@ -190,16 +190,15 @@ function ProjectTable(props: ProjectTableProps) {
   }, []);
 
   /**
-   * Creates a function which will hide the given project completely (no
-   * breadcrumb).
+   * Hides the given project completely (no breadcrumb).
    *
    * @param {string} projectId the ID of the project to hide
    */
   function hideProject(projectId: string) {
-    return () => {
-      hiddenProjectIds.push(projectId);
-      setHiddenProjectIds([...hiddenProjectIds]);
-    };
+    // eslint-disable-next-line
+    console.log('hiddenProjectIds is: ', hiddenProjectIds);
+    hiddenProjectIds.push(projectId);
+    setHiddenProjectIds([...hiddenProjectIds]);
   }
   // #endregion
 
@@ -232,7 +231,7 @@ function ProjectTable(props: ProjectTableProps) {
               ''
             ) : (
               <CompletableRow
-                hideThisCompletable={hideProject(projectId)}
+                hideCompletable={hideProject}
                 deleteThisCompletable={deleteProject(projectId)}
                 completableType="project"
                 key={projectId}

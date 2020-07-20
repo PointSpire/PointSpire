@@ -80,7 +80,7 @@ export interface CompletableRowProps extends WithStyles<typeof styles> {
    * Used to hide this project when all children have indicated that they
    * need to be hidden as well.
    */
-  hideThisCompletable: () => void;
+  hideCompletable: (completableId: string) => void;
 }
 
 /**
@@ -94,7 +94,7 @@ const CompletableRow = (props: CompletableRowProps) => {
     completableType,
     classes,
     deleteThisCompletable,
-    hideThisCompletable,
+    hideCompletable,
   } = props;
 
   const [sortBy, setSortBy] = useState('priority');
@@ -180,7 +180,7 @@ const CompletableRow = (props: CompletableRowProps) => {
    */
   useEffect(() => {
     if (thisIsFiltered && completable.subtasks.length === 0) {
-      hideThisCompletable();
+      hideCompletable(completableId);
     } else if (thisIsFiltered) {
       setSubTasksOpen(true);
     }
@@ -198,7 +198,7 @@ const CompletableRow = (props: CompletableRowProps) => {
       shouldBeFiltered &&
       hiddenSubtaskIds.length === completable.subtasks.length
     ) {
-      hideThisCompletable();
+      hideCompletable(completableId);
     } else if (shouldBeFiltered) {
       setSubTasksOpen(true);
     }
@@ -229,6 +229,16 @@ const CompletableRow = (props: CompletableRowProps) => {
       }
     );
 
+    UserData.addCompletablePropertyListener(
+      completableType,
+      completableId,
+      listenerId,
+      'tags',
+      () => {
+        checkAndSetFiltered();
+      }
+    );
+
     return () => {
       UserData.removeCompletablePropertyListener(
         completableType,
@@ -241,6 +251,12 @@ const CompletableRow = (props: CompletableRowProps) => {
         completableId,
         listenerId,
         'completed'
+      );
+      UserData.removeCompletablePropertyListener(
+        completableType,
+        completableId,
+        listenerId,
+        'tags'
       );
     };
   }, []);
@@ -263,7 +279,7 @@ const CompletableRow = (props: CompletableRowProps) => {
   }, []);
 
   /**
-   * Creates a function that will hide the subtask completely (no breadcrumb).
+   * Hides the subtask completely (no breadcrumb).
    * If all of the children of this completable should be hidden and this
    * completable is filtered, then it triggers the parent of this completable
    * to hide this completable.
@@ -271,24 +287,22 @@ const CompletableRow = (props: CompletableRowProps) => {
    * @param {string} subTaskId the ID of the subTask to hide
    */
   function hideSubTask(subTaskId: string) {
-    return () => {
-      hiddenSubtaskIds.push(subTaskId);
+    hiddenSubtaskIds.push(subTaskId);
 
-      /* This needs to be created here instead of using state because state
+    /* This needs to be created here instead of using state because state
       doesn't seem to be coming through in this function. It doesn't seem
       to have a performance hit so it looks okay. */
-      const thisCompletableShouldBeFiltered = isFiltered(
-        completableType,
-        completableId
-      );
-      if (
-        hiddenSubtaskIds.length === completable.subtasks.length &&
-        thisCompletableShouldBeFiltered
-      ) {
-        hideThisCompletable();
-      }
-      setHiddenSubtaskIds([...hiddenSubtaskIds]);
-    };
+    const thisCompletableShouldBeFiltered = isFiltered(
+      completableType,
+      completableId
+    );
+    if (
+      hiddenSubtaskIds.length === completable.subtasks.length &&
+      thisCompletableShouldBeFiltered
+    ) {
+      hideCompletable(completableId);
+    }
+    setHiddenSubtaskIds([...hiddenSubtaskIds]);
   }
   // #endregion
 
@@ -515,7 +529,7 @@ const CompletableRow = (props: CompletableRowProps) => {
                 ''
               ) : (
                 <CompletableRow
-                  hideThisCompletable={hideSubTask(taskId)}
+                  hideCompletable={hideSubTask}
                   deleteThisCompletable={deleteSubTask(taskId)}
                   completableType="task"
                   key={taskId}
