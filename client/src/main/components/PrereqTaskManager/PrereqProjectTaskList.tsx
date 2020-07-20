@@ -8,8 +8,9 @@ import {
   Theme,
   WithStyles,
   withStyles,
-  ListSubheader,
+  // ListSubheader,
   ListItemText,
+  Button,
 } from '@material-ui/core';
 import UserData from '../../clientData/UserData';
 
@@ -53,7 +54,14 @@ const PrereqProjectTaskList = (props: PrereqTaskListProps): JSX.Element => {
           >
             <li key={`project-${prj._id}`}>
               <ul>
-                <ListSubheader>{prj.title}</ListSubheader>
+                {/* <ListSubheader>{prj.title}</ListSubheader> */}
+                <Button
+                  id={prj._id}
+                  variant="text"
+                  onClick={handlePrereqTaskChange}
+                >
+                  {prj.title}
+                </Button>
                 {prj.subtasks?.map(t => (
                   <Paper
                     className={classes.itemPrimary}

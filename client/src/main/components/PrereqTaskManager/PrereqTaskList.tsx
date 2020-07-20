@@ -14,19 +14,14 @@ import UserData from '../../clientData/UserData';
 
 function styles(theme: Theme) {
   return createStyles({
-    itemPrimary: {
+    item: {
       backgroundColor: theme.palette.primary.light,
-    },
-    itemSecondary: {
-      backgroundColor: theme.palette.secondary.light,
     },
   });
 }
 
 export interface PrereqTaskListProps extends WithStyles<typeof styles> {
-  isMainList?: boolean;
   taskList: string[];
-  // tasks: TaskObjects;
   handlePrereqTaskChange: (e: MouseEvent<HTMLElement>) => void;
 }
 
@@ -35,13 +30,7 @@ export interface PrereqTaskListProps extends WithStyles<typeof styles> {
  * @param {PrereqTaskListProps} props PrereqTaskList properties.
  */
 const PrereqTaskList = (props: PrereqTaskListProps): JSX.Element => {
-  const {
-    classes,
-    isMainList,
-    taskList,
-    // tasks,
-    handlePrereqTaskChange,
-  } = props;
+  const { classes, taskList, handlePrereqTaskChange } = props;
 
   const tasks = UserData.getTasks();
 
@@ -50,11 +39,7 @@ const PrereqTaskList = (props: PrereqTaskListProps): JSX.Element => {
       {taskList.map(t => {
         return (
           <List dense component="div" role="list" key={`prereq-task-list-${t}`}>
-            <Paper
-              className={
-                isMainList ? classes.itemPrimary : classes.itemSecondary
-              }
-            >
+            <Paper className={classes.item}>
               <ListItem id={t} button onClick={handlePrereqTaskChange}>
                 <Typography>{tasks[t]?.title}</Typography>
               </ListItem>

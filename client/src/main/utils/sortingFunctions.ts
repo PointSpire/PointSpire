@@ -71,6 +71,20 @@ export function titleSortDescending(type: CompletableType) {
 }
 
 /**
+ * Sorts completables by the number of prerequisite tasks.
+ *
+ * @param {CompletableType} type the type of the completables
+ */
+export function prereqSortDescending(type: CompletableType) {
+  const completables = getCompletables(type);
+  return (completableId1: string, completableId2: string): number => {
+    const completable1 = completables[completableId1];
+    const completable2 = completables[completableId2];
+    return completable2.prereqTasks.length - completable1.prereqTasks.length;
+  };
+}
+
+/**
  * Sorting functions that can be used to sort completables. Includes the
  * correct label name and the key is the completable property name.
  */
@@ -103,6 +117,10 @@ const sortingFunctions: SortingFunctions = {
   title: {
     labelName: 'Title',
     function: titleSortDescending,
+  },
+  prereqs: {
+    labelName: 'prerequisites',
+    function: prereqSortDescending,
   },
 };
 

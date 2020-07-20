@@ -21,8 +21,7 @@ import NoteButton from './NoteButton';
 import CompletedCheckbox from './CompletedCheckbox';
 import PrereqTaskDialog from '../PrereqTaskManager/PrereqTaskDialog';
 import UserData from '../../clientData/UserData';
-// import PrereqTaskDisplay from '../PrereqTaskManager/PrereqTaskDisplay';
-import PrereqTaskDisplay from '../PrereqTaskManager/PrereqTaskDisplay_2';
+import PrereqTaskDisplay from '../PrereqTaskManager/PrereqTaskDisplay';
 
 function styles(theme: Theme) {
   return createStyles({

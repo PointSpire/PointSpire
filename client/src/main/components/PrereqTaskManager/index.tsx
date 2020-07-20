@@ -19,6 +19,7 @@ import { Task, CompletableType } from '../../utils/dbTypes';
 import UserData from '../../clientData/UserData';
 import PrereqTaskList from './PrereqTaskList';
 import PrereqProjectTaskList from './PrereqProjectTaskList';
+import AllPrereqTasks from './AllPrereqTasks';
 
 function searchByNameDescending(searchTerm: string, tasks: Task[]): string[] {
   const matches = tasks.filter(task =>
@@ -176,7 +177,6 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
       }
       return (
         <PrereqTaskList
-          isMainList
           taskList={allTaskIds}
           handlePrereqTaskChange={handlePrereqTasksChange}
         />
@@ -262,11 +262,11 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
       </Grid>
       <Grid item xs={4} className={classes.gridItem}>
         <Paper className={classes.areaPaper}>
-          <Typography align="center">Prerequisite Tasks</Typography>
+          <Typography align="center">Prerequisites</Typography>
           {currentPrereqTasks && currentPrereqTasks.length > 0 ? (
-            <PrereqTaskList
-              taskList={currentPrereqTasks}
+            <AllPrereqTasks
               handlePrereqTaskChange={handlePrereqTasksChange}
+              prereqsList={currentPrereqTasks}
             />
           ) : (
             <Typography align="center">No Prerequisite Tasks</Typography>

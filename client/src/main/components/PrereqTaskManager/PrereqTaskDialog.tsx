@@ -12,7 +12,6 @@ import {
 } from '@material-ui/core';
 import { CompletableType } from '../../utils/dbTypes';
 import UserData from '../../clientData/UserData';
-// import { Task, TaskObjects, ProjectObjects } from '../../utils/dbTypes';
 import PrereqTaskManager from '.';
 
 function styles(theme: Theme) {
@@ -31,9 +30,6 @@ function styles(theme: Theme) {
 
 export interface PrereqTaskDialogProps extends WithStyles<typeof styles> {
   savePrereqId: string;
-  // projects: ProjectObjects;
-  // tasks: TaskObjects;
-  // parentTask: Task;
   completableId: string;
   completableType: CompletableType;
   openDialog: boolean;
