@@ -236,6 +236,17 @@ const definition = {
           },
         },
       },
+      projectObjectPrereqIds: {
+        type: 'object',
+        properties: {
+          prereqTasks: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+          },
+        },
+      },
       projectObjectWithIds: {
         allOf: [
           {
@@ -243,6 +254,9 @@ const definition = {
           },
           {
             $ref: '#/components/schemas/projectObjectTaskIds',
+          },
+          {
+            $ref: '#/components/schemas/projectObjectPrereqIds',
           },
         ],
       },
