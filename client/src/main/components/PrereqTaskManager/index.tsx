@@ -15,7 +15,7 @@ import {
   Select,
 } from '@material-ui/core';
 import { Search as SearchIcon, Clear as ClearIcon } from '@material-ui/icons';
-import { Task, TaskObjects, ProjectObjects } from '../../logic/dbTypes';
+import { Task, TaskObjects, ProjectObjects } from '../../utils/dbTypes';
 import PrereqTaskList from './PrereqTaskList';
 import PrereqProjectTaskList from './PrereqProjectTaskList';
 

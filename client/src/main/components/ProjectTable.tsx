@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@material-ui/core/';
 import {
   Theme,
@@ -6,21 +6,11 @@ import {
   withStyles,
   WithStyles,
 } from '@material-ui/core/styles';
-import { ProjectObjects, TaskObjects, Project, User } from '../logic/dbTypes';
-import ProjectRow from './ProjectRow';
-import {
-  SetProjectsFunction,
-  SetProjectFunction,
-  SetUserFunction,
-  SetTaskFunction,
-  SetTasksFunction,
-} from '../App';
-import {
-  postNewProject,
-  deleteProject as deleteProjectOnServer,
-} from '../logic/fetchMethods';
-import sortingFunctions from '../logic/sortingFunctions';
+import sortingFunctions from '../utils/sortingFunctions';
 import SortInput from './SortInput';
+import CompletableRow from './CompletableRow';
+import UserData from '../clientData/UserData';
+// import arraysAreShallowEqual from '../logic/comparisonFunctions';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */
@@ -45,16 +35,7 @@ function styles(theme: Theme) {
   });
 }
 
-export interface ProjectTableProps extends WithStyles<typeof styles> {
-  projects: ProjectObjects;
-  tasks: TaskObjects;
-  user: User;
-  setProjects: SetProjectsFunction;
-  setProject: SetProjectFunction;
-  setUser: SetUserFunction;
-  setTask: SetTaskFunction;
-  setTasks: SetTasksFunction;
-}
+export type ProjectTableProps = WithStyles<typeof styles>;
 
 export type ProjectTableState = unknown;
 
@@ -65,63 +46,131 @@ export type ProjectTableState = unknown;
  * @param {ProjectTableProps} props the props
  */
 function ProjectTable(props: ProjectTableProps) {
-  const {
-    projects,
-    tasks,
-    user,
-    setProjects,
-    setProject,
-    setUser,
-    setTask,
-    setTasks,
-    classes,
-  } = props;
+  const { classes } = props;
+  const [projectIds, setProjectIds] = useState([
+    ...UserData.getUser().projects,
+  ]);
+  const [sortBy, setSortBy] = useState('priority');
 
-  const [sortBy, setSortBy] = useState('Priority');
+  const listenerId = `ProjectTable`;
 
   /**
-   * Adds the project to the user state and the project objects state.
-   *
-   * @private
-   * @param {Project} newProject the new project to add to state
+   * Removes all of the listeners for the projects on the field indicated by
+   * `sortBy`.
    */
-  function addProjectToState(newProject: Project): void {
-    projects[newProject._id] = newProject;
-    user.projects.push(newProject._id);
-    setProjects(projects);
-    setUser(user);
+  function removeSortByListeners() {
+    projectIds.forEach(projectId => {
+      UserData.removeCompletablePropertyListener(
+        'project',
+        projectId,
+        listenerId,
+        sortBy
+      );
+    });
   }
 
   /**
-   * Generates a function that will delete the specified project in state and
-   * on the server.
+   * Adds a single listener to the project with the given ID on the property
+   * indicated by `updatedSortBy`.
    *
-   * @param {Project} projectToDelete the project to delete
+   * @param {string} projectId the ID of the project
+   * @param {string} updatedSortBy the property name that will be used to add
+   * listeners
    */
-  function deleteProject(projectToDelete: Project) {
-    return async () => {
-      // Delete the project from state first
-      delete projects[projectToDelete._id];
-      setProjects(projects);
-      user.projects.splice(user.projects.indexOf(projectToDelete._id), 1);
-      setUser(user);
+  function addSortByListener(projectId: string, updatedSortBy: string) {
+    UserData.addCompletablePropertyListener(
+      'project',
+      projectId,
+      listenerId,
+      updatedSortBy,
+      () => {
+        // Simply trigger a re-render so it re-sorts the projects list
+        const newProjects = [...UserData.getUser().projects];
+        setProjectIds(newProjects);
+      }
+    );
+  }
 
-      // Make the request to delete the project
-      await deleteProjectOnServer(projectToDelete);
+  /**
+   * Adds listeners to all of the projects for the user on the property
+   * indicated by the `updatedSortBy` variable.
+   *
+   * @param {string} updatedSortBy the property name that will be used to add
+   * listeners
+   */
+  function addSortByListeners(updatedSortBy: string) {
+    projectIds.forEach(projectId => {
+      addSortByListener(projectId, updatedSortBy);
+    });
+  }
+
+  /**
+   * Updates the `sortBy` prop so that the appropriate listeners are removed
+   * and re-added to the project table.
+   *
+   * @param {string} updatedSortBy the updated sortBy value which should match
+   * one of the available properties on the sortingFunctions object
+   */
+  function updateSortBy(updatedSortBy: string) {
+    // Skip the update if they are the same
+    if (updatedSortBy !== sortBy) {
+      removeSortByListeners();
+      setSortBy(updatedSortBy);
+      addSortByListeners(updatedSortBy);
+    }
+  }
+
+  /**
+   * Generates a function that will delete the specified project.
+   *
+   * @param {string} projectId the ID of the project to delete
+   */
+  function deleteProject(projectId: string) {
+    return () => {
+      // Delete the project from ClientData. Listeners do not need to be
+      // deleted because deleting the completable removes all listeners.
+      UserData.deleteCompletable('project', projectId);
     };
   }
 
   /**
-   * Adds a project to the server, and to state. This can be passed down to
-   * child components.
+   * Subscribe to changes in the projects array on the user.
+   */
+  useEffect(() => {
+    UserData.addUserPropertyListener(listenerId, 'projects', () => {
+      const newProjects = [...UserData.getUser().projects];
+      setProjectIds(newProjects);
+    });
+
+    return function cleanup() {
+      UserData.removeUserPropertyListener('projects', listenerId);
+    };
+  }, []);
+
+  /**
+   * Subscribe to changes in the children for sorting purposes.
    *
-   * @param {string} projectTitle the title of the new project
+   * This could potentially be made more efficient by comparing to see if the
+   * sorted array is different than the original array. Not sure if that is
+   * more efficient than just pushing the change or not though.
+   */
+  useEffect(() => {
+    addSortByListeners(sortBy);
+
+    // This will be ran when the component is unmounted
+    return function cleanup() {
+      removeSortByListeners();
+    };
+  }, []);
+
+  /**
+   * Adds a new project with a default title.
    */
   async function addProject(): Promise<void> {
-    const newProject = await postNewProject(user._id, 'Untitled');
+    const newProject = await UserData.addProject('Untitled');
 
-    // Save the project to state
-    addProjectToState(newProject);
+    // Add the sorting listener
+    addSortByListener(newProject._id, sortBy);
   }
 
   return (
@@ -129,25 +178,19 @@ function ProjectTable(props: ProjectTableProps) {
       <SortInput
         className={classes.sortInput}
         sortBy={sortBy}
-        setSortBy={setSortBy}
+        setSortBy={updateSortBy}
       />
       <div className={classes.root}>
-        {Object.values(projects)
-          .sort(sortingFunctions[sortBy])
-          .map(projectDoc => {
-            return (
-              <ProjectRow
-                deleteThisProject={deleteProject(projectDoc)}
-                key={projectDoc._id}
-                setTasks={setTasks}
-                setProject={setProject}
-                project={projectDoc}
-                tasks={tasks}
-                projects={projects}
-                setTask={setTask}
-              />
-            );
-          })}
+        {projectIds
+          .sort(sortingFunctions[sortBy].function('project'))
+          .map(projectId => (
+            <CompletableRow
+              deleteThisCompletable={deleteProject(projectId)}
+              completableType="project"
+              key={projectId}
+              completableId={projectId}
+            />
+          ))}
       </div>
       <Button
         className={classes.addProjectButton}

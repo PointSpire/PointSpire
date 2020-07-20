@@ -18,10 +18,18 @@ interface IndexableProperties {
   [key: string]: unknown;
 }
 
+/**
+ * Represents a completable type that is either a Task or a Project.
+ */
+export type Completable = Task | Project;
+
+export type CompletableType = 'project' | 'task';
+
 /* User Types */
 
 export type UserSettings = {
   yellowGreenTasks: boolean;
+  notesExpanded: boolean;
 
   /**
    * This is defined so that extra settings can be added onto the settings
@@ -57,6 +65,8 @@ export interface Task extends Document {
   note: string;
   title: string;
   priority: number;
+  completed: boolean;
+  completedDate: Date | null;
 }
 
 export type TaskObjects = {
@@ -65,8 +75,6 @@ export type TaskObjects = {
 
 export function tasksAreEqual(task1: Task, task2: Task): boolean {
   let equal = true;
-  // eslint-disable-next-line
-  console.log(task1._id);
   Object.keys(task1).forEach(key => {
     if (
       key !== '__v' &&

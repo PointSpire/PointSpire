@@ -3,7 +3,7 @@ import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Tooltip from '@material-ui/core/Tooltip';
 import React from 'react';
-import { Task, Project } from '../logic/dbTypes';
+import { Task, Project } from '../../utils/dbTypes';
 
 export type TaskExpanderButtonProps = {
   parent: Task | Project;

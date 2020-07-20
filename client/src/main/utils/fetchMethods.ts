@@ -57,6 +57,58 @@ const fetchData = {
 export const { baseServerUrl } = fetchData;
 
 /**
+ * Parses the dates returned by a server call into actual date objects. This
+ * is needed becuase the data is sent via JSON, and needs to be re-constructed
+ * into a class object.
+ *
+ * @param {Task | Project} returnedObject the task or project to convert the
+ * dates for
+ * @returns {Task | Project} the converted original object
+ */
+function parseReturnedDates(returnedObject: Task | Project): Task {
+  const convertedObject = returnedObject;
+  if (returnedObject.startDate) {
+    convertedObject.startDate = new Date(returnedObject.startDate);
+  }
+  if (returnedObject.dueDate) {
+    convertedObject.dueDate = new Date(returnedObject.dueDate);
+  }
+  return convertedObject;
+}
+
+/**
+ * Looks at the given Task or Project and makes sure that the `completed`
+ * property is a boolean. If not, it sets that value to false.
+ *
+ * NOTE: This isn't needed at the moment.
+ *
+ * @param {Task | Project} returnedObject the returned Project or Task
+ * @returns {Task} the converted original object
+ */
+function evaluateCompleted(returnedObject: Task | Project): Task {
+  const convertedObject = returnedObject;
+  if (typeof returnedObject.completed !== 'boolean') {
+    convertedObject.completed = false;
+  }
+  return convertedObject;
+}
+
+/**
+ * Sanitizes the provided Task or Project so that the values conform to this
+ * client's needs and it potentially fills in for documents on the database
+ * that were made before certain properties were defined on the server.
+ *
+ * @param {Task | Project} completeable the Task or Project to sanitize
+ * @returns {Task} the santized completable
+ */
+function sanitizeCompletable(completeable: Task | Project): Task {
+  let sanitizedObject = completeable;
+  sanitizedObject = parseReturnedDates(sanitizedObject);
+  sanitizedObject = evaluateCompleted(sanitizedObject);
+  return sanitizedObject;
+}
+
+/**
  * Gets the project with the specified ID.
  *
  * @param {string} id the id of the project to retrieve data for
@@ -95,12 +147,31 @@ export async function patchTask(task: Task): Promise<boolean> {
 }
 
 /**
+ * Makes a patch request to the server with the given user.
+ *
+ * @param {User} user the updated user object to send to the server
+ * @returns {boolean} true if successful and false if not
+ */
+export async function patchUser(user: User): Promise<boolean> {
+  const res = await fetch(`${baseServerUrl}/api/users/${user._id}`, {
+    method: 'PATCH',
+    headers: fetchData.basicHeader,
+    body: JSON.stringify(user),
+  });
+  return res.status === 200;
+}
+
+/**
  * Gets the user data from the server by using the current code in the user's
  * url path. If the code isn't there, then it makes a request to `/api/users`
  * expecting the user to have a cookie with a valid session ID in it, so the
  * server returns the correct AllUserData object.
+ *
+ * @returns {Promise<AllUserData | null>} all of the user data if it came back
+ * or null if there wasn't a session cookie that the server could use and
+ * the user isn't trying to login after a callback from authentication
  */
-export async function getUserData(): Promise<AllUserData> {
+export async function getUserData(): Promise<AllUserData | null> {
   const githubCodeRegEx = /\?code=(.*)/;
   const githubCodeMatch = githubCodeRegEx.exec(window.location.href);
   let githubCode = '';
@@ -129,13 +200,20 @@ export async function getUserData(): Promise<AllUserData> {
 
     return data;
   }
-  const url = `${fetchData.baseServerUrl}/api/users`;
-  const res = await fetch(url, {
-    method: 'GET',
-    credentials: 'include',
-  });
-  const data = (await res.json()) as AllUserData;
-  return data;
+
+  // Try to get from the server with a session cookie if the user has one
+  try {
+    const url = `${fetchData.baseServerUrl}/api/users`;
+    const res = await fetch(url, {
+      method: 'GET',
+      credentials: 'include',
+    });
+    const data = (await res.json()) as AllUserData;
+    return data;
+  } catch {
+    // Return null if there isn't any data, meaning they need to login first.
+    return null;
+  }
 }
 
 /**
@@ -194,26 +272,6 @@ export async function postNewProject(
 }
 
 /**
- * Parses the dates returned by a server call into actual date objects. This
- * is needed becuase the data is sent via JSON, and needs to be re-constructed
- * into a class object.
- *
- * @param {Task | Project} returnedObject the task or project to convert the
- * dates for
- * @returns {Task | Project} the converted original object
- */
-function parseReturnedDates(returnedObject: Task | Project): Task {
-  const convertedObject = returnedObject;
-  if (returnedObject.startDate) {
-    convertedObject.startDate = new Date(returnedObject.startDate);
-  }
-  if (returnedObject.dueDate) {
-    convertedObject.dueDate = new Date(returnedObject.dueDate);
-  }
-  return convertedObject;
-}
-
-/**
  * Makes a patch request to the server with the given project.
  *
  * @param {Project} project the project to send to update on the server
@@ -230,7 +288,7 @@ export async function patchProject(project: Task): Promise<boolean> {
     body: JSON.stringify(project),
   });
   const returnedProject = (await res.json()) as Task;
-  const parsedProject = parseReturnedDates(returnedProject);
+  const parsedProject = sanitizeCompletable(returnedProject);
   if (projectsAreEqual(project, parsedProject)) {
     return true;
   }
@@ -241,12 +299,12 @@ export async function patchProject(project: Task): Promise<boolean> {
  * Deletes the given project from the server and returns the successfully
  * deleted project.
  *
- * @param {Project} project the project to delete
+ * @param {string} projectId the ID of the project to delete
  * @returns {Promise<Project>} the successfully deleted Project
  */
-export async function deleteProject(project: Project): Promise<Project> {
+export async function deleteProject(projectId: string): Promise<Project> {
   const { basicHeader } = fetchData;
-  const fullUrl = `${baseServerUrl}/api/projects/${project._id}`;
+  const fullUrl = `${baseServerUrl}/api/projects/${projectId}`;
   const res = await fetch(fullUrl, {
     method: 'DELETE',
     headers: basicHeader,
@@ -286,7 +344,7 @@ export async function postNewTask(
     body: JSON.stringify(newTask),
   });
   const returnedTask = (await taskRes.json()) as Task;
-  const parsedTask = parseReturnedDates(returnedTask);
+  const parsedTask = sanitizeCompletable(returnedTask);
 
   return parsedTask;
 }
@@ -301,6 +359,17 @@ export async function postNewTask(
 export async function deleteTask(task: Task): Promise<Task> {
   const { basicHeader } = fetchData;
   const fullUrl = `${baseServerUrl}/api/tasks/${task._id}`;
+  const res = await fetch(fullUrl, {
+    method: 'DELETE',
+    headers: basicHeader,
+  });
+  const returnedTask = (await res.json()) as Task;
+  return returnedTask;
+}
+
+export async function deleteTaskById(taskId: string): Promise<Task> {
+  const { basicHeader } = fetchData;
+  const fullUrl = `${baseServerUrl}/api/tasks/${taskId}`;
   const res = await fetch(fullUrl, {
     method: 'DELETE',
     headers: basicHeader,

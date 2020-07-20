@@ -3,6 +3,8 @@
  * amount of time has passed.
  */
 
+import { AppSaveStatus, SavedStatus } from '../clientData/AppSaveStatus';
+
 /**
  * The latest timer ID that was scheduled.
  */
@@ -20,12 +22,30 @@ const timeToWait = 10 * 1000;
 let callbacks: { [key: string]: Function } = {};
 
 /**
+ * Asks the user first before closing out of the application if there are still
+ * changes to be saved.
+ *
+ * @param {BeforeUnloadEvent} e the event passed in from the window
+ */
+export function windowUnloadListener(e: BeforeUnloadEvent) {
+  if (AppSaveStatus.getStatus() !== SavedStatus.Saved) {
+    // Prevent unload
+    e.preventDefault();
+    e.returnValue = '';
+  }
+  // Allow unload
+  delete e.returnValue;
+}
+
+/**
  * Runs all the callbacks stored and then clears the callbacks object.
  */
 function runAllCallbacks() {
+  AppSaveStatus.setStatus(SavedStatus.Saving);
   Object.values(callbacks).forEach(callback => {
     callback();
   });
+  AppSaveStatus.setStatus(SavedStatus.Saved);
   callbacks = {};
 }
 
@@ -37,6 +57,24 @@ function runAllCallbacks() {
 export function resetTimer(): void {
   clearTimeout(currentTimerId);
   currentTimerId = setTimeout(runAllCallbacks, timeToWait);
+}
+
+/**
+ * Cancels the current timer to prevent double saving during a user initiated
+ * save.
+ */
+function cancelTimer(): void {
+  clearTimeout(currentTimerId);
+}
+
+/**
+ * Clears the current timer, runs all callback and resets the timer.
+ * Used to manually save all changes, primarily used in the user save button.
+ */
+export function manualSave(): void {
+  cancelTimer();
+  runAllCallbacks();
+  resetTimer();
 }
 
 /**
@@ -59,6 +97,7 @@ export default function scheduleCallback(
   key: string,
   callback: Function
 ): void {
+  AppSaveStatus.setStatus(SavedStatus.Save);
   callbacks[key] = callback;
   resetTimer();
 }
