@@ -195,8 +195,6 @@ function ProjectTable(props: ProjectTableProps) {
    * @param {string} projectId the ID of the project to hide
    */
   function hideProject(projectId: string) {
-    // eslint-disable-next-line
-    console.log('hiddenProjectIds is: ', hiddenProjectIds);
     hiddenProjectIds.push(projectId);
     setHiddenProjectIds([...hiddenProjectIds]);
   }
