@@ -14,6 +14,9 @@ import UserData from '../../clientData/UserData';
 
 function styles(theme: Theme) {
   return createStyles({
+    mainList: {
+      padding: theme.spacing(1),
+    },
     itemPrimary: {
       backgroundColor: theme.palette.primary.light,
       margin: theme.spacing(1),
@@ -28,7 +31,6 @@ function styles(theme: Theme) {
 }
 
 export interface AllPrereqTaskListProps extends WithStyles<typeof styles> {
-  isMainList?: boolean;
   prereqsList: string[];
   handlePrereqTaskChange: (e: MouseEvent<HTMLElement>) => void;
 }
@@ -38,7 +40,7 @@ export interface AllPrereqTaskListProps extends WithStyles<typeof styles> {
  * @param {PrereqTaskListProps} props PrereqTaskList properties.
  */
 const AllPrereqTaskList = (props: AllPrereqTaskListProps): JSX.Element => {
-  const { classes, isMainList, prereqsList, handlePrereqTaskChange } = props;
+  const { classes, prereqsList, handlePrereqTaskChange } = props;
 
   const tasks = UserData.getTasks();
   const projects = UserData.getProjects();
@@ -51,14 +53,10 @@ const AllPrereqTaskList = (props: AllPrereqTaskListProps): JSX.Element => {
       <Typography>Projects</Typography>
       <List dense component="div" role="list">
         {projectDisp.length > 0 ? (
-          <Paper>
+          <Paper className={classes.mainList}>
             {projectDisp.map(p => {
               return (
-                <Paper
-                  className={
-                    isMainList ? classes.itemPrimary : classes.itemSecondary
-                  }
-                >
+                <Paper key={`sel-proj-${p}`} className={classes.itemPrimary}>
                   <ListItem id={p} button onClick={handlePrereqTaskChange}>
                     <Typography>{projects[p]?.title}</Typography>
                   </ListItem>
@@ -73,14 +71,14 @@ const AllPrereqTaskList = (props: AllPrereqTaskListProps): JSX.Element => {
       <Typography>Tasks</Typography>
       <List dense component="div" role="list">
         {taskDisp.length > 0 ? (
-          <Paper
-            className={isMainList ? classes.itemPrimary : classes.itemSecondary}
-          >
+          <Paper className={classes.mainList}>
             {taskDisp.map(t => {
               return (
-                <ListItem id={t} button onClick={handlePrereqTaskChange}>
-                  <Typography>{tasks[t]?.title}</Typography>
-                </ListItem>
+                <Paper key={`sel-task-${t}`} className={classes.itemSecondary}>
+                  <ListItem id={t} button onClick={handlePrereqTaskChange}>
+                    <Typography>{tasks[t]?.title}</Typography>
+                  </ListItem>
+                </Paper>
               );
             })}
           </Paper>
@@ -90,51 +88,6 @@ const AllPrereqTaskList = (props: AllPrereqTaskListProps): JSX.Element => {
       </List>
     </Grid>
   );
-
-  // return (
-  //   <Grid item>
-  //     <Typography>Tasks</Typography>
-  //     {prereqsList.map(t => {
-  //       return (
-  //         <List dense component="div" role="list" key={`prereq-task-list-${t}`}>
-  //           <Paper
-  //             className={
-  //               isMainList ? classes.itemPrimary : classes.itemSecondary
-  //             }
-  //           >
-  //             {tasks[t] ? (
-  //               <ListItem id={t} button onClick={handlePrereqTaskChange}>
-  //                 <Typography>{tasks[t]?.title}</Typography>
-  //               </ListItem>
-  //             ) : (
-  //               <></>
-  //             )}
-  //           </Paper>
-  //         </List>
-  //       );
-  //     })}
-  //     <Typography>Projects</Typography>
-  //     {prereqsList.map(t => {
-  //       return (
-  //         <List dense component="div" role="list" key={`prereq-task-list-${t}`}>
-  //           <Paper
-  //             className={
-  //               isMainList ? classes.itemPrimary : classes.itemSecondary
-  //             }
-  //           >
-  //             {projects[t] ? (
-  //               <ListItem id={t} button onClick={handlePrereqTaskChange}>
-  //                 <Typography>{projects[t].title}</Typography>
-  //               </ListItem>
-  //             ) : (
-  //               ''
-  //             )}
-  //           </Paper>
-  //         </List>
-  //       );
-  //     })}
-  //   </Grid>
-  // );
 };
 
 export default withStyles(styles, { withTheme: true })(AllPrereqTaskList);

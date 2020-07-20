@@ -8,11 +8,11 @@ import {
   Theme,
   WithStyles,
   withStyles,
-  // ListSubheader,
   ListItemText,
   Button,
 } from '@material-ui/core';
 import UserData from '../../clientData/UserData';
+import NestedPrereqTaskList from './NestedPrereqTaskComponent';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -23,6 +23,8 @@ function styles(theme: Theme) {
     },
     itemPrimary: {
       backgroundColor: theme.palette.primary.light,
+      padding: theme.spacing(0.5),
+      margin: theme.spacing(1),
     },
     itemSecondary: {
       backgroundColor: theme.palette.secondary.light,
@@ -54,7 +56,6 @@ const PrereqProjectTaskList = (props: PrereqTaskListProps): JSX.Element => {
           >
             <li key={`project-${prj._id}`}>
               <ul>
-                {/* <ListSubheader>{prj.title}</ListSubheader> */}
                 <Button
                   id={prj._id}
                   variant="text"
@@ -63,13 +64,16 @@ const PrereqProjectTaskList = (props: PrereqTaskListProps): JSX.Element => {
                   {prj.title}
                 </Button>
                 {prj.subtasks?.map(t => (
-                  <Paper
-                    className={classes.itemPrimary}
-                    key={`task-${prj._id}-${t}`}
-                  >
-                    <ListItem id={t} button onClick={handlePrereqTaskChange}>
-                      <ListItemText primary={tasks[t]?.title} />
-                    </ListItem>
+                  <Paper key={`task-${prj._id}-${t}`}>
+                    <Paper className={classes.itemPrimary}>
+                      <ListItem id={t} button onClick={handlePrereqTaskChange}>
+                        <ListItemText primary={tasks[t]?.title} />
+                      </ListItem>
+                    </Paper>
+                    <NestedPrereqTaskList
+                      handlePrereqTaskChange={handlePrereqTaskChange}
+                      taskList={tasks[t].subtasks}
+                    />
                   </Paper>
                 ))}
               </ul>
