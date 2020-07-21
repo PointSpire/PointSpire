@@ -6,8 +6,8 @@ import {
   WithStyles,
   Theme,
 } from '@material-ui/core';
-import UserData from '../../clientData/UserData';
-import { UserTags } from '../../utils/dbTypes';
+import UserData from '../../../../clientData/UserData';
+import { UserTags } from '../../../../utils/dbTypes';
 import SettingsTagChip from './SettingsTagChip';
 
 function styles(theme: Theme) {
@@ -29,15 +29,15 @@ function styles(theme: Theme) {
   });
 }
 
-export type FontSizeSettingProps = WithStyles<typeof styles>;
+export type TagsSettingProps = WithStyles<typeof styles>;
 
 /**
  * Represents the setting for the font size. This handles validation on the
  * input.
  *
- * @param {FontSizeSettingProps} props the props
+ * @param {TagsSettingProps} props the props
  */
-function FontSizeSetting(props: FontSizeSettingProps): JSX.Element {
+function TagsSetting(props: TagsSettingProps): JSX.Element {
   const { classes } = props;
 
   const [userTags, setUserTags] = useState(UserData.getUser().currentTags);
@@ -90,4 +90,4 @@ function FontSizeSetting(props: FontSizeSettingProps): JSX.Element {
   );
 }
 
-export default withStyles(styles, { withTheme: true })(FontSizeSetting);
+export default withStyles(styles, { withTheme: true })(TagsSetting);

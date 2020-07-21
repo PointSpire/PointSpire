@@ -8,8 +8,8 @@ import {
 } from '@material-ui/core';
 import { ObjectID } from 'bson';
 import { Autocomplete } from '@material-ui/lab';
-import UserData from '../../clientData/UserData';
-import { CompletableType, UserTags } from '../../utils/dbTypes';
+import UserData from '../../../../clientData/UserData';
+import { CompletableType, UserTags } from '../../../../utils/dbTypes';
 import TagChip from './TagChip';
 
 function styles() {

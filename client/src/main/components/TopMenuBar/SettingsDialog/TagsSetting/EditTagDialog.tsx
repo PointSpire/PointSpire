@@ -10,8 +10,8 @@ import {
   colors as materialUIColors,
   MenuItem,
 } from '@material-ui/core';
-import { UserTag } from '../../utils/dbTypes';
-import UserData from '../../clientData/UserData';
+import { UserTag } from '../../../../utils/dbTypes';
+import UserData from '../../../../clientData/UserData';
 
 type ColorValues = {
   [colorNumber: string]: string;

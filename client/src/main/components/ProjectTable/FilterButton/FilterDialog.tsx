@@ -11,7 +11,7 @@ import {
   FormControlLabel,
   Checkbox,
 } from '@material-ui/core';
-import UserData from '../clientData/UserData';
+import UserData from '../../../clientData/UserData';
 
 export interface FilterDialogProps {
   open: boolean;

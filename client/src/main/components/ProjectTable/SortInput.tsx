@@ -1,6 +1,6 @@
 import React from 'react';
 import { Select, MenuItem, InputLabel, FormControl } from '@material-ui/core';
-import sortingFunctions from '../utils/sortingFunctions';
+import sortingFunctions from '../../utils/sortingFunctions';
 
 export type SortInputProps = {
   setSortBy: (sortBy: string) => void;
