@@ -1,6 +1,4 @@
-/* eslint-disable react/jsx-one-expression-per-line */
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
 import {
   List,
   ListItem,
@@ -20,6 +18,7 @@ import NoteInput from './CompletableRow/NoteInput';
 import DateInput from './CompletableRow/DateInput';
 import PriorityButton from './PriorityButton/PriorityButton';
 import ProjectTable from './ProjectTable';
+import { CompletableType } from '../logic/dbTypes';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -48,10 +47,13 @@ function styles(theme: Theme) {
   });
 }
 
-export type CompletableDetailsRouteProps = WithStyles<typeof styles>;
+export interface CompletableDetailsProps extends WithStyles<typeof styles> {
+  completableType: CompletableType;
+  completableId: string;
+}
 
-function CompletableDetailsRoute() {
-  const { completableType, completableId } = useParams();
+function CompletableDetailsRoute(props: CompletableDetailsProps) {
+  const { completableType, completableId } = props;
 
   const [completable, setCompletable] = useState(
     ClientData.getCompletable(completableType, completableId)
@@ -148,7 +150,6 @@ function CompletableDetailsRoute() {
             completableId={completableId}
             completableType={completableType}
             label="Note"
-            rows={5}
           />
         </ListItem>
         <ListItem button onClick={subtasksClickHandler}>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, useMediaQuery } from '@material-ui/core/';
+import { Button } from '@material-ui/core/';
 import {
   Theme,
   createStyles,
@@ -70,8 +70,6 @@ function ProjectTable(props: ProjectTableProps) {
   ]);
 
   const [sortBy, setSortBy] = useState('priority');
-
-  const mobile = useMediaQuery('(max-width:800px)');
 
   const listenerId = `CompletableTable`;
 
@@ -272,7 +270,6 @@ function ProjectTable(props: ProjectTableProps) {
               completableType={completablesType}
               key={completableId}
               completableId={completableId}
-              mobile={mobile}
             />
           ))}
       </div>

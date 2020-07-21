@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import { createMuiTheme, ThemeProvider, Theme } from '@material-ui/core/styles';
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
-import MuiAlert from '@material-ui/lab/Alert';
+import MuiAlert, { Color as SnackBarSeverity } from '@material-ui/lab/Alert';
 import { Snackbar } from '@material-ui/core';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 import TopMenuBar from './components/TopMenuBar';
 import { AllUserData } from './logic/dbTypes';
 import { getUserData, getTestUserData } from './logic/fetchMethods';
@@ -11,37 +12,7 @@ import baseThemeOptions from './AppTheme';
 import ClientData from './logic/ClientData/ClientData';
 import IndexRoute from './routes/IndexRoute';
 import CompletableDetailsRoute from './routes/CompletableDetailsRoute';
-
-/**
- * Used to determine the severity of an alert for the snackbar of the app.
- */
-type SnackBarSeverity = 'error' | 'warning' | 'info' | 'success';
-
-type AppState = {
-  /**
-   * Determines if the toast window at the bottom is open.
-   */
-  snackBarOpen: boolean;
-
-  /**
-   * The current severity that was set for the toast window at the bottom.
-   */
-  snackBarSeverity: SnackBarSeverity;
-
-  /**
-   * The text for the toast window at the bottom.
-   */
-  snackBarText: string;
-
-  /**
-   * State for the projectIds which is just used to show the ProjectTable
-   */
-  projectIds: Array<string> | null;
-
-  appTheme: Theme;
-};
-
-type AppProps = unknown;
+import MobileContext from './contexts/MobileContext';
 
 // Set the githubClientId. See the .env file for details.
 let githubClientId: string;
@@ -54,28 +25,23 @@ if (process.env.REACT_APP_AUTH === 'LOCAL') {
 /**
  * Represents the main application window.
  */
-class App extends React.Component<AppProps, AppState> {
-  constructor(props: AppProps) {
-    super(props);
-    this.state = {
-      snackBarOpen: false,
-      snackBarSeverity: 'error',
-      snackBarText: 'unknown',
-      appTheme: createMuiTheme(baseThemeOptions),
-      projectIds: null,
-    };
+const App = () => {
+  const [snackBarOpen, setSnackBarOpen] = useState(false);
+  const [snackBarSeverity, setSnackBarSeverity] = useState<SnackBarSeverity>(
+    'error'
+  );
+  const [snackBarText, setSnackBarText] = useState<string>('uknown');
+  const [appTheme, setAppTheme] = useState<Theme>(
+    createMuiTheme(baseThemeOptions)
+  );
+  const [projectIds, setProjectIds] = useState<null | string[]>(null);
 
-    this.handleSnackBarClose = this.handleSnackBarClose.bind(this);
-    this.alert = this.alert.bind(this);
-    this.setTheme = this.setTheme.bind(this);
-    this.setProjectIds = this.setProjectIds.bind(this);
-  }
+  const mobile = useMediaQuery(appTheme.breakpoints.down('sm'));
 
   /**
-   * Runs after the component is mounted. This is the best place for API calls.
+   * Gets user data from server
    */
-  async componentDidMount(): Promise<void> {
-    // Get the data for the user
+  async function getData() {
     let userData: AllUserData | null;
     if (process.env.REACT_APP_ENV === 'LOCAL_DEV') {
       userData = await getTestUserData();
@@ -87,32 +53,16 @@ class App extends React.Component<AppProps, AppState> {
       ClientData.setProjects(userData.projects);
       ClientData.setTasks(userData.tasks);
       ClientData.setUser(userData.user);
-      this.setProjectIds(userData.user.projects);
+      setProjectIds(userData.user.projects);
     }
   }
 
-  setProjectIds(updatedProjectIds: Array<string>): void {
-    this.setState({
-      projectIds: updatedProjectIds,
-    });
-  }
-
   /**
-   * Updates the theme for the application.
-   *
-   * @param {Theme} updatedTheme the updated theme object
+   * Runs after the component is mounted. This is the best place for API calls.
    */
-  setTheme(updatedTheme: Theme): void {
-    this.setState({
-      appTheme: updatedTheme,
-    });
-  }
-
-  handleSnackBarClose(): void {
-    this.setState({
-      snackBarOpen: false,
-    });
-  }
+  useEffect(() => {
+    getData();
+  });
 
   /**
    * Displays a kind of "toast" at the bottom of the screen in the form of a
@@ -123,32 +73,22 @@ class App extends React.Component<AppProps, AppState> {
    * for error
    * @param {string} message The message to display in the toast message
    */
-  alert(severity: SnackBarSeverity, message: string): void {
-    this.setState({
-      snackBarOpen: true,
-      snackBarSeverity: severity,
-      snackBarText: message,
-    });
+  function alert(severity: SnackBarSeverity, message: string): void {
+    setSnackBarOpen(true);
+    setSnackBarSeverity(severity);
+    setSnackBarText(message);
   }
 
-  render(): JSX.Element {
-    const {
-      snackBarOpen,
-      snackBarSeverity,
-      snackBarText,
-      appTheme,
-      projectIds,
-    } = this.state;
-    const { handleSnackBarClose, alert, setTheme } = this;
-    return (
-      <div className="App">
+  return (
+    <div className="App">
+      <MobileContext.Provider value={mobile}>
         <ThemeProvider theme={appTheme}>
           <BrowserRouter>
             <TopMenuBar
               githubClientId={githubClientId}
               alert={alert}
               appTheme={appTheme}
-              setTheme={setTheme}
+              setTheme={setAppTheme}
             />
             <Switch>
               <Route exact path="/">
@@ -157,14 +97,14 @@ class App extends React.Component<AppProps, AppState> {
               <Route
                 path="/c/:completableType/:completableId"
                 render={({ location: { key } }) =>
-                  // eslint-disable-next-line prettier/prettier
-                  projectIds && <CompletableDetailsRoute key={key} />}
+                  projectIds && <CompletableDetailsRoute key={key} />
+                }
               />
             </Switch>
             <Snackbar
               open={snackBarOpen}
               autoHideDuration={3000}
-              onClose={handleSnackBarClose}
+              onClose={() => setSnackBarOpen(false)}
             >
               <MuiAlert
                 elevation={6}
@@ -176,10 +116,10 @@ class App extends React.Component<AppProps, AppState> {
             </Snackbar>
           </BrowserRouter>
         </ThemeProvider>
-      </div>
-    );
-  }
-}
+      </MobileContext.Provider>
+    </div>
+  );
+};
 
 /**
  * The type of the method `alert` on the App class. This can be used to specify
