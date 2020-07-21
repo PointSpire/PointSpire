@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '@material-ui/core/';
+import { Button, useMediaQuery } from '@material-ui/core/';
 import {
   Theme,
   createStyles,
@@ -10,7 +10,8 @@ import sortingFunctions from '../logic/sortingFunctions';
 import SortInput from './SortInput';
 import CompletableRow from './CompletableRow/CompletableRow';
 import ClientData from '../logic/ClientData/ClientData';
-// import arraysAreShallowEqual from '../logic/comparisonFunctions';
+import { CompletableType } from '../logic/dbTypes';
+import { postNewTask } from '../logic/fetchMethods';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */
@@ -35,7 +36,10 @@ function styles(theme: Theme) {
   });
 }
 
-export type ProjectTableProps = WithStyles<typeof styles>;
+export interface ProjectTableProps extends WithStyles<typeof styles> {
+  rootCompletableType?: CompletableType;
+  rootCompletableId?: string;
+}
 
 export type ProjectTableState = unknown;
 
@@ -46,23 +50,40 @@ export type ProjectTableState = unknown;
  * @param {ProjectTableProps} props the props
  */
 function ProjectTable(props: ProjectTableProps) {
-  const { classes } = props;
-  const [projectIds, setProjectIds] = useState([
-    ...ClientData.getUser().projects,
+  const { rootCompletableId, rootCompletableType, classes } = props;
+
+  // The type of completables in the table
+  const completablesType =
+    rootCompletableType && rootCompletableId ? 'task' : 'project';
+
+  // Returns the ids of the completables in the table
+  function getCompletableIds() {
+    if (rootCompletableType && rootCompletableId) {
+      return ClientData.getCompletable(rootCompletableType, rootCompletableId)
+        .subtasks;
+    }
+    return ClientData.getUser().projects;
+  }
+
+  const [completableIds, setCompletableIds] = useState([
+    ...getCompletableIds(),
   ]);
+
   const [sortBy, setSortBy] = useState('priority');
 
-  const listenerId = `ProjectTable`;
+  const mobile = useMediaQuery('(max-width:800px)');
+
+  const listenerId = `CompletableTable`;
 
   /**
-   * Removes all of the listeners for the projects on the field indicated by
+   * Removes all of the listeners for the completables on the field indicated by
    * `sortBy`.
    */
   function removeSortByListeners() {
-    projectIds.forEach(projectId => {
+    completableIds.forEach(completableId => {
       ClientData.removeCompletablePropertyListener(
-        'project',
-        projectId,
+        completablesType,
+        completableId,
         listenerId,
         sortBy
       );
@@ -73,34 +94,34 @@ function ProjectTable(props: ProjectTableProps) {
    * Adds a single listener to the project with the given ID on the property
    * indicated by `updatedSortBy`.
    *
-   * @param {string} projectId the ID of the project
+   * @param {string} completableId the ID of the completable
    * @param {string} updatedSortBy the property name that will be used to add
    * listeners
    */
-  function addSortByListener(projectId: string, updatedSortBy: string) {
+  function addSortByListener(completableId: string, updatedSortBy: string) {
     ClientData.addCompletablePropertyListener(
-      'project',
-      projectId,
+      completablesType,
+      completableId,
       listenerId,
       updatedSortBy,
       () => {
         // Simply trigger a re-render so it re-sorts the projects list
-        const newProjects = [...ClientData.getUser().projects];
-        setProjectIds(newProjects);
+        const newCompletables = [...getCompletableIds()];
+        setCompletableIds(newCompletables);
       }
     );
   }
 
   /**
-   * Adds listeners to all of the projects for the user on the property
+   * Adds listeners to all of the completables for the user | project on the property
    * indicated by the `updatedSortBy` variable.
    *
    * @param {string} updatedSortBy the property name that will be used to add
    * listeners
    */
   function addSortByListeners(updatedSortBy: string) {
-    projectIds.forEach(projectId => {
-      addSortByListener(projectId, updatedSortBy);
+    completableIds.forEach(completableId => {
+      addSortByListener(completableId, updatedSortBy);
     });
   }
 
@@ -123,27 +144,63 @@ function ProjectTable(props: ProjectTableProps) {
   /**
    * Generates a function that will delete the specified project.
    *
-   * @param {string} projectId the ID of the project to delete
+   * @param {string} completableId the ID of the project to delete
    */
-  function deleteProject(projectId: string) {
+  function deleteCompletable(completableId: string) {
     return () => {
       // Delete the project from ClientData. Listeners do not need to be
       // deleted because deleting the completable removes all listeners.
-      ClientData.deleteCompletable('project', projectId);
+      ClientData.deleteCompletable(completablesType, completableId);
+
+      if (rootCompletableType && rootCompletableId) {
+        // Set this completables subtasks info on ClientData which triggers state
+        const updatedCompletable = ClientData.getCompletable(
+          rootCompletableType,
+          rootCompletableId
+        );
+        updatedCompletable.subtasks.splice(
+          updatedCompletable.subtasks.indexOf(completableId),
+          1
+        );
+        ClientData.setAndSaveCompletable(
+          rootCompletableType,
+          updatedCompletable
+        );
+      }
     };
   }
 
   /**
-   * Subscribe to changes in the projects array on the user.
+   * Subscribe to changes in the completables array on the user.
    */
   useEffect(() => {
-    ClientData.addUserPropertyListener(listenerId, 'projects', () => {
-      const newProjects = [...ClientData.getUser().projects];
-      setProjectIds(newProjects);
-    });
+    if (rootCompletableType && rootCompletableId) {
+      ClientData.addCompletableListener(
+        rootCompletableType,
+        rootCompletableId,
+        listenerId,
+        () => {
+          const newCompletables = [...getCompletableIds()];
+          setCompletableIds(newCompletables);
+        }
+      );
+    } else {
+      ClientData.addUserPropertyListener(listenerId, 'projects', () => {
+        const newCompletables = [...getCompletableIds()];
+        setCompletableIds(newCompletables);
+      });
+    }
 
     return function cleanup() {
-      ClientData.removeUserPropertyListener('projects', listenerId);
+      if (rootCompletableType && rootCompletableId) {
+        ClientData.removeCompletableListener(
+          rootCompletableType,
+          rootCompletableId,
+          listenerId
+        );
+      } else {
+        ClientData.removeUserPropertyListener('projects', listenerId);
+      }
     };
   }, []);
 
@@ -166,11 +223,37 @@ function ProjectTable(props: ProjectTableProps) {
   /**
    * Adds a new project with a default title.
    */
-  async function addProject(): Promise<void> {
-    const newProject = await ClientData.addProject('Untitled');
+  async function addCompletable(): Promise<void> {
+    let newCompletable;
 
+    if (rootCompletableType && rootCompletableId) {
+      // Make the request for the new task
+      newCompletable = await postNewTask(
+        rootCompletableType,
+        rootCompletableId,
+        'Untitled'
+      );
+
+      // Add the new task to the task objects
+      const tasks = ClientData.getTasks();
+      tasks[newCompletable._id] = newCompletable;
+      ClientData.setTasks(tasks);
+
+      // Add the new sub task to the completable
+      const updatedCompletable = ClientData.getCompletable(
+        rootCompletableType,
+        rootCompletableId
+      );
+      updatedCompletable.subtasks.push(newCompletable._id);
+      ClientData.setAndSaveCompletable(rootCompletableType, updatedCompletable);
+
+      // Set this completable as a listener of the new one
+      addSortByListener(newCompletable._id, sortBy);
+    } else {
+      newCompletable = await ClientData.addProject('Untitled');
+    }
     // Add the sorting listener
-    addSortByListener(newProject._id, sortBy);
+    addSortByListener(newCompletable._id, sortBy);
   }
 
   return (
@@ -181,24 +264,24 @@ function ProjectTable(props: ProjectTableProps) {
         setSortBy={updateSortBy}
       />
       <div className={classes.root}>
-        {projectIds
-          .sort(sortingFunctions[sortBy].function('project'))
-          .map(projectId => (
+        {completableIds
+          .sort(sortingFunctions[sortBy].function(completablesType))
+          .map(completableId => (
             <CompletableRow
-              deleteThisCompletable={deleteProject(projectId)}
-              completableType="project"
-              key={projectId}
-              completableId={projectId}
-              mobile
+              deleteThisCompletable={deleteCompletable(completableId)}
+              completableType={completablesType}
+              key={completableId}
+              completableId={completableId}
+              mobile={mobile}
             />
           ))}
       </div>
       <Button
         className={classes.addProjectButton}
         variant="outlined"
-        onClick={addProject}
+        onClick={addCompletable}
       >
-        Add Project
+        {completablesType === 'task' ? 'Add Task' : 'Add Project'}
       </Button>
     </>
   );

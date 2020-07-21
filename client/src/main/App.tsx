@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.css';
 import { createMuiTheme, ThemeProvider, Theme } from '@material-ui/core/styles';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import MuiAlert from '@material-ui/lab/Alert';
 import { Snackbar } from '@material-ui/core';
 import TopMenuBar from './components/TopMenuBar';
@@ -143,7 +143,7 @@ class App extends React.Component<AppProps, AppState> {
     return (
       <div className="App">
         <ThemeProvider theme={appTheme}>
-          <Router>
+          <BrowserRouter>
             <TopMenuBar
               githubClientId={githubClientId}
               alert={alert}
@@ -152,11 +152,14 @@ class App extends React.Component<AppProps, AppState> {
             />
             <Switch>
               <Route exact path="/">
-                <IndexRoute projectIds={projectIds} />
+                {projectIds && <IndexRoute />}
               </Route>
-              <Route path="/c/:completableType/:completableId">
-                <CompletableDetailsRoute />
-              </Route>
+              <Route
+                path="/c/:completableType/:completableId"
+                render={({ location: { key } }) =>
+                  // eslint-disable-next-line prettier/prettier
+                  projectIds && <CompletableDetailsRoute key={key} />}
+              />
             </Switch>
             <Snackbar
               open={snackBarOpen}
@@ -171,7 +174,7 @@ class App extends React.Component<AppProps, AppState> {
                 {snackBarText}
               </MuiAlert>
             </Snackbar>
-          </Router>
+          </BrowserRouter>
         </ThemeProvider>
       </div>
     );
