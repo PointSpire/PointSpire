@@ -14,11 +14,11 @@ import {
   ListItem,
 } from '@material-ui/core';
 import { Theme } from '@material-ui/core/styles';
-import { AlertFunction } from '../../App';
+import { AlertFunction } from '../../../App';
 import FontSizeSetting from './FontSizeSetting';
-import baseThemeOptions from '../../AppTheme';
-import { setCookie, ClientCookies } from '../../utils/clientCookies';
-import UserData from '../../clientData/UserData';
+import baseThemeOptions from '../../../AppTheme';
+import { setCookie, ClientCookies } from '../../../utils/clientCookies';
+import UserData from '../../../clientData/UserData';
 
 type SettingsDialogProps = {
   open: boolean;

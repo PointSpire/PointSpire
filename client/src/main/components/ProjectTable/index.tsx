@@ -6,10 +6,10 @@ import {
   withStyles,
   WithStyles,
 } from '@material-ui/core/styles';
-import sortingFunctions from '../utils/sortingFunctions';
+import sortingFunctions from '../../utils/sortingFunctions';
 import SortInput from './SortInput';
 import CompletableRow from './CompletableRow';
-import UserData from '../clientData/UserData';
+import UserData from '../../clientData/UserData';
 // import arraysAreShallowEqual from '../logic/comparisonFunctions';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 

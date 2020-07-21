@@ -7,8 +7,8 @@ import {
   InputLabel,
 } from '@material-ui/core';
 import PriorityDialog from './PriorityDialog';
-import { CompletableType } from '../../utils/dbTypes';
-import UserData from '../../clientData/UserData';
+import { CompletableType } from '../../../../utils/dbTypes';
+import UserData from '../../../../clientData/UserData';
 
 function styles() {
   return createStyles({

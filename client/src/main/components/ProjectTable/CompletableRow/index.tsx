@@ -8,18 +8,18 @@ import {
   Card,
   Collapse,
 } from '@material-ui/core';
-import { CompletableType } from '../../utils/dbTypes';
-import { postNewTask, deleteTaskById } from '../../utils/fetchMethods';
+import { CompletableType } from '../../../utils/dbTypes';
+import { postNewTask, deleteTaskById } from '../../../utils/fetchMethods';
 import NoteInput from './NoteInput';
 import DateInput from './DateInput';
-import SimpleTextInput from '../SimpleTextInput';
-import TaskMenu from '../TaskMenu';
-import sortingFunctions from '../../utils/sortingFunctions';
-import PriorityButton from '../PriorityButton';
+import SimpleTextInput from './SimpleTextInput';
+import TaskMenu from './TaskMenu';
+import sortingFunctions from '../../../utils/sortingFunctions';
+import PriorityButton from './PriorityButton';
 import TaskExpanderButton from './TaskExpanderButton';
 import NoteButton from './NoteButton';
 import CompletedCheckbox from './CompletedCheckbox';
-import UserData from '../../clientData/UserData';
+import UserData from '../../../clientData/UserData';
 
 function styles(theme: Theme) {
   return createStyles({

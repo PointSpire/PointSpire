@@ -1,6 +1,6 @@
 import React from 'react';
 import { TextField } from '@material-ui/core';
-import { resetTimer } from '../../utils/savingTimer';
+import { resetTimer } from '../../../../utils/savingTimer';
 
 export type PriorityInputProps = {
   input: string;
