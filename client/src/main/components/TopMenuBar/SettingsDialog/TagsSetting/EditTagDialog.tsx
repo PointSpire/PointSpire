@@ -7,24 +7,11 @@ import {
   Button,
   TextField,
   Select,
-  colors as materialUIColors,
   MenuItem,
 } from '@material-ui/core';
 import { UserTag } from '../../../../utils/dbTypes';
 import UserData from '../../../../clientData/UserData';
-
-type ColorValues = {
-  [colorNumber: string]: string;
-};
-
-/**
- * Used to allow indexing of properties on the colors object.
- */
-type Colors = {
-  [colorName: string]: ColorValues;
-};
-
-const colors: Colors = materialUIColors;
+import colors, { createThemeFromColorName } from '../../../../utils/colors';
 
 export interface EditTagDialogProps {
   open: boolean;
@@ -82,6 +69,10 @@ function EditTagDialog(props: EditTagDialogProps) {
     setTagColorName(colorName);
   }
 
+  function capitalizeFirstLetter(str: string): string {
+    return str[0].toUpperCase() + str.slice(1);
+  }
+
   return (
     <Dialog
       open={open}
@@ -101,11 +92,22 @@ function EditTagDialog(props: EditTagDialogProps) {
           value={tagColorName}
           onChange={handleColorChange}
         >
-          {Object.keys(colors).map(colorName => (
-            <MenuItem value={colorName} key={colorName}>
-              {colorName}
-            </MenuItem>
-          ))}
+          {Object.keys(colors).map(colorName => {
+            // Create the theme so that the menu item has the color of the tag
+            const theme = createThemeFromColorName(colorName);
+            return (
+              <MenuItem
+                value={colorName}
+                key={colorName}
+                style={{
+                  color: theme.palette.primary.contrastText,
+                  backgroundColor: theme.palette.primary.main,
+                }}
+              >
+                {capitalizeFirstLetter(colorName)}
+              </MenuItem>
+            );
+          })}
         </Select>
       </DialogContent>
       <DialogActions>
