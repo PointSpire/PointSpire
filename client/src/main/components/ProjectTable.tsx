@@ -6,6 +6,7 @@ import {
   withStyles,
   WithStyles,
 } from '@material-ui/core/styles';
+import { useHistory } from 'react-router-dom';
 import sortingFunctions from '../logic/sortingFunctions';
 import SortInput from './SortInput';
 import CompletableRow from './CompletableRow/CompletableRow';
@@ -70,6 +71,8 @@ function ProjectTable(props: ProjectTableProps) {
   ]);
 
   const [sortBy, setSortBy] = useState('priority');
+
+  const history = useHistory();
 
   const listenerId = `CompletableTable`;
 
@@ -247,8 +250,10 @@ function ProjectTable(props: ProjectTableProps) {
 
       // Set this completable as a listener of the new one
       addSortByListener(newCompletable._id, sortBy);
+      history.push(`/c/task/${newCompletable._id}`);
     } else {
       newCompletable = await ClientData.addProject('Untitled');
+      history.push(`/c/project/${newCompletable._id}`);
     }
     // Add the sorting listener
     addSortByListener(newCompletable._id, sortBy);

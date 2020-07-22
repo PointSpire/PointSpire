@@ -12,6 +12,7 @@ export type TaskMenuProps = {
     e: MouseEvent<HTMLElement>,
     prereqTasks: string[] | null
   ) => void;
+  detailedView: () => void;
   clickProp?: boolean;
 };
 
@@ -28,6 +29,7 @@ function TaskMenu(props: TaskMenuProps): JSX.Element {
     sortBy,
     setSortBy,
     openPrereqTaskDialog,
+    detailedView,
     clickProp = true,
   } = props;
 
@@ -81,6 +83,7 @@ function TaskMenu(props: TaskMenuProps): JSX.Element {
           {'< '}
           Sort By
         </MenuItem>
+        <MenuItem onClick={detailedView}>Edit</MenuItem>
         <MenuItem onClick={handleAddSubTask}>Add SubTask</MenuItem>
         <MenuItem onClick={handleDelete}>Delete</MenuItem>
         {openPrereqTaskDialog ? (

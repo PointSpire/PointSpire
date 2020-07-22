@@ -12,7 +12,8 @@ import baseThemeOptions from './AppTheme';
 import ClientData from './logic/ClientData/ClientData';
 import IndexRoute from './routes/IndexRoute';
 import CompletableDetailsRoute from './routes/CompletableDetailsRoute';
-import MobileContext from './contexts/MobileContext';
+import ModalCompletableDetailsRoute from './routes/ModalCompletableDetailsRoute';
+import { MobileContext } from './contexts';
 
 // Set the githubClientId. See the .env file for details.
 let githubClientId: string;
@@ -90,17 +91,26 @@ const App = () => {
               appTheme={appTheme}
               setTheme={setAppTheme}
             />
-            <Switch>
-              <Route exact path="/">
-                {projectIds && <IndexRoute />}
-              </Route>
-              <Route
-                path="/c/:completableType/:completableId"
-                render={({ location: { key } }) =>
-                  projectIds && <CompletableDetailsRoute key={key} />
-                }
-              />
-            </Switch>
+            {mobile ? (
+              <Switch>
+                <Route exact path="/">
+                  {projectIds && <IndexRoute />}
+                </Route>
+                <Route
+                  path="/c/:completableType/:completableId"
+                  render={({ location: { key } }) =>
+                    projectIds && <CompletableDetailsRoute key={key} />
+                  }
+                />
+              </Switch>
+            ) : (
+              <>
+                <Route path="/">{projectIds && <IndexRoute />}</Route>
+                <Route path="/c/:completableType/:completableId">
+                  <ModalCompletableDetailsRoute />
+                </Route>
+              </>
+            )}
             <Snackbar
               open={snackBarOpen}
               autoHideDuration={3000}

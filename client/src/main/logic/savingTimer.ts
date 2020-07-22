@@ -63,7 +63,7 @@ export function resetTimer(): void {
  * Cancels the current timer to prevent double saving during a user initiated
  * save.
  */
-function cancelTimer(): void {
+export function cancelTimer(): void {
   clearTimeout(currentTimerId);
 }
 

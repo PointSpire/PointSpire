@@ -21,7 +21,7 @@ import TaskExpanderButton from './TaskExpanderButton';
 import NoteButton from './NoteButton';
 import CompletedCheckbox from './CompletedCheckbox';
 import ClientData from '../../logic/ClientData/ClientData';
-import MobileContext from '../../contexts/MobileContext';
+import { MobileContext } from '../../contexts';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -250,7 +250,7 @@ const CompletableRow = (props: CompletableRowProps) => {
    * Clicking on the completable row on mobile routes to the
    * CompletableDetailsRoute
    */
-  function completableClickHandler(): void {
+  function detailedViewHandler(): void {
     history.push(`/c/${completableType}/${completableId}`);
   }
 
@@ -308,7 +308,7 @@ const CompletableRow = (props: CompletableRowProps) => {
                       completableType={completableType}
                       completableId={completableId}
                       completablePropertyName="title"
-                      onClick={completableClickHandler}
+                      onClick={detailedViewHandler}
                       mobile={mobile}
                     />
                   </Grid>
@@ -344,6 +344,7 @@ const CompletableRow = (props: CompletableRowProps) => {
                       setSortBy={updateSortBy}
                       deleteTask={deleteThisCompletable}
                       addSubTask={addSubTask}
+                      detailedView={detailedViewHandler}
                       clickProp={!mobile}
                     />
                   </Grid>
