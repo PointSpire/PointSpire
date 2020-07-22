@@ -63,7 +63,7 @@ const App = () => {
    */
   useEffect(() => {
     getData();
-  });
+  }, []);
 
   /**
    * Displays a kind of "toast" at the bottom of the screen in the form of a

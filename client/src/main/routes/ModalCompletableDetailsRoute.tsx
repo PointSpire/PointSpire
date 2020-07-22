@@ -1,13 +1,15 @@
 import React from 'react';
 import { useParams, useHistory } from 'react-router-dom';
-import { Dialog } from '@material-ui/core';
+import { Dialog, DialogActions, Button } from '@material-ui/core';
 import CompletableDetails from '../components/CompletableDetails';
+import { manualSave } from '../logic/savingTimer';
 
 function CompleteableDetailsRoute() {
   const { completableType, completableId = '' } = useParams();
   const history = useHistory();
 
   function handleClose() {
+    manualSave();
     history.push('/');
   }
 
@@ -22,6 +24,11 @@ function CompleteableDetailsRoute() {
         completableType={completableType}
         completableId={completableId}
       />
+      <DialogActions>
+        <Button onClick={() => handleClose()} color="primary">
+          Save
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 }
