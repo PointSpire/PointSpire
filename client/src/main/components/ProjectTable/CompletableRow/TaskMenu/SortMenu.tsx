@@ -1,6 +1,6 @@
 import React from 'react';
 import { MenuItem, Menu } from '@material-ui/core';
-import sortingFunctions from '../../utils/sortingFunctions';
+import sortingFunctions from '../../../../utils/sortingFunctions';
 
 export type SortMenuProps = {
   anchorEl: HTMLElement | null;
