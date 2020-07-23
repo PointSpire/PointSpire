@@ -4,8 +4,6 @@ import {
   Completable,
   CompletableType,
   User,
-  Project,
-  Task,
 } from '../utils/dbTypes';
 import scheduleCallback from '../utils/savingTimer';
 import {
@@ -18,6 +16,8 @@ import {
   postNewTask,
   deleteTag,
 } from '../utils/fetchMethods';
+import Project from '../models/Project';
+import Task from '../models/Task';
 
 /**
  * The callback which will be called if any changes are made to a Completable.
@@ -434,13 +434,16 @@ class UserData {
    * @param {string} parentId the ID of the parent of the new task
    * @param {string} title the title of the new task
    */
-  static async addTask(
+  static addTask(
     parentType: CompletableType,
     parentId: string,
     title: string
-  ): Promise<Task> {
-    // Get the new task from the server
-    const newTask = await postNewTask(parentType, parentId, title);
+  ): Task {
+    const newTask = new Task();
+    newTask.title = title;
+    scheduleCallback(`${newTask._id}.addTaskToServer`, () => {
+      postNewTask(parentType, parentId, newTask);
+    });
 
     // Set the new task locally, and don't save to the server
     this.setCompletable('task', newTask);
@@ -465,9 +468,13 @@ class UserData {
    *
    * @param {string} title the title of the new project
    */
-  static async addProject(title: string): Promise<Project> {
+  static addProject(title: string): Project {
     // Get the new project from the server
-    const newProject = await postNewProject(this.user._id, title);
+    const newProject = new Project();
+    newProject.title = title;
+    scheduleCallback(`${newProject._id}.addTaskToServer`, () => {
+      postNewProject(this.user._id, newProject);
+    });
 
     // Set the new project locally, and don't save to the server
     this.setCompletable('project', newProject);

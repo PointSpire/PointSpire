@@ -3,12 +3,14 @@
  * for PointSpire.
  */
 
+import Task from '../models/Task';
+
 /**
  * The basic type for a document from MongoDB.
  */
-interface Document extends IndexableProperties {
+export interface Document extends IndexableProperties {
   _id: string;
-  __v: number;
+  __v?: number;
 }
 
 /**
@@ -75,24 +77,6 @@ export type AllUserData = {
 };
 
 /* Task Types */
-
-export interface Task extends Document {
-  subtasks: Array<string>;
-  prereqTasks: Array<string>;
-  dateCreated: Date;
-  startDate: Date | null;
-  dueDate: Date | null;
-  note: string;
-  title: string;
-  priority: number;
-  completed: boolean;
-  completedDate: Date | null;
-
-  /**
-   * Holds an array of tag IDs for the task that correspond to the user's tags.
-   */
-  tags: Array<string>;
-}
 
 export type TaskObjects = {
   [id: string]: Task;

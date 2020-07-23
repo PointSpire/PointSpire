@@ -6,7 +6,6 @@ import {
   Project,
   AllUserData,
   User,
-  Task,
   tasksAreEqual,
   projectsAreEqual,
 } from './dbTypes';
@@ -16,6 +15,7 @@ import {
   getCookie,
   deleteAllCookies,
 } from './clientCookies';
+import Task from '../models/Task';
 
 const fetchData = {
   baseServerUrl:
@@ -264,18 +264,15 @@ export function getRequest<T>(url: string, id: string): Promise<T> {
 }
 
 /**
- * Makes a post request to the server to add a new project with the given title.
+ * Makes a post request to the server to add a new project.
  *
  * @param {string} userId the ID of the user to add this project to
- * @param {string} projectTitle the title of the new project
+ * @param {Project} project the newly created project
  */
 export async function postNewProject(
   userId: string,
-  projectTitle: string
+  project: Project
 ): Promise<Project> {
-  const tempProject = {
-    title: projectTitle,
-  };
   const url = fetchData.buildUrl(
     `${fetchData.baseServerUrl}/api/users/~/projects`,
     userId
@@ -283,7 +280,7 @@ export async function postNewProject(
   const projectRes = await fetch(url, {
     method: 'POST',
     headers: fetchData.basicHeader,
-    body: JSON.stringify(tempProject),
+    body: JSON.stringify(project),
   });
   const newProject = (await projectRes.json()) as Project;
   return newProject;
@@ -344,8 +341,8 @@ export async function deleteProject(projectId: string): Promise<Project> {
 export async function postNewTask(
   parentType: 'task' | 'project',
   parentId: string,
-  taskTitle: string
-): Promise<Task> {
+  task: Task
+): Promise<void> {
   const { basicHeader } = fetchData;
   let fullUrl: string;
   if (parentType === 'project') {
@@ -353,18 +350,17 @@ export async function postNewTask(
   } else {
     fullUrl = `${baseServerUrl}/api/tasks/${parentId}/subtasks`;
   }
-  const newTask = {
-    title: taskTitle,
-  };
   const taskRes = await fetch(fullUrl, {
     method: 'POST',
     headers: basicHeader,
-    body: JSON.stringify(newTask),
+    body: JSON.stringify(task),
   });
   const returnedTask = (await taskRes.json()) as Task;
   const parsedTask = sanitizeCompletable(returnedTask);
-
-  return parsedTask;
+  if (!tasksAreEqual(task, parsedTask)) {
+    // eslint-disable-next-line
+    console.error('Returned task after saving was not equal');
+  }
 }
 
 /**

@@ -14,7 +14,7 @@ import SortMenu from './SortMenu';
 
 export type TaskMenuProps = {
   deleteTask: () => void;
-  addSubTask: (title: string) => Promise<void>;
+  addSubTask: (title: string) => void;
   sortBy: string;
   setSortBy: (sortBy: string) => void;
   openPrereqTaskDialog?: (
@@ -54,10 +54,7 @@ function TaskMenu(props: TaskMenuProps): JSX.Element {
   }
 
   function handleAddSubTask(): void {
-    addSubTask('Untitled').catch(err => {
-      // eslint-disable-next-line
-      console.error(err);
-    });
+    addSubTask('Untitled');
   }
 
   function handleClose(): void {

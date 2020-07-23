@@ -3,6 +3,7 @@
  * amount of time has passed.
  */
 
+import moment from 'moment';
 import { AppSaveStatus, SavedStatus } from '../clientData/AppSaveStatus';
 
 /**
@@ -19,7 +20,20 @@ const timeToWait = 10 * 1000;
 /**
  * The store for the callbacks
  */
-let callbacks: { [key: string]: Function } = {};
+let callbacks: {
+  [key: string]: {
+    /**
+     * The callback to run when saving. This can be an asynchronous process
+     * which will complete before the next callback is ran.
+     */
+    callback: () => void | Promise<void>;
+
+    /**
+     * Used to determine the order in which callbacks should be procesed.
+     */
+    timeAdded: Date;
+  };
+} = {};
 
 /**
  * Asks the user first before closing out of the application if there are still
@@ -42,9 +56,23 @@ export function windowUnloadListener(e: BeforeUnloadEvent) {
  */
 function runAllCallbacks() {
   AppSaveStatus.setStatus(SavedStatus.Saving);
-  Object.values(callbacks).forEach(callback => {
+
+  /* Sort the callbacks from earliest added to latest added. This is needed
+  in the case where a new item is added to the DB and later callbacks edit that
+  item */
+  const orderedCallbacks = Object.values(callbacks)
+    .sort((callbackObj1, callbackObj2) => {
+      return moment(callbackObj1.timeAdded).isBefore(callbackObj2.timeAdded)
+        ? -1
+        : 1;
+    })
+    .map(callbackObj => callbackObj.callback);
+
+  // Run all the callbacks
+  orderedCallbacks.forEach(callback => {
     callback();
   });
+
   AppSaveStatus.setStatus(SavedStatus.Saved);
   callbacks = {};
 }
@@ -95,9 +123,12 @@ export function manualSave(): void {
  */
 export default function scheduleCallback(
   key: string,
-  callback: Function
+  callback: () => void | Promise<void>
 ): void {
   AppSaveStatus.setStatus(SavedStatus.Save);
-  callbacks[key] = callback;
+  callbacks[key] = {
+    callback,
+    timeAdded: new Date(),
+  };
   resetTimer();
 }

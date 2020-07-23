@@ -10,7 +10,7 @@ import {
   Typography,
 } from '@material-ui/core';
 import { CompletableType } from '../../../utils/dbTypes';
-import { postNewTask, deleteTaskById } from '../../../utils/fetchMethods';
+import { deleteTaskById } from '../../../utils/fetchMethods';
 import NoteInput from './NoteInput';
 import DateInput from './DateInput';
 import SimpleTextInput from './SimpleTextInput';
@@ -366,19 +366,9 @@ const CompletableRow = (props: CompletableRowProps) => {
    *
    * @param {string} newTitle the title of the new task
    */
-  async function addSubTask(newTitle: string): Promise<void> {
+  function addSubTask(newTitle: string): void {
     // Make the request for the new task
-    const newTask = await postNewTask(completableType, completableId, newTitle);
-
-    // Add the new task to the task objects
-    const tasks = UserData.getTasks();
-    tasks[newTask._id] = newTask;
-    UserData.setTasks(tasks);
-
-    // Add the new sub task to the completable
-    const updatedCompletable = { ...completable };
-    updatedCompletable.subtasks.push(newTask._id);
-    UserData.setAndSaveCompletable(completableType, updatedCompletable);
+    const newTask = UserData.addTask(completableType, completableId, newTitle);
 
     // Set this completable as a listener of the new one
     addSortByListener(newTask._id, sortBy);
