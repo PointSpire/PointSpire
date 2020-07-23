@@ -296,8 +296,6 @@ class UserData {
    * This doesn't trigger any callbacks because there shouldn't be any on the
    * entire projects object to help performance.
    *
-   * This should be used at application startup, and when adding new projects.
-   *
    * @param {ProjectObjects} projects the updated projects object
    */
   static setProjects(projects: ProjectObjects): void {

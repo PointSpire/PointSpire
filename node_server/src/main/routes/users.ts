@@ -211,6 +211,37 @@ function createUsersRouter(db: typeof mongoose): Router {
         });
       }
 
+      /* Validate that each project's subtasks and each tasks's subtasks 
+      actually exist. If they don't, then delete them */
+      Object.values(projects).forEach(projectDoc => {
+        let projectIsModified = false;
+        projectDoc.subtasks.forEach((subtaskId, index) => {
+          if (!tasks.hasOwnProperty(subtaskId.toString())) {
+            projects[projectDoc._id].subtasks.splice(index, 1);
+            projectIsModified = true;
+          }
+        });
+        if (projectIsModified) {
+          Project.findByIdAndUpdate(projectDoc._id, {
+            subtasks: projects[projectDoc._id].subtasks,
+          }).exec();
+        }
+      });
+      Object.values(tasks).forEach(taskDoc => {
+        let taskIsModified = false;
+        taskDoc.subtasks.forEach((subtaskId, index) => {
+          if (!tasks.hasOwnProperty(subtaskId.toString())) {
+            tasks[taskDoc._id].subtasks.splice(index, 1);
+            taskIsModified = true;
+          }
+        });
+        if (taskIsModified) {
+          Task.findByIdAndUpdate(taskDoc._id, {
+            subtasks: tasks[taskDoc._id].subtasks,
+          }).exec();
+        }
+      });
+
       // Return the completed AllUserData object
       return {
         user: userDoc,
