@@ -1,5 +1,6 @@
 import React from 'react';
-import { Chip, ThemeProvider, createMuiTheme, colors } from '@material-ui/core';
+import { Chip, ThemeProvider, createMuiTheme } from '@material-ui/core';
+import colors from '../../../../utils/colors';
 import { UserTag } from '../../../../utils/dbTypes';
 
 export interface TagChipProps {

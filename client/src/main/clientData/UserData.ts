@@ -497,8 +497,15 @@ class UserData {
       delete this.user.currentTags[tagId];
     }
 
-    // Change the user property
+    // Change the user property for currentTags
     this.setUserProperty('currentTags', { ...this.user.currentTags });
+
+    // Remove the tag from the user's filters if it is there
+    const filterTagIndex = this.user.filters.tagIdsToShow.indexOf(tagId);
+    if (filterTagIndex !== -1) {
+      this.user.filters.tagIdsToShow.splice(filterTagIndex, 1);
+      this.setUserProperty('filters', { ...this.user.filters });
+    }
 
     // Find all projects with the tag and change them
     Object.values(this.projects).forEach(project => {
