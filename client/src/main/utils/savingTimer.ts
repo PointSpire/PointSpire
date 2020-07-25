@@ -3,13 +3,7 @@
  * amount of time has passed.
  */
 
-import moment from 'moment';
 import { AppSaveStatus, SavedStatus } from '../clientData/AppSaveStatus';
-
-/**
- * The latest timer ID that was scheduled.
- */
-let currentTimerId: NodeJS.Timeout;
 
 /**
  * The time to wait after the latest scheduleCallback function is called before
@@ -17,23 +11,27 @@ let currentTimerId: NodeJS.Timeout;
  */
 const timeToWait = 10 * 1000;
 
-/**
- * The store for the callbacks
- */
-let callbacks: {
-  [key: string]: {
-    /**
-     * The callback to run when saving. This can be an asynchronous process
-     * which will complete before the next callback is ran.
-     */
-    callback: () => void | Promise<void>;
+class TimerData {
+  /**
+   * The store for the callbacks
+   */
+  static callbacks: {
+    [key: string]: () => Promise<void>;
+  } = {};
 
-    /**
-     * Used to determine the order in which callbacks should be procesed.
-     */
-    timeAdded: Date;
-  };
-} = {};
+  /**
+   * The latest timer ID that was scheduled.
+   */
+  static currentTimerId: NodeJS.Timeout;
+
+  /**
+   * Contiains the ordered keys of the callbacks to run. This is separate from
+   * `callbacks` to save on processing time because each time a callback is
+   * added a check needs to run that will see if the callback has alredy been
+   * added. This way no checks need to run until saving occurs.
+   */
+  static orderedCallbacks: Array<string> = [];
+}
 
 /**
  * Asks the user first before closing out of the application if there are still
@@ -51,30 +49,28 @@ export function windowUnloadListener(e: BeforeUnloadEvent) {
   delete e.returnValue;
 }
 
+async function runCallbackPromises() {
+  // eslint-disable-next-line
+  for (const key of TimerData.orderedCallbacks) {
+    // eslint-disable-next-line no-await-in-loop
+    await TimerData.callbacks[key]();
+  }
+}
+
 /**
  * Runs all the callbacks stored and then clears the callbacks object.
  */
 function runAllCallbacks() {
   AppSaveStatus.setStatus(SavedStatus.Saving);
 
-  /* Sort the callbacks from earliest added to latest added. This is needed
-  in the case where a new item is added to the DB and later callbacks edit that
-  item */
-  const orderedCallbacks = Object.values(callbacks)
-    .sort((callbackObj1, callbackObj2) => {
-      return moment(callbackObj1.timeAdded).isBefore(callbackObj2.timeAdded)
-        ? -1
-        : 1;
-    })
-    .map(callbackObj => callbackObj.callback);
+  // eslint-disable-next-line
+  console.log('Ordered callbacks: ', TimerData.orderedCallbacks);
 
-  // Run all the callbacks
-  orderedCallbacks.forEach(callback => {
-    callback();
+  runCallbackPromises().then(() => {
+    AppSaveStatus.setStatus(SavedStatus.Saved);
+    TimerData.callbacks = {};
+    TimerData.orderedCallbacks = [];
   });
-
-  AppSaveStatus.setStatus(SavedStatus.Saved);
-  callbacks = {};
 }
 
 /**
@@ -83,8 +79,8 @@ function runAllCallbacks() {
  * the user is interacting with the page.
  */
 export function resetTimer(): void {
-  clearTimeout(currentTimerId);
-  currentTimerId = setTimeout(runAllCallbacks, timeToWait);
+  clearTimeout(TimerData.currentTimerId);
+  TimerData.currentTimerId = setTimeout(runAllCallbacks, timeToWait);
 }
 
 /**
@@ -92,7 +88,7 @@ export function resetTimer(): void {
  * save.
  */
 function cancelTimer(): void {
-  clearTimeout(currentTimerId);
+  clearTimeout(TimerData.currentTimerId);
 }
 
 /**
@@ -118,17 +114,20 @@ export function manualSave(): void {
  * only the latest callback is ran after the specified amount of time. This
  * key should be unique in the application. For example
  * `${project._id}.methodName`.
- * @param {Function} callback the function to be ran after the specified
+ * @param {Promise<void>} callback the function to be ran after the specified
  * amount of time since the last time `scheduleCallback` was called globally
  */
 export default function scheduleCallback(
   key: string,
-  callback: () => void | Promise<void>
+  callback: () => Promise<void>
 ): void {
   AppSaveStatus.setStatus(SavedStatus.Save);
-  callbacks[key] = {
-    callback,
-    timeAdded: new Date(),
-  };
-  resetTimer();
+
+  // Check to see if the callback is already there
+  if (TimerData.callbacks[key]) {
+    const index = TimerData.orderedCallbacks.indexOf(key);
+    TimerData.orderedCallbacks.splice(index, 1);
+  }
+  TimerData.callbacks[key] = callback;
+  TimerData.orderedCallbacks.push(key);
 }

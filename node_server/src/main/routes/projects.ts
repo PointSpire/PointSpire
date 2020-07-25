@@ -184,8 +184,9 @@ function createProjectsRouter(db: typeof mongoose): Router {
       })
       .then(projectDoc => {
         // Make sure no sneaky stuff is happenin 😅
-        if (req.body._id) {
+        if (req.body._id || req.body.__v) {
           delete req.body._id;
+          delete req.body.__v;
         }
 
         projectDoc = Object.assign(projectDoc, req.body);

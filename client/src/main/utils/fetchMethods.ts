@@ -317,15 +317,23 @@ export async function patchProject(project: Task): Promise<boolean> {
  * @param {string} projectId the ID of the project to delete
  * @returns {Promise<Project>} the successfully deleted Project
  */
-export async function deleteProject(projectId: string): Promise<Project> {
-  const { basicHeader } = fetchData;
-  const fullUrl = `${baseServerUrl}/api/projects/${projectId}`;
-  const res = await fetch(fullUrl, {
-    method: 'DELETE',
-    headers: basicHeader,
-  });
-  const returnedProject = (await res.json()) as Project;
-  return returnedProject;
+export async function deleteProject(
+  projectId: string
+): Promise<Project | null> {
+  try {
+    const { basicHeader } = fetchData;
+    const fullUrl = `${baseServerUrl}/api/projects/${projectId}`;
+    const res = await fetch(fullUrl, {
+      method: 'DELETE',
+      headers: basicHeader,
+    });
+    const returnedProject = (await res.json()) as Project;
+    return returnedProject;
+  } catch (err) {
+    // eslint-disable-next-line
+    console.error(err);
+    return null;
+  }
 }
 
 /**
@@ -336,7 +344,6 @@ export async function deleteProject(projectId: string): Promise<Project> {
  * is being attached to
  * @param {string} parentId the id of the parent
  * @param {string} taskTitle the title of the new task
- * @returns {Promise<Task>} the Task that the server produced
  */
 export async function postNewTask(
   parentType: 'task' | 'project',
@@ -364,32 +371,39 @@ export async function postNewTask(
 }
 
 /**
- * Deletes the given task from the server and returns the successfully deleted
- * task.
+ * Deletes a task by ID on the server.
  *
- * @param {Task} task the task to delete
- * @returns {Promise<Task>} the successfully deleted Task
+ * @param {string} taskId the ID of the task to delete
  */
-export async function deleteTask(task: Task): Promise<Task> {
-  const { basicHeader } = fetchData;
-  const fullUrl = `${baseServerUrl}/api/tasks/${task._id}`;
-  const res = await fetch(fullUrl, {
-    method: 'DELETE',
-    headers: basicHeader,
-  });
-  const returnedTask = (await res.json()) as Task;
-  return returnedTask;
+export async function deleteTaskById(taskId: string): Promise<Task | null> {
+  try {
+    const { basicHeader } = fetchData;
+    const fullUrl = `${baseServerUrl}/api/tasks/${taskId}`;
+    const res = await fetch(fullUrl, {
+      method: 'DELETE',
+      headers: basicHeader,
+    });
+    const returnedTask = (await res.json()) as Task;
+    // eslint-disable-next-line
+    console.log('Task with ID: ', taskId, ' was successfully deleted');
+    return returnedTask;
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error(err);
+    return null;
+  }
 }
 
-export async function deleteTaskById(taskId: string): Promise<Task> {
-  const { basicHeader } = fetchData;
-  const fullUrl = `${baseServerUrl}/api/tasks/${taskId}`;
-  const res = await fetch(fullUrl, {
-    method: 'DELETE',
-    headers: basicHeader,
-  });
-  const returnedTask = (await res.json()) as Task;
-  return returnedTask;
+/**
+ * Deletes the given task from the server and returns the successfully deleted
+ * task. If there is an error, it is printed to the console.
+ *
+ * @param {Task} task the task to delete
+ * @returns {Promise<Task | null>} the successfully deleted Task or null if
+ * there was an error
+ */
+export async function deleteTask(task: Task): Promise<Task | null> {
+  return deleteTaskById(task._id);
 }
 
 /**

@@ -10,7 +10,6 @@ import {
   Typography,
 } from '@material-ui/core';
 import { CompletableType } from '../../../utils/dbTypes';
-import { deleteTaskById } from '../../../utils/fetchMethods';
 import NoteInput from './NoteInput';
 import DateInput from './DateInput';
 import SimpleTextInput from './SimpleTextInput';
@@ -164,6 +163,33 @@ const CompletableRow = (props: CompletableRowProps) => {
       addSortByListeners(updatedSortBy);
     }
   }
+
+  /**
+   * Subscribe to changes in the subtasks of the completable so that when one is
+   * added or deleted, the collapse updates.
+   */
+  useEffect(() => {
+    UserData.addCompletablePropertyListener(
+      completableType,
+      completableId,
+      listenerId,
+      'subtasks',
+      () => {
+        setCompletable({
+          ...UserData.getCompletable(completableType, completableId),
+        });
+      }
+    );
+
+    return () => {
+      UserData.removeCompletablePropertyListener(
+        completableType,
+        completableId,
+        listenerId,
+        'subtasks'
+      );
+    };
+  }, []);
 
   // #region [rgba(0, 205, 30, 0.1)] Filtering
   const [thisIsFiltered, setThisIsFiltered] = useState(
@@ -384,8 +410,8 @@ const CompletableRow = (props: CompletableRowProps) => {
    * @param {string} taskId the ID of the task to delete
    */
   function deleteSubTask(taskId: string) {
-    return async () => {
-      // Delete the task from ClientData first
+    return () => {
+      // Delete the task
       UserData.deleteCompletable('task', taskId);
 
       // Set this completables subtasks info on ClientData which triggers state
@@ -395,9 +421,6 @@ const CompletableRow = (props: CompletableRowProps) => {
         1
       );
       UserData.setAndSaveCompletable(completableType, updatedCompletable);
-
-      // Make the request to delete the task
-      await deleteTaskById(taskId);
     };
   }
 

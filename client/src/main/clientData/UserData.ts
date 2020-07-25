@@ -175,7 +175,7 @@ class UserData {
       } else {
         patchCompletable = patchTask;
       }
-      patchCompletable(completable)
+      return patchCompletable(completable)
         .then(result => {
           if (result) {
             // eslint-disable-next-line
@@ -205,8 +205,8 @@ class UserData {
    * @param {User} updatedUser the updated user object
    */
   private static saveUser(updatedUser: User) {
-    return () => {
-      patchUser(updatedUser)
+    return async () => {
+      return patchUser(updatedUser)
         .then(result => {
           if (result) {
             // eslint-disable-next-line
@@ -439,8 +439,8 @@ class UserData {
   ): Task {
     const newTask = new Task();
     newTask.title = title;
-    scheduleCallback(`${newTask._id}.addTaskToServer`, () => {
-      postNewTask(parentType, parentId, newTask);
+    scheduleCallback(`${newTask._id}.addTaskToServer`, async () => {
+      await postNewTask(parentType, parentId, newTask);
     });
 
     // Set the new task locally, and don't save to the server
@@ -470,8 +470,8 @@ class UserData {
     // Get the new project from the server
     const newProject = new Project();
     newProject.title = title;
-    scheduleCallback(`${newProject._id}.addTaskToServer`, () => {
-      postNewProject(this.user._id, newProject);
+    scheduleCallback(`${newProject._id}.addTaskToServer`, async () => {
+      await postNewProject(this.user._id, newProject);
     });
 
     // Set the new project locally, and don't save to the server
@@ -524,8 +524,8 @@ class UserData {
     });
 
     // Schedule the deletion request for the server
-    scheduleCallback(`${this.user._id}.deleteTag.${tagId}`, () => {
-      deleteTag(this.user._id, tagId);
+    scheduleCallback(`${this.user._id}.deleteTag.${tagId}`, async () => {
+      await deleteTag(this.user._id, tagId);
     });
   }
 
@@ -543,7 +543,7 @@ class UserData {
   static deleteCompletable(type: CompletableType, completableId: string) {
     let completables;
     let completableListeners;
-    let deleteCompletableOnServer: (id: string) => void;
+    let deleteCompletableOnServer: (id: string) => Promise<Task | null>;
     if (type === 'project') {
       completables = this.projects;
       completableListeners = this.projectListeners;
@@ -559,8 +559,8 @@ class UserData {
     }
 
     // Schedule the server deletion of the completable
-    scheduleCallback(`${completableId}.delete`, () => {
-      deleteCompletableOnServer(completableId);
+    scheduleCallback(`${completableId}.delete`, async () => {
+      await deleteCompletableOnServer(completableId);
     });
 
     delete completables[completableId];

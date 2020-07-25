@@ -165,6 +165,34 @@ function createUsersRouter(db: typeof mongoose): Router {
   }
 
   /**
+   * Checks for duplicate projects in the provided UserDoc and sends a
+   * corrected UserDoc to the server with the update.
+   *
+   * @param {UserDoc} userDoc the userDoc to check and modify if needed
+   * @returns {UserDoc | null} this returns the corrected UserDoc if a change
+   * was made and null if there was no change made
+   */
+  async function checkUserDocForDuplicateProjects(
+    userDoc: UserDoc
+  ): Promise<UserDoc | null> {
+    const projectIdsSet = [...new Set(userDoc.projects)];
+    if (JSON.stringify(userDoc.projects) !== JSON.stringify(projectIdsSet)) {
+      console.warn(
+        'A duplicate was found in the users projects. ',
+        'Removing duplicate now...'
+      );
+      const returnedUserDoc = await User.updateOne(
+        { _id: userDoc._id },
+        {
+          projects: projectIdsSet,
+        }
+      ).exec();
+      return returnedUserDoc;
+    }
+    return null;
+  }
+
+  /**
    * Reterns all of the user data for a user.
    *
    * @param {string} userId the id of the user to query
@@ -172,7 +200,7 @@ function createUsersRouter(db: typeof mongoose): Router {
    */
   async function graphQueryUser(userId: string): Promise<AllUserData> {
     try {
-      const userDoc = await User.findOne({ _id: userId }).exec();
+      let userDoc = await User.findOne({ _id: userId }).exec();
       if (!userDoc) {
         throw new Error('User not found');
       }
@@ -198,6 +226,12 @@ function createUsersRouter(db: typeof mongoose): Router {
           })
           .exec();
 
+        // Check for duplicate projects
+        const userDocChange = await checkUserDocForDuplicateProjects(userDoc);
+        if (userDocChange) {
+          userDoc = userDocChange;
+        }
+
         // Pull all of the subtasks out of each project into tasks object
         projectsArr.forEach(project => {
           const subtaskHierarchy = project.subtask_hierarchy;
@@ -216,11 +250,20 @@ function createUsersRouter(db: typeof mongoose): Router {
       Object.values(projects).forEach(projectDoc => {
         let projectIsModified = false;
         projectDoc.subtasks.forEach((subtaskId, index) => {
-          if (!tasks.hasOwnProperty(subtaskId.toString())) {
+          // Check for task existence and duplicates
+          if (
+            !tasks.hasOwnProperty(subtaskId.toString()) ||
+            projectDoc.subtasks.indexOf(subtaskId) !== index
+          ) {
+            console.warn(
+              `Found duplicate or task that doesn't exist with ID:` +
+                `${subtaskId}`
+            );
             projects[projectDoc._id].subtasks.splice(index, 1);
             projectIsModified = true;
           }
         });
+
         if (projectIsModified) {
           Project.findByIdAndUpdate(projectDoc._id, {
             subtasks: projects[projectDoc._id].subtasks,
@@ -229,8 +272,16 @@ function createUsersRouter(db: typeof mongoose): Router {
       });
       Object.values(tasks).forEach(taskDoc => {
         let taskIsModified = false;
+        // Check for task existence and duplicates
         taskDoc.subtasks.forEach((subtaskId, index) => {
-          if (!tasks.hasOwnProperty(subtaskId.toString())) {
+          if (
+            !tasks.hasOwnProperty(subtaskId.toString()) ||
+            taskDoc.subtasks.indexOf(subtaskId) !== index
+          ) {
+            console.warn(
+              `Found duplicate or task that doesn't exist with ID:` +
+                `${subtaskId}`
+            );
             tasks[taskDoc._id].subtasks.splice(index, 1);
             taskIsModified = true;
           }
@@ -356,30 +407,21 @@ function createUsersRouter(db: typeof mongoose): Router {
    *   parameters:
    *   - $ref: '#/components/parameters/userIdParam'
    */
-  router.patch('/:userId', (req, res) => {
-    checkUserId(req.params.userId)
-      .then(userDoc => {
-        if (req.body) {
-          return userDoc;
-        } else {
-          throw new Error(errorDescriptions.userUpdateNotDefined);
-        }
-      })
-      .then(userDoc => {
-        // Make sure no sneaky stuff is happenin 😅
-        if (req.body._id) {
-          delete req.body._id;
-        }
-
-        userDoc = Object.assign(userDoc, req.body);
-        userDoc.save();
-        res.status(200);
-        res.json(userDoc);
-      })
-      .catch(err => {
-        res.status(400);
-        res.send(err);
-      });
+  router.patch('/:userId', async (req, res) => {
+    try {
+      if (!req.body) {
+        throw new Error(errorDescriptions.userUpdateNotDefined);
+      }
+      let userDoc = await checkUserId(req.params.userId);
+      if (req.body._id) {
+        delete req.body._id;
+      }
+      userDoc = Object.assign(userDoc, req.body);
+      await userDoc.save();
+      res.status(200).json(userDoc);
+    } catch (err) {
+      res.status(400).send(err);
+    }
   });
 
   /**
