@@ -7,6 +7,7 @@ import Debug from 'debug';
 import { AppSaveStatus, SavedStatus } from '../clientData/AppSaveStatus';
 
 const debug = Debug('savingTimer.ts');
+debug.enabled = false;
 
 /**
  * The time to wait after the latest scheduleCallback function is called before
