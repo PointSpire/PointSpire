@@ -165,6 +165,20 @@ function createUsersRouter(db: typeof mongoose): Router {
   }
 
   /**
+   * Removes duplicates from the given array in the most efficient possible way.
+   * This is benchmarked in the following article:
+   * https://blog.usejournal.com/performance-of-javascript-array-ops-2690aed47a50
+   *
+   * @param {Array<unknown>} arr the array to remove duplicates for
+   * @returns {Array<unknown>} the array with the duplicates removed
+   */
+  function removeDuplicates<T>(arr: Array<T>): Array<T> {
+    return arr.filter((elem, pos, array) => {
+      return array.indexOf(elem) == pos;
+    });
+  }
+
+  /**
    * Checks for duplicate projects in the provided UserDoc and sends a
    * corrected UserDoc to the server with the update.
    *
@@ -175,7 +189,9 @@ function createUsersRouter(db: typeof mongoose): Router {
   async function checkUserDocForDuplicateProjects(
     userDoc: UserDoc
   ): Promise<UserDoc | null> {
-    const projectIdsSet = [...new Set(userDoc.projects)];
+    const projectIdsSet = removeDuplicates<mongoose.Types.ObjectIdConstructor>(
+      userDoc.projects
+    );
     if (JSON.stringify(userDoc.projects) !== JSON.stringify(projectIdsSet)) {
       console.warn(
         'A duplicate was found in the users projects. ',
@@ -228,7 +244,7 @@ function createUsersRouter(db: typeof mongoose): Router {
 
         // Check for duplicate projects
         const userDocChange = await checkUserDocForDuplicateProjects(userDoc);
-        if (userDocChange) {
+        if (userDocChange !== null) {
           userDoc = userDocChange;
         }
 

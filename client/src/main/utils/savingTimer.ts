@@ -3,7 +3,10 @@
  * amount of time has passed.
  */
 
+import Debug from 'debug';
 import { AppSaveStatus, SavedStatus } from '../clientData/AppSaveStatus';
+
+const debug = Debug('savingTimer.ts');
 
 /**
  * The time to wait after the latest scheduleCallback function is called before
@@ -63,8 +66,7 @@ async function runCallbackPromises() {
 function runAllCallbacks() {
   AppSaveStatus.setStatus(SavedStatus.Saving);
 
-  // eslint-disable-next-line
-  console.log('Ordered callbacks: ', TimerData.orderedCallbacks);
+  debug('Ordered callbacks: ', TimerData.orderedCallbacks);
 
   runCallbackPromises().then(() => {
     AppSaveStatus.setStatus(SavedStatus.Saved);
