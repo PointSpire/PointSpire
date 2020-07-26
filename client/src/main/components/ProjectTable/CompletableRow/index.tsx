@@ -9,6 +9,7 @@ import {
   Collapse,
   Typography,
 } from '@material-ui/core';
+import Debug from 'debug';
 import { CompletableType } from '../../../utils/dbTypes';
 import NoteInput from './NoteInput';
 import DateInput from './DateInput';
@@ -23,6 +24,9 @@ import TagRow from './TagRow';
 import isFiltered from '../../../utils/filterFunctions';
 import HiddenItemsCaption from '../HiddenItemsCaption';
 import UserData from '../../../clientData/UserData';
+
+const debug = Debug('CompletableRow');
+debug.enabled = false;
 
 function styles(theme: Theme) {
   return createStyles({
@@ -106,6 +110,8 @@ const CompletableRow = (props: CompletableRowProps) => {
   );
 
   const listenerId = `${completableId}.CompletableRow`;
+
+  debug('rendered');
 
   /**
    * Removes all of the listeners for the subTasks on the field indicated by

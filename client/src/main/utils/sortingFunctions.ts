@@ -1,6 +1,10 @@
 import moment from 'moment';
+import Debug from 'debug';
 import { CompletableType } from './dbTypes';
 import UserData from '../clientData/UserData';
+
+const debug = Debug('sortingFunctions.ts');
+debug.enabled = false;
 
 function getCompletables(type: CompletableType) {
   if (type === 'project') {
@@ -17,7 +21,11 @@ function getCompletables(type: CompletableType) {
  */
 export function prioritySortDescending(type: CompletableType) {
   const completables = getCompletables(type);
+  debug(`prioritySortDescending completables is: `, completables);
   return (completable1Id: string, completable2Id: string): number => {
+    if (!completables[completable1Id]) {
+      debug(`Completable with ID: ${completable1Id} came back undefined`);
+    }
     return (
       completables[completable1Id].priority -
       completables[completable2Id].priority

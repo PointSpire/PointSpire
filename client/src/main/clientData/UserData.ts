@@ -1,3 +1,4 @@
+import Debug from 'debug';
 import {
   ProjectObjects,
   TaskObjects,
@@ -18,6 +19,9 @@ import {
 } from '../utils/fetchMethods';
 import Project from '../models/Project';
 import Task from '../models/Task';
+
+const debug = Debug('UserData.ts');
+debug.enabled = true;
 
 /**
  * The callback which will be called if any changes are made to a Completable.
@@ -509,14 +513,21 @@ class UserData {
 
     // Find all projects with the tag and change them
     Object.values(this.projects).forEach(project => {
-      const tagIndex = project.tags.findIndex(id => id === tagId);
-      if (tagIndex !== -1) {
-        project.tags.splice(tagIndex, 1);
-        this.setCompletableProperty(
-          'project',
-          project._id,
-          'tags',
-          project.tags
+      if (project.tags) {
+        const tagIndex = project.tags.findIndex(id => id === tagId);
+        if (tagIndex !== -1) {
+          project.tags.splice(tagIndex, 1);
+          this.setCompletableProperty(
+            'project',
+            project._id,
+            'tags',
+            project.tags
+          );
+        }
+      } else {
+        debug(
+          `The project with ID: "${project._id}" and title: "${project.title}"` +
+            ` did not have a "tags" property.`
         );
       }
     });
