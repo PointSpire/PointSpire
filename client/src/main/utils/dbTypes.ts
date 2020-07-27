@@ -3,12 +3,14 @@
  * for PointSpire.
  */
 
+import Task from '../models/Task';
+
 /**
  * The basic type for a document from MongoDB.
  */
-interface Document extends IndexableProperties {
+export interface Document extends IndexableProperties {
   _id: string;
-  __v: number;
+  __v?: number;
 }
 
 /**
@@ -38,6 +40,24 @@ export type UserSettings = {
   [settingName: string]: boolean;
 };
 
+export interface UserTag {
+  color: string;
+  name: string;
+}
+
+/**
+ * The filters that the user has set.
+ */
+export interface UserFilters extends IndexableProperties {
+  showFutureStartDates: boolean;
+  showCompletedTasks: boolean;
+  tagIdsToShow: Array<string>;
+}
+
+export interface UserTags {
+  [tagId: string]: UserTag;
+}
+
 export interface User extends Document {
   projects: Array<string>;
   firstName: string;
@@ -46,6 +66,8 @@ export interface User extends Document {
   dateCreated: Date;
   userName: string;
   settings: UserSettings;
+  currentTags: UserTags;
+  filters: UserFilters;
 }
 
 export type AllUserData = {
@@ -55,19 +77,6 @@ export type AllUserData = {
 };
 
 /* Task Types */
-
-export interface Task extends Document {
-  subtasks: Array<string>;
-  prereqTasks: Array<string>;
-  dateCreated: Date;
-  startDate: Date | null;
-  dueDate: Date | null;
-  note: string;
-  title: string;
-  priority: number;
-  completed: boolean;
-  completedDate: Date | null;
-}
 
 export type TaskObjects = {
   [id: string]: Task;

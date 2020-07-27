@@ -3,12 +3,11 @@
  * amount of time has passed.
  */
 
+import Debug from 'debug';
 import { AppSaveStatus, SavedStatus } from '../clientData/AppSaveStatus';
 
-/**
- * The latest timer ID that was scheduled.
- */
-let currentTimerId: NodeJS.Timeout;
+const debug = Debug('savingTimer.ts');
+debug.enabled = false;
 
 /**
  * The time to wait after the latest scheduleCallback function is called before
@@ -16,10 +15,27 @@ let currentTimerId: NodeJS.Timeout;
  */
 const timeToWait = 10 * 1000;
 
-/**
- * The store for the callbacks
- */
-let callbacks: { [key: string]: Function } = {};
+class TimerData {
+  /**
+   * The store for the callbacks
+   */
+  static callbacks: {
+    [key: string]: () => Promise<void>;
+  } = {};
+
+  /**
+   * The latest timer ID that was scheduled.
+   */
+  static currentTimerId: NodeJS.Timeout;
+
+  /**
+   * Contiains the ordered keys of the callbacks to run. This is separate from
+   * `callbacks` to save on processing time because each time a callback is
+   * added a check needs to run that will see if the callback has alredy been
+   * added. This way no checks need to run until saving occurs.
+   */
+  static orderedCallbacks: Array<string> = [];
+}
 
 /**
  * Asks the user first before closing out of the application if there are still
@@ -37,16 +53,27 @@ export function windowUnloadListener(e: BeforeUnloadEvent) {
   delete e.returnValue;
 }
 
+async function runCallbackPromises() {
+  // eslint-disable-next-line
+  for (const key of TimerData.orderedCallbacks) {
+    // eslint-disable-next-line no-await-in-loop
+    await TimerData.callbacks[key]();
+  }
+}
+
 /**
  * Runs all the callbacks stored and then clears the callbacks object.
  */
 function runAllCallbacks() {
   AppSaveStatus.setStatus(SavedStatus.Saving);
-  Object.values(callbacks).forEach(callback => {
-    callback();
+
+  debug('Ordered callbacks: ', TimerData.orderedCallbacks);
+
+  runCallbackPromises().then(() => {
+    AppSaveStatus.setStatus(SavedStatus.Saved);
+    TimerData.callbacks = {};
+    TimerData.orderedCallbacks = [];
   });
-  AppSaveStatus.setStatus(SavedStatus.Saved);
-  callbacks = {};
 }
 
 /**
@@ -55,8 +82,8 @@ function runAllCallbacks() {
  * the user is interacting with the page.
  */
 export function resetTimer(): void {
-  clearTimeout(currentTimerId);
-  currentTimerId = setTimeout(runAllCallbacks, timeToWait);
+  clearTimeout(TimerData.currentTimerId);
+  TimerData.currentTimerId = setTimeout(runAllCallbacks, timeToWait);
 }
 
 /**
@@ -64,7 +91,7 @@ export function resetTimer(): void {
  * save.
  */
 function cancelTimer(): void {
-  clearTimeout(currentTimerId);
+  clearTimeout(TimerData.currentTimerId);
 }
 
 /**
@@ -90,14 +117,20 @@ export function manualSave(): void {
  * only the latest callback is ran after the specified amount of time. This
  * key should be unique in the application. For example
  * `${project._id}.methodName`.
- * @param {Function} callback the function to be ran after the specified
+ * @param {Promise<void>} callback the function to be ran after the specified
  * amount of time since the last time `scheduleCallback` was called globally
  */
 export default function scheduleCallback(
   key: string,
-  callback: Function
+  callback: () => Promise<void>
 ): void {
   AppSaveStatus.setStatus(SavedStatus.Save);
-  callbacks[key] = callback;
-  resetTimer();
+
+  // Check to see if the callback is already there
+  if (TimerData.callbacks[key]) {
+    const index = TimerData.orderedCallbacks.indexOf(key);
+    TimerData.orderedCallbacks.splice(index, 1);
+  }
+  TimerData.callbacks[key] = callback;
+  TimerData.orderedCallbacks.push(key);
 }

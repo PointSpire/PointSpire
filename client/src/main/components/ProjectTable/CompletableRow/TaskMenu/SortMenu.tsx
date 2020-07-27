@@ -45,7 +45,7 @@ function SortMenu(props: SortMenuProps): JSX.Element {
             selected={sortBy === sortType}
             onClick={handleClick(sortType)}
           >
-            {sortType}
+            {sortingFunctions[sortType].labelName}
           </MenuItem>
         );
       })}

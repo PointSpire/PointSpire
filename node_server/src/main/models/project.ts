@@ -1,40 +1,25 @@
-import mongoose, { Model, Schema } from 'mongoose';
-import { TaskDoc } from './task';
-
-const ObjectId = mongoose.Types.ObjectId;
+import mongoose, { Model, Schema, SchemaDefinition } from 'mongoose';
+import { TaskDoc, taskSchema } from './task';
 
 /**
- * The mongoose schema for a Project in the database.
+ * Creates the projectSchema with the provided interfaces if desired.
+ *
+ * @param {...SchemaDefinition[]} addSchemas different additional schemas that
+ * should be added to the project schema. This is like adding interfaces.
+ * The things added here are just objects.
+ * @returns {Schema} the created projectSchema
  */
-const projectSchema = new Schema({
-  title: {
-    type: String,
-    required: true,
-  },
-  note: String,
-  startDate: {
-    type: Date,
-    default: null,
-  },
-  dueDate: {
-    type: Date,
-    default: null,
-  },
-  priority: {
-    type: require('mongoose-int32'),
-    default: 0,
-  },
-  dateCreated: { type: Date, default: Date.now },
-  subtasks: [{ type: ObjectId, ref: 'Task', default: [] }],
-  completed: {
-    type: Boolean,
-    default: false,
-  },
-  completedDate: {
-    type: Date,
-    default: null,
-  },
-});
+function createProjectSchema(...addSchemas: SchemaDefinition[]): Schema {
+  const schema = new Schema();
+  if (addSchemas) {
+    addSchemas.forEach(addSchema => {
+      schema.add(addSchema);
+    });
+  }
+  return schema;
+}
+
+const projectSchema = createProjectSchema(taskSchema);
 
 /**
  * Used to hold a map of project IDs paired with their ProjectDoc. This

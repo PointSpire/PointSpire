@@ -7,9 +7,10 @@ import {
   Grid,
   Card,
   Collapse,
+  Typography,
 } from '@material-ui/core';
+import Debug from 'debug';
 import { CompletableType } from '../../../utils/dbTypes';
-import { postNewTask, deleteTaskById } from '../../../utils/fetchMethods';
 import NoteInput from './NoteInput';
 import DateInput from './DateInput';
 import SimpleTextInput from './SimpleTextInput';
@@ -19,7 +20,13 @@ import PriorityButton from './PriorityButton';
 import TaskExpanderButton from './TaskExpanderButton';
 import NoteButton from './NoteButton';
 import CompletedCheckbox from './CompletedCheckbox';
+import TagRow from './TagRow';
+import isFiltered from '../../../utils/filterFunctions';
+import HiddenItemsCaption from '../HiddenItemsCaption';
 import UserData from '../../../clientData/UserData';
+
+const debug = Debug('CompletableRow');
+debug.enabled = false;
 
 function styles(theme: Theme) {
   return createStyles({
@@ -45,6 +52,25 @@ function styles(theme: Theme) {
     checkbox: {
       paddingRight: 0,
     },
+    breadCrumbRoot: {
+      display: 'flex',
+      width: '100%',
+      flexDirection: 'row',
+      alignItems: 'center',
+
+      // Tighten up the spacing between the breadcrumb and the first subtask
+      marginBottom: theme.spacing(-2),
+    },
+    breadCrumb: {
+      textAlign: 'left',
+      marginLeft: theme.spacing(1),
+    },
+    hiddenItemsCaption: {
+      marginTop: theme.spacing(2),
+
+      // Make it so that the margin doesn't collapse
+      display: 'block',
+    },
   });
 }
 
@@ -52,6 +78,12 @@ export interface CompletableRowProps extends WithStyles<typeof styles> {
   completableType: CompletableType;
   completableId: string;
   deleteThisCompletable: () => void;
+
+  /**
+   * Used to hide this project when all children have indicated that they
+   * need to be hidden as well.
+   */
+  hideCompletable: (completableId: string) => void;
 }
 
 /**
@@ -65,6 +97,7 @@ const CompletableRow = (props: CompletableRowProps) => {
     completableType,
     classes,
     deleteThisCompletable,
+    hideCompletable,
   } = props;
 
   const [sortBy, setSortBy] = useState('priority');
@@ -78,8 +111,10 @@ const CompletableRow = (props: CompletableRowProps) => {
 
   const listenerId = `${completableId}.CompletableRow`;
 
+  debug('rendered');
+
   /**
-   * Removes all of the listeners for the tasks on the field indicated by
+   * Removes all of the listeners for the subTasks on the field indicated by
    * `sortBy`.
    */
   function removeSortByListeners() {
@@ -136,11 +171,175 @@ const CompletableRow = (props: CompletableRowProps) => {
   }
 
   /**
-   * Subscribe to changes in the children for sorting purposes.
+   * Subscribe to changes in the subtasks of the completable so that when one is
+   * added or deleted, the collapse updates.
+   */
+  useEffect(() => {
+    UserData.addCompletablePropertyListener(
+      completableType,
+      completableId,
+      listenerId,
+      'subtasks',
+      () => {
+        setCompletable({
+          ...UserData.getCompletable(completableType, completableId),
+        });
+      }
+    );
+
+    return () => {
+      UserData.removeCompletablePropertyListener(
+        completableType,
+        completableId,
+        listenerId,
+        'subtasks'
+      );
+    };
+  }, []);
+
+  // #region [rgba(0, 205, 30, 0.1)] Filtering
+  const [thisIsFiltered, setThisIsFiltered] = useState(
+    isFiltered(completableType, completableId)
+  );
+  const [hiddenSubtaskIds, setHiddenSubtaskIds] = useState<Array<string>>([]);
+
+  /**
+   * Hide this completable if it has no children and it is filtered. Otherwise,
+   * if this completable is filtered and it has children, then expand the
+   * subtasks.
    *
-   * This could potentially be made more efficient by comparing to see if the
-   * sorted array is different than the original array. Not sure if that is
-   * more efficient than just pushing the change or not though.
+   * This only runs once on mount because hiding is handled by listeners later.
+   */
+  useEffect(() => {
+    if (thisIsFiltered && completable.subtasks.length === 0) {
+      hideCompletable(completableId);
+    } else if (thisIsFiltered) {
+      setSubTasksOpen(true);
+    }
+  }, []);
+
+  /**
+   * Checks if this completable should be filtered. If it does, then it checks
+   * if the children are all hidden as well. If all children are hidden, then
+   * it signals to this completables parent that this completable should be
+   * hidden.
+   */
+  function checkAndSetFiltered() {
+    const shouldBeFiltered = isFiltered(completableType, completableId);
+    if (
+      shouldBeFiltered &&
+      hiddenSubtaskIds.length === completable.subtasks.length
+    ) {
+      hideCompletable(completableId);
+    } else if (shouldBeFiltered) {
+      setSubTasksOpen(true);
+    }
+    setThisIsFiltered(shouldBeFiltered);
+  }
+
+  /**
+   * Subscribe to changes that might cause this completable to become filtered.
+   */
+  useEffect(() => {
+    UserData.addCompletablePropertyListener(
+      completableType,
+      completableId,
+      listenerId,
+      'startDate',
+      () => {
+        checkAndSetFiltered();
+      }
+    );
+
+    UserData.addCompletablePropertyListener(
+      completableType,
+      completableId,
+      listenerId,
+      'completed',
+      () => {
+        checkAndSetFiltered();
+      }
+    );
+
+    UserData.addCompletablePropertyListener(
+      completableType,
+      completableId,
+      listenerId,
+      'tags',
+      () => {
+        checkAndSetFiltered();
+      }
+    );
+
+    return () => {
+      UserData.removeCompletablePropertyListener(
+        completableType,
+        completableId,
+        listenerId,
+        'startDate'
+      );
+      UserData.removeCompletablePropertyListener(
+        completableType,
+        completableId,
+        listenerId,
+        'completed'
+      );
+      UserData.removeCompletablePropertyListener(
+        completableType,
+        completableId,
+        listenerId,
+        'tags'
+      );
+    };
+  }, []);
+
+  /**
+   * Subscribe to changes in the filters.
+   */
+  useEffect(() => {
+    UserData.addUserPropertyListener(listenerId, 'filters', () => {
+      /* Clear the hidden subtasks so that they retry their own filtering
+      conditions and report back to this completable */
+      setHiddenSubtaskIds([]);
+
+      checkAndSetFiltered();
+    });
+
+    return () => {
+      UserData.removeUserPropertyListener('filters', listenerId);
+    };
+  }, []);
+
+  /**
+   * Hides the subtask completely (no breadcrumb).
+   * If all of the children of this completable should be hidden and this
+   * completable is filtered, then it triggers the parent of this completable
+   * to hide this completable.
+   *
+   * @param {string} subTaskId the ID of the subTask to hide
+   */
+  function hideSubTask(subTaskId: string) {
+    hiddenSubtaskIds.push(subTaskId);
+
+    /* This needs to be created here instead of using state because state
+      doesn't seem to be coming through in this function. It doesn't seem
+      to have a performance hit so it looks okay. */
+    const thisCompletableShouldBeFiltered = isFiltered(
+      completableType,
+      completableId
+    );
+    if (
+      hiddenSubtaskIds.length === completable.subtasks.length &&
+      thisCompletableShouldBeFiltered
+    ) {
+      hideCompletable(completableId);
+    }
+    setHiddenSubtaskIds([...hiddenSubtaskIds]);
+  }
+  // #endregion
+
+  /**
+   * Subscribe to changes in the children for sorting purposes.
    */
   useEffect(() => {
     addSortByListeners(sortBy);
@@ -199,22 +398,15 @@ const CompletableRow = (props: CompletableRowProps) => {
    *
    * @param {string} newTitle the title of the new task
    */
-  async function addSubTask(newTitle: string): Promise<void> {
+  function addSubTask(newTitle: string): void {
     // Make the request for the new task
-    const newTask = await postNewTask(completableType, completableId, newTitle);
-
-    // Add the new task to the task objects
-    const tasks = UserData.getTasks();
-    tasks[newTask._id] = newTask;
-    UserData.setTasks(tasks);
-
-    // Add the new sub task to the completable
-    const updatedCompletable = { ...completable };
-    updatedCompletable.subtasks.push(newTask._id);
-    UserData.setAndSaveCompletable(completableType, updatedCompletable);
+    const newTask = UserData.addTask(completableType, completableId, newTitle);
 
     // Set this completable as a listener of the new one
     addSortByListener(newTask._id, sortBy);
+
+    // Open up the subtasks
+    setSubTasksOpen(true);
   }
 
   /**
@@ -224,8 +416,8 @@ const CompletableRow = (props: CompletableRowProps) => {
    * @param {string} taskId the ID of the task to delete
    */
   function deleteSubTask(taskId: string) {
-    return async () => {
-      // Delete the task from ClientData first
+    return () => {
+      // Delete the task
       UserData.deleteCompletable('task', taskId);
 
       // Set this completables subtasks info on ClientData which triggers state
@@ -235,122 +427,141 @@ const CompletableRow = (props: CompletableRowProps) => {
         1
       );
       UserData.setAndSaveCompletable(completableType, updatedCompletable);
-
-      // Make the request to delete the task
-      await deleteTaskById(taskId);
     };
   }
 
   return (
     <>
-      <div className={classes.root}>
+      <div className={thisIsFiltered ? classes.breadCrumbRoot : classes.root}>
         <TaskExpanderButton
           open={subTasksOpen}
           setOpen={setSubTasksOpen}
           parent={completable}
         />
-        <Card className={`${classes.card}`} raised key={completable._id}>
-          <Grid container justify="flex-start" alignItems="center">
-            <Grid
-              container
-              spacing={2}
-              wrap="nowrap"
-              alignItems="center"
-              justify="flex-start"
-            >
-              <Grid item>
-                <CompletedCheckbox
-                  completableType={completableType}
-                  className={classes.checkbox}
-                  completable={completable}
-                />
+        {thisIsFiltered ? (
+          <Typography variant="overline" className={classes.breadCrumb}>
+            {completable.title}
+          </Typography>
+        ) : (
+          <Card className={classes.card} raised key={completable._id}>
+            <Grid container justify="flex-start" alignItems="center">
+              <Grid
+                container
+                spacing={2}
+                wrap="nowrap"
+                alignItems="center"
+                justify="flex-start"
+              >
+                <Grid item>
+                  <CompletedCheckbox
+                    completableType={completableType}
+                    className={classes.checkbox}
+                    completable={completable}
+                  />
+                </Grid>
+                <Grid item>
+                  <NoteButton
+                    noteIsEmpty={
+                      !completable.note || completable.note.length === 0
+                    }
+                    setNoteOpen={setNoteOpen}
+                    noteOpen={noteOpen}
+                  />
+                </Grid>
+                <Grid
+                  item
+                  className={classes.root}
+                  key={`${completable._id}.title`}
+                >
+                  <SimpleTextInput
+                    label={
+                      completableType === 'project'
+                        ? 'Project Title'
+                        : 'Task Title'
+                    }
+                    completableType={completableType}
+                    completableId={completableId}
+                    completablePropertyName="title"
+                  />
+                </Grid>
+                <Grid item>
+                  <PriorityButton
+                    completableType={completableType}
+                    completableId={completableId}
+                  />
+                </Grid>
+                <Grid item>
+                  <DateInput
+                    completablePropertyName="startDate"
+                    completableId={completableId}
+                    completableType={completableType}
+                    label="Start Date"
+                  />
+                </Grid>
+                <Grid item>
+                  <DateInput
+                    completablePropertyName="dueDate"
+                    completableId={completableId}
+                    completableType={completableType}
+                    label="Due Date"
+                  />
+                </Grid>
+                <Grid item>
+                  <TaskMenu
+                    sortBy={sortBy}
+                    setSortBy={updateSortBy}
+                    deleteTask={deleteThisCompletable}
+                    addSubTask={addSubTask}
+                  />
+                </Grid>
               </Grid>
-              <Grid item>
-                <NoteButton
-                  noteIsEmpty={
-                    !completable.note || completable.note.length === 0
-                  }
-                  setNoteOpen={setNoteOpen}
-                  noteOpen={noteOpen}
+              <Grid container item className={classes.flexGrow}>
+                <TagRow
+                  completableType={completableType}
+                  completableId={completableId}
                 />
               </Grid>
               <Grid
                 item
-                className={classes.root}
-                key={`${completable._id}.title`}
+                className={classes.flexGrow}
+                key={`${completable._id}.note`}
               >
-                <SimpleTextInput
-                  label={
-                    completableType === 'project'
-                      ? 'Project Title'
-                      : 'Task Title'
-                  }
-                  completableType={completableType}
-                  completableId={completableId}
-                  completablePropertyName="title"
-                />
-              </Grid>
-              <Grid item>
-                <PriorityButton
-                  completableType={completableType}
-                  completableId={completableId}
-                />
-              </Grid>
-              <Grid item>
-                <DateInput
-                  completablePropertyName="startDate"
-                  completableId={completableId}
-                  completableType={completableType}
-                  label="Start Date"
-                />
-              </Grid>
-              <Grid item>
-                <DateInput
-                  completablePropertyName="dueDate"
-                  completableId={completableId}
-                  completableType={completableType}
-                  label="Due Date"
-                />
-              </Grid>
-              <Grid item>
-                <TaskMenu
-                  sortBy={sortBy}
-                  setSortBy={updateSortBy}
-                  deleteTask={deleteThisCompletable}
-                  addSubTask={addSubTask}
-                />
+                <Collapse in={noteOpen} timeout="auto">
+                  <NoteInput
+                    completableId={completableId}
+                    completableType={completableType}
+                    label="Note"
+                  />
+                </Collapse>
               </Grid>
             </Grid>
-
-            <Grid
-              item
-              className={classes.flexGrow}
-              key={`${completable._id}.note`}
-            >
-              <Collapse in={noteOpen} timeout="auto">
-                <NoteInput
-                  completableId={completableId}
-                  completableType={completableType}
-                  label="Note"
-                />
-              </Collapse>
-            </Grid>
-          </Grid>
-        </Card>
+          </Card>
+        )}
       </div>
+
       <div className={classes.nested}>
         <Collapse in={subTasksOpen} timeout="auto" className={classes.flexGrow}>
           {completable.subtasks
             .sort(sortingFunctions[sortBy].function('task'))
-            .map(taskId => (
-              <CompletableRow
-                deleteThisCompletable={deleteSubTask(taskId)}
-                completableType="task"
-                key={taskId}
-                completableId={taskId}
-                classes={classes}
-              />
-            ))}
+            .map(taskId => {
+              return hiddenSubtaskIds.includes(taskId) ? (
+                ''
+              ) : (
+                <CompletableRow
+                  hideCompletable={hideSubTask}
+                  deleteThisCompletable={deleteSubTask(taskId)}
+                  completableType="task"
+                  key={taskId}
+                  completableId={taskId}
+                  classes={classes}
+                />
+              );
+            })}
+          <HiddenItemsCaption
+            className={classes.hiddenItemsCaption}
+            numHiddenItems={hiddenSubtaskIds.length}
+            completableType="task"
+          />
         </Collapse>
       </div>
     </>

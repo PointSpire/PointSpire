@@ -15,9 +15,10 @@ import {
   Select,
 } from '@material-ui/core';
 import { Search as SearchIcon, Clear as ClearIcon } from '@material-ui/icons';
-import { Task, TaskObjects, ProjectObjects } from '../../utils/dbTypes';
+import { TaskObjects, ProjectObjects } from '../../utils/dbTypes';
 import PrereqTaskList from './PrereqTaskList';
 import PrereqProjectTaskList from './PrereqProjectTaskList';
+import Task from '../../models/Task';
 
 function searchByNameDescending(searchTerm: string, tasks: Task[]): string[] {
   const matches = tasks.filter(task =>
