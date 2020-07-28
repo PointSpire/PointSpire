@@ -5,7 +5,7 @@ const ObjectId = mongoose.Types.ObjectId;
 /**
  * The mongoose schema for a Task in the database.
  */
-const taskSchema = new Schema({
+export const taskSchema = new Schema({
   title: String,
   note: String,
   dateCreated: { type: Date, default: Date.now },
@@ -39,6 +39,18 @@ const taskSchema = new Schema({
       default: new Array<typeof ObjectId>(),
     },
   ],
+  completed: {
+    type: Boolean,
+    default: false,
+  },
+  completedDate: {
+    type: Date,
+    default: null,
+  },
+  tags: {
+    type: [String],
+    default: [],
+  },
 });
 
 /**
@@ -53,7 +65,14 @@ export interface TaskDoc extends Document {
   dueDate: Date | null;
   priority: number;
   subtasks: Array<typeof ObjectId>;
+  completed: boolean;
+  completedDate: Date | null;
   prereqTasks: Array<typeof ObjectId>;
+
+  /**
+   * Holds an array of tag IDs for the task that correspond to the user's tags.
+   */
+  tags: Array<string>;
 }
 
 /**

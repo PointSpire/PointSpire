@@ -74,8 +74,10 @@ function createUsersRouter(db: typeof mongoose): Router {
     if (req.session && req.session.userId) {
       res.redirect(`/api/users/${req.session.userId}`);
     } else {
-      res.status(405);
-      res.send(errorDescriptions.userIdNotSpecified);
+      // Clear their cookies if they don't have a session
+      res.clearCookie('connect.sid');
+      res.clearCookie('userId');
+      res.status(405).send(errorDescriptions.userIdNotSpecified);
     }
   });
 
@@ -163,6 +165,50 @@ function createUsersRouter(db: typeof mongoose): Router {
   }
 
   /**
+   * Removes duplicates from the given array in the most efficient possible way.
+   * This is benchmarked in the following article:
+   * https://blog.usejournal.com/performance-of-javascript-array-ops-2690aed47a50
+   *
+   * @param {Array<unknown>} arr the array to remove duplicates for
+   * @returns {Array<unknown>} the array with the duplicates removed
+   */
+  function removeDuplicates<T>(arr: Array<T>): Array<T> {
+    return arr.filter((elem, pos, array) => {
+      return array.indexOf(elem) == pos;
+    });
+  }
+
+  /**
+   * Checks for duplicate projects in the provided UserDoc and sends a
+   * corrected UserDoc to the server with the update.
+   *
+   * @param {UserDoc} userDoc the userDoc to check and modify if needed
+   * @returns {UserDoc | null} this returns the corrected UserDoc if a change
+   * was made and null if there was no change made
+   */
+  async function checkUserDocForDuplicateProjects(
+    userDoc: UserDoc
+  ): Promise<UserDoc | null> {
+    const projectIdsSet = removeDuplicates<mongoose.Types.ObjectIdConstructor>(
+      userDoc.projects
+    );
+    if (JSON.stringify(userDoc.projects) !== JSON.stringify(projectIdsSet)) {
+      console.warn(
+        'A duplicate was found in the users projects. ',
+        'Removing duplicate now...'
+      );
+      const returnedUserDoc = await User.updateOne(
+        { _id: userDoc._id },
+        {
+          projects: projectIdsSet,
+        }
+      ).exec();
+      return returnedUserDoc;
+    }
+    return null;
+  }
+
+  /**
    * Reterns all of the user data for a user.
    *
    * @param {string} userId the id of the user to query
@@ -170,7 +216,7 @@ function createUsersRouter(db: typeof mongoose): Router {
    */
   async function graphQueryUser(userId: string): Promise<AllUserData> {
     try {
-      const userDoc = await User.findOne({ _id: userId }).exec();
+      let userDoc = await User.findOne({ _id: userId }).exec();
       if (!userDoc) {
         throw new Error('User not found');
       }
@@ -181,14 +227,6 @@ function createUsersRouter(db: typeof mongoose): Router {
 
       // Get all of the projects for the user
       if (userDoc.projects) {
-        /*
-        projects = await Project.find({
-          _id: {
-            $in: userDoc.projects,
-          },
-        });
-        */
-
         const projectsArr: Array<ProjectDoc> = await Project.aggregate()
           .match({
             _id: {
@@ -204,6 +242,12 @@ function createUsersRouter(db: typeof mongoose): Router {
           })
           .exec();
 
+        // Check for duplicate projects
+        const userDocChange = await checkUserDocForDuplicateProjects(userDoc);
+        if (userDocChange !== null) {
+          userDoc = userDocChange;
+        }
+
         // Pull all of the subtasks out of each project into tasks object
         projectsArr.forEach(project => {
           const subtaskHierarchy = project.subtask_hierarchy;
@@ -216,6 +260,54 @@ function createUsersRouter(db: typeof mongoose): Router {
           projects[project._id] = project;
         });
       }
+
+      /* Validate that each project's subtasks and each tasks's subtasks 
+      actually exist. If they don't, then delete them */
+      Object.values(projects).forEach(projectDoc => {
+        let projectIsModified = false;
+        projectDoc.subtasks.forEach((subtaskId, index) => {
+          // Check for task existence and duplicates
+          if (
+            !tasks.hasOwnProperty(subtaskId.toString()) ||
+            projectDoc.subtasks.indexOf(subtaskId) !== index
+          ) {
+            console.warn(
+              `Found duplicate or task that doesn't exist with ID:` +
+                `${subtaskId}`
+            );
+            projects[projectDoc._id].subtasks.splice(index, 1);
+            projectIsModified = true;
+          }
+        });
+
+        if (projectIsModified) {
+          Project.findByIdAndUpdate(projectDoc._id, {
+            subtasks: projects[projectDoc._id].subtasks,
+          }).exec();
+        }
+      });
+      Object.values(tasks).forEach(taskDoc => {
+        let taskIsModified = false;
+        // Check for task existence and duplicates
+        taskDoc.subtasks.forEach((subtaskId, index) => {
+          if (
+            !tasks.hasOwnProperty(subtaskId.toString()) ||
+            taskDoc.subtasks.indexOf(subtaskId) !== index
+          ) {
+            console.warn(
+              `Found duplicate or task that doesn't exist with ID:` +
+                `${subtaskId}`
+            );
+            tasks[taskDoc._id].subtasks.splice(index, 1);
+            taskIsModified = true;
+          }
+        });
+        if (taskIsModified) {
+          Task.findByIdAndUpdate(taskDoc._id, {
+            subtasks: tasks[taskDoc._id].subtasks,
+          }).exec();
+        }
+      });
 
       // Return the completed AllUserData object
       return {
@@ -277,7 +369,7 @@ function createUsersRouter(db: typeof mongoose): Router {
    *       content:
    *         'application/json':
    *           schema:
-   *             $ref: '#/components/schemas/projectObjectRequestBody'
+   *             $ref: '#/components/schemas/completableObjectPostBody'
    *     responses:
    *       '400':
    *         description: 'The userId was not found or there was an error while searching it'
@@ -318,7 +410,7 @@ function createUsersRouter(db: typeof mongoose): Router {
    *       content:
    *         'application/json':
    *           schema:
-   *             $ref: '#/components/schemas/userObjectPatchBody'
+   *             $ref: '#/components/schemas/userObjectBasis'
    *     responses:
    *       200:
    *         description: The user was successfully overwritten with the provided data.
@@ -331,30 +423,21 @@ function createUsersRouter(db: typeof mongoose): Router {
    *   parameters:
    *   - $ref: '#/components/parameters/userIdParam'
    */
-  router.patch('/:userId', (req, res) => {
-    checkUserId(req.params.userId)
-      .then(userDoc => {
-        if (req.body) {
-          return userDoc;
-        } else {
-          throw new Error(errorDescriptions.userUpdateNotDefined);
-        }
-      })
-      .then(userDoc => {
-        // Make sure no sneaky stuff is happenin 😅
-        if (req.body._id) {
-          delete req.body._id;
-        }
-
-        userDoc = Object.assign(userDoc, req.body);
-        userDoc.save();
-        res.status(200);
-        res.json(userDoc);
-      })
-      .catch(err => {
-        res.status(400);
-        res.send(err);
-      });
+  router.patch('/:userId', async (req, res) => {
+    try {
+      if (!req.body) {
+        throw new Error(errorDescriptions.userUpdateNotDefined);
+      }
+      let userDoc = await checkUserId(req.params.userId);
+      if (req.body._id) {
+        delete req.body._id;
+      }
+      userDoc = Object.assign(userDoc, req.body);
+      await userDoc.save();
+      res.status(200).json(userDoc);
+    } catch (err) {
+      res.status(400).send(err);
+    }
   });
 
   /**
@@ -405,6 +488,94 @@ function createUsersRouter(db: typeof mongoose): Router {
     } catch (err) {
       res.status(400);
       res.send(err);
+    }
+  });
+
+  /**
+   * @swagger
+   * /users/{userId}/tags/{tagId}:
+   *  delete:
+   *    summary: Deletes a tag from a user
+   *    description: Deletes the given tagId from the user with the userId and any of their projects or tasks that have that tag.
+   *    tags:
+   *      - User
+   *    responses:
+   *      200:
+   *        description: Successfully deleted the tag from the user and the user's projects and tasks
+   *      400:
+   *        description: The user was not found or there was an error while finding the user
+   *  parameters:
+   *  - $ref: '#/components/parameters/userIdParam'
+   *  - $ref: '#/components/parameters/tagIdParam'
+   */
+  router.delete(`/:userId/tags/:tagId`, async (req, res) => {
+    try {
+      const userData = await graphQueryUser(req.params.userId);
+      const projectIds = Object.keys(userData.projects);
+      const taskIds = Object.keys(userData.tasks);
+
+      const tagId = req.params.tagId;
+      const newTags = userData.user.currentTags;
+      const newFilters = userData.user.filters;
+
+      // See if the user has that tag first
+      if (Object.keys(newTags).includes(tagId)) {
+        // Delete the tag locally
+        delete newTags[tagId];
+
+        // Delete the tag from the filters if it is there
+        const filterTagIndex = newFilters.tagIdsToShow.indexOf(tagId);
+        if (filterTagIndex !== -1) {
+          newFilters.tagIdsToShow.splice(filterTagIndex, 1);
+        }
+
+        // Delete the tag from the user, and any projects or tasks
+        await Promise.all([
+          User.findOneAndUpdate(
+            { _id: req.params.userId },
+            {
+              currentTags: newTags,
+              filters: newFilters,
+            }
+          ).exec(),
+          Project.updateMany(
+            {
+              _id: {
+                $in: projectIds,
+              },
+            },
+            {
+              $pull: {
+                tags: tagId,
+              },
+            }
+          ),
+          Task.updateMany(
+            {
+              _id: {
+                $in: taskIds,
+              },
+            },
+            {
+              $pull: {
+                tags: tagId,
+              },
+            }
+          ).exec(),
+        ]);
+      } else {
+        throw new Error(`Tag with ID: ${tagId} not found.`);
+      }
+
+      res
+        .status(200)
+        .send(
+          `Successfully deleted tag with ID: ${tagId} from ` +
+            `user and any projects or tasks that had that tag.`
+        );
+    } catch (err) {
+      console.error(err);
+      res.status(400).send(err);
     }
   });
 

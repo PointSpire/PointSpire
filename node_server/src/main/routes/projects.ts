@@ -82,7 +82,7 @@ function createProjectsRouter(db: typeof mongoose): Router {
    *        content:
    *          'application/json':
    *            schema:
-   *              $ref: '#/components/schemas/projectObjectWithIds'
+   *              $ref: '#/components/schemas/completableObjectResponse'
    *      400:
    *        description: The project ID didn't correspond to one in the database or there was an error while accessing the database.
    *  parameters:
@@ -113,14 +113,14 @@ function createProjectsRouter(db: typeof mongoose): Router {
    *      content:
    *        'application/json':
    *          schema:
-   *            $ref: '#/components/schemas/taskObjectRequestBody'
+   *            $ref: '#/components/schemas/completableObjectPostBody'
    *    responses:
    *      201:
    *        description: The task was succesfully created and the new task is returned
    *        content:
    *          'application/json':
    *            schema:
-   *              $ref: '#/components/schemas/taskObjectWithIds'
+   *              $ref: '#/components/schemas/completableObjectResponse'
    *      400:
    *        description: There was an error while saving the task or getting the project
    *  parameters:
@@ -160,14 +160,14 @@ function createProjectsRouter(db: typeof mongoose): Router {
    *      content:
    *        'application/json':
    *          schema:
-   *            $ref: '#/components/schemas/projectObjectRequestBody'
+   *            $ref: '#/components/schemas/completableObjectPatchBody'
    *    responses:
    *      200:
    *        description: The update was successful and the updated project was returned
    *        content:
    *          'application/json':
    *            schema:
-   *              $ref: '#/components/schemas/projectObjectWithIds'
+   *              $ref: '#/components/schemas/completableObjectResponse'
    *      400:
    *        description: There was an error while finding the project or the project ID did not return a project.
    *  parameters:
@@ -184,8 +184,9 @@ function createProjectsRouter(db: typeof mongoose): Router {
       })
       .then(projectDoc => {
         // Make sure no sneaky stuff is happenin 😅
-        if (req.body._id) {
+        if (req.body._id || req.body.__v) {
           delete req.body._id;
+          delete req.body.__v;
         }
 
         projectDoc = Object.assign(projectDoc, req.body);
@@ -214,7 +215,7 @@ function createProjectsRouter(db: typeof mongoose): Router {
    *        content:
    *          'application/json':
    *            schema:
-   *              $ref: '#/components/schemas/projectObjectWithIds'
+   *              $ref: '#/components/schemas/completableObjectResponse'
    *      400:
    *        description: The project id was not found or there was an error while deleting the project.
    *  parameters:
