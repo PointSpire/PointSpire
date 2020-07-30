@@ -3,16 +3,17 @@ import {
   Grid,
   List,
   Paper,
-  ListItem,
+  // ListItem,
   createStyles,
   Theme,
   WithStyles,
   withStyles,
-  ListItemText,
+  // ListItemText,
   Button,
 } from '@material-ui/core';
 import UserData from '../../clientData/UserData';
-import NestedPrereqTaskList from './NestedPrereqTaskComponent';
+// import NestedPrereqTaskList from './NestedPrereqTaskComponent';
+import TaskListComponent from './TaskListComponent';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -44,7 +45,7 @@ const PrereqProjectTaskList = (props: PrereqTaskListProps): JSX.Element => {
   const { classes, handlePrereqTaskChange } = props;
 
   const projectList = Object.values(UserData.getProjects());
-  const tasks = UserData.getTasks();
+  // const tasks = UserData.getTasks();
 
   return (
     <Grid item>
@@ -63,7 +64,11 @@ const PrereqProjectTaskList = (props: PrereqTaskListProps): JSX.Element => {
                 >
                   {prj.title}
                 </Button>
-                {prj.subtasks?.map(t => (
+                <TaskListComponent
+                  taskList={prj.subtasks}
+                  handlePrereqTaskChange={handlePrereqTaskChange}
+                />
+                {/* {prj.subtasks?.map(t => (
                   <Paper key={`task-${prj._id}-${t}`}>
                     <Paper className={classes.itemPrimary}>
                       <ListItem id={t} button onClick={handlePrereqTaskChange}>
@@ -75,7 +80,7 @@ const PrereqProjectTaskList = (props: PrereqTaskListProps): JSX.Element => {
                       taskList={tasks[t].subtasks}
                     />
                   </Paper>
-                ))}
+                ))} */}
               </ul>
             </li>
           </Paper>

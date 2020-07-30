@@ -13,7 +13,7 @@ import UserData from '../../clientData/UserData';
 function styles(theme: Theme) {
   return createStyles({
     item: {
-      backgroundColor: theme.palette.primary.light,
+      backgroundColor: theme.palette.secondary.main,
       padding: theme.spacing(0.5),
       margin: theme.spacing(1),
     },

@@ -20,7 +20,7 @@ function styles(theme: Theme) {
   });
 }
 
-export interface PrereqTaskListProps extends WithStyles<typeof styles> {
+export interface TasklistComponentProps extends WithStyles<typeof styles> {
   taskList: string[];
   handlePrereqTaskChange: (e: MouseEvent<HTMLElement>) => void;
 }
@@ -29,7 +29,7 @@ export interface PrereqTaskListProps extends WithStyles<typeof styles> {
  * Displays the prerequisite tasks as a list of buttons.
  * @param {PrereqTaskListProps} props PrereqTaskList properties.
  */
-const PrereqTaskList = (props: PrereqTaskListProps): JSX.Element => {
+const TasklistComponent = (props: TasklistComponentProps): JSX.Element => {
   const { classes, taskList, handlePrereqTaskChange } = props;
 
   const tasks = UserData.getTasks();
@@ -44,6 +44,15 @@ const PrereqTaskList = (props: PrereqTaskListProps): JSX.Element => {
                 <Typography>{tasks[t]?.title}</Typography>
               </ListItem>
             </Paper>
+            {tasks[t].subtasks ? (
+              <TasklistComponent
+                classes={classes}
+                taskList={tasks[t].subtasks}
+                handlePrereqTaskChange={handlePrereqTaskChange}
+              />
+            ) : (
+              ''
+            )}
           </List>
         );
       })}
@@ -51,4 +60,4 @@ const PrereqTaskList = (props: PrereqTaskListProps): JSX.Element => {
   );
 };
 
-export default withStyles(styles, { withTheme: true })(PrereqTaskList);
+export default withStyles(styles, { withTheme: true })(TasklistComponent);

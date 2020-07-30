@@ -20,10 +20,21 @@ import UserData from '../../clientData/UserData';
 import PrereqTaskList from './PrereqTaskList';
 import PrereqProjectTaskList from './PrereqProjectTaskList';
 import AllPrereqTasks from './AllPrereqTasks';
+import PrereqSearchDisplay from './PrereqSearchDisplay';
 
-function searchByNameDescending(searchTerm: string, tasks: Task[]): string[] {
+// #region [ rgba(0,100,200,0.05) ] External functions and sytle function
+function searchByNameDescending(
+  searchTerm: string,
+  tasks: Task[],
+  projects: Task[]
+): string[] {
   const matches = tasks.filter(task =>
     task.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  matches.concat(
+    projects.filter(project =>
+      project.title.toLowerCase().includes(searchTerm.toLowerCase())
+    )
   );
   return matches.map(task => task._id);
 }
@@ -68,7 +79,9 @@ function styles(theme: Theme) {
     },
   });
 }
+// #endregion
 
+// #region [ rgba(200,100,0,0.05) ] Interfaces
 export interface PrereqTaskManagerProps extends WithStyles<typeof styles> {
   savePrereqId: string;
   completableId: string;
@@ -83,6 +96,7 @@ interface Selection {
   name?: string | undefined;
   value: unknown;
 }
+// #endregion
 
 /**
  * Controlls the display and selection of prerequisite tasks.
@@ -90,6 +104,7 @@ interface Selection {
  * up and more efficient.
  */
 const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
+  // #region [ rgba(100, 180, 0, 0.05) ] Property Def
   const {
     classes,
     completableId,
@@ -99,6 +114,7 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
   } = props;
   const completable = UserData.getCompletable(completableType, completableId);
   const allTasks = UserData.getTasks();
+  const allProjects = UserData.getProjects();
   const [currentPrereqTasks, setCurrentPrereqTasks] = useState<string[]>(
     completable.prereqTasks
   );
@@ -111,7 +127,10 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
    * Selected ids to display from allTasks.
    */
   const allTaskIds = searchOn ? searchResults : Object.keys(allTasks);
+  const allProjectIds = Object.keys(allProjects);
+  // #endregion
 
+  // #region [ rgba(200, 0, 180, 0.05) ] Component Methods
   /**
    * finds the task selected and either removes or adds it to the
    * prereqTask state.
@@ -137,6 +156,7 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
    */
   const handleSearchClear = () => {
     setSearch(false);
+    setSearchResults([]);
   };
 
   /**
@@ -145,7 +165,10 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
    */
   const handleSearchPrereqClick = (): void => {
     const allTaskValues = Object.values(allTasks);
-    setSearchResults(searchByNameDescending(searchText, allTaskValues));
+    const allProjectValues = Object.values(allProjects);
+    setSearchResults(
+      searchByNameDescending(searchText, allTaskValues, allProjectValues)
+    );
     setSearch(true);
   };
 
@@ -163,6 +186,14 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
     const { value } = e.target;
     if (value !== undefined) {
       setFilter(value as string);
+    }
+  };
+
+  const handleAddAllTaskObjects = () => {
+    if (selectedFilter === 'Projects') {
+      setCurrentPrereqTasks([...allTaskIds, ...allProjectIds]);
+    } else {
+      setCurrentPrereqTasks(allTaskIds);
     }
   };
 
@@ -184,12 +215,14 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
     }
     return <Typography>You have nothing to do! Wow.</Typography>;
   };
+  // #endregion
 
+  // #region [ rgba(200,50,50,0.1) ] JSX
+  // I wish there was a way to have regions in JSX.
   return (
     <Grid container direction="row">
       <Grid item xs={4} className={classes.gridItem}>
         <Paper className={classes.areaPaper}>
-          <Typography align="center">{`Task: ${completable.title}`}</Typography>
           <Select value={selectedFilter} onChange={handleSelectEvent}>
             <MenuItem value="Projects">Projects</MenuItem>
             <MenuItem value="Tasks">Tasks</MenuItem>
@@ -243,12 +276,9 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
           </Paper>
           <Divider orientation="horizontal" className={classes.dividerBase} />
           <Typography>Filters</Typography>
+          <PrereqSearchDisplay searchTasks={searchResults} />
           <Divider orientation="horizontal" />
-          <Button
-            variant="text"
-            fullWidth
-            onClick={() => setCurrentPrereqTasks(allTaskIds)}
-          >
+          <Button variant="text" fullWidth onClick={handleAddAllTaskObjects}>
             Add All
           </Button>
           <Button
@@ -301,6 +331,7 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
       </Grid>
     </Grid>
   );
+  // #endregion
 };
 
 export default withStyles(styles, { withTheme: true })(PrereqTaskManager);

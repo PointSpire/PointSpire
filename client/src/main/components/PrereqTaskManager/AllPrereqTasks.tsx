@@ -23,7 +23,7 @@ function styles(theme: Theme) {
       padding: theme.spacing(0.5),
     },
     itemSecondary: {
-      backgroundColor: theme.palette.secondary.light,
+      backgroundColor: theme.palette.secondary.main,
       margin: theme.spacing(1),
       padding: theme.spacing(0.5),
     },
