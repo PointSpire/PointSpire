@@ -18,12 +18,12 @@ function styles(theme: Theme) {
       padding: theme.spacing(1),
     },
     itemPrimary: {
-      backgroundColor: theme.palette.primary.light,
+      backgroundColor: theme.palette.background.paper,
       margin: theme.spacing(1),
       padding: theme.spacing(0.5),
     },
     itemSecondary: {
-      backgroundColor: theme.palette.secondary.main,
+      backgroundColor: theme.palette.background.paper,
       margin: theme.spacing(1),
       padding: theme.spacing(0.5),
     },
