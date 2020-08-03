@@ -79,6 +79,9 @@ const mongooseConnectionOptions = {
 
   // Fixes deprecation warning
   useUnifiedTopology: true,
+
+  // Fixes deprecation warning
+  useFindAndModify: false,
 };
 
 /**

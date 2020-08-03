@@ -53,59 +53,24 @@ const definition = {
           type: 'string',
         },
       },
+      tagIdParam: {
+        name: 'tagId',
+        in: 'path',
+        required: true,
+        schema: {
+          type: 'string',
+        },
+      },
     },
     schemas: {
-      userObjectPatchBody: {
+      document: {
         type: 'object',
         properties: {
-          userName: {
+          _id: {
             type: 'string',
           },
-          firstName: {
-            type: 'string',
-          },
-          lastName: {
-            type: 'string',
-          },
-          githubId: {
-            type: 'string',
-          },
-          settings: {
-            $ref: '#/components/schemas/userObjectSettings',
-          },
-        },
-      },
-      userObjectSettings: {
-        type: 'object',
-        properties: {
-          yellowGreenTasks: {
-            type: 'boolean',
-          },
-          notesExpanded: {
-            type: 'boolean',
-          },
-        },
-      },
-      allUserDataObject: {
-        type: 'object',
-        properties: {
-          user: {
-            $ref: '#/components/schemas/userObjectWithIds',
-          },
-          projects: {
-            type: 'object',
-            description:
-              'The key is the ID for the project to make access faster',
-            additionalProperties: {
-              $ref: '#/components/schemas/projectObjectWithIds',
-            },
-          },
-          tasks: {
-            type: 'object',
-            description: 'The key is the ID for the task to make access faster',
-            additionalProperties: {
-              $ref: '#/components/schemas/taskObjectWithIds',
-            },
+          __v: {
+            type: 'integer',
           },
         },
       },
@@ -127,16 +92,56 @@ const definition = {
           settings: {
             $ref: '#/components/schemas/userObjectSettings',
           },
-          dateCreated: {
-            description:
-              'A Date string representing the date this user was created. This can be used as a valid Date object in JavaScript.',
-            type: 'string',
+          currentTags: {
+            $ref: '#/components/schemas/userObjectTags',
           },
-          _id: {
-            type: 'string',
+          filters: {
+            $ref: '#/components/schemas/userObjectFilters',
           },
-          __v: {
-            type: 'integer',
+        },
+      },
+      userObjectTags: {
+        type: 'object',
+        description:
+          'An object with key value pairs where the key is the tag ID and the value is the properties of the tag',
+        additionalProperties: {
+          type: 'object',
+          properties: {
+            color: {
+              type: 'string',
+            },
+            name: {
+              type: 'string',
+            },
+          },
+        },
+      },
+      userObjectFilters: {
+        type: 'object',
+        description: 'The filters that the user has set',
+        properties: {
+          showFutureStartDates: {
+            type: 'boolean',
+          },
+          showCompletedTasks: {
+            type: 'boolean',
+          },
+          tagIdsToShow: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+          },
+        },
+      },
+      userObjectSettings: {
+        type: 'object',
+        properties: {
+          yellowGreenTasks: {
+            type: 'boolean',
+          },
+          notesExpanded: {
+            type: 'boolean',
           },
         },
       },
@@ -153,79 +158,110 @@ const definition = {
           },
         },
       },
+      allUserDataObject: {
+        type: 'object',
+        properties: {
+          user: {
+            $ref: '#/components/schemas/userObjectWithIds',
+          },
+          projects: {
+            type: 'object',
+            description:
+              'The key is the ID for the project to make access faster',
+            additionalProperties: {
+              $ref: '#/components/schemas/completableObjectResponse',
+            },
+          },
+          tasks: {
+            type: 'object',
+            description: 'The key is the ID for the task to make access faster',
+            additionalProperties: {
+              $ref: '#/components/schemas/completableObjectResponse',
+            },
+          },
+        },
+      },
+      userObjectResponseBasis: {
+        allOf: [
+          {
+            $ref: '#/components/schemas/document',
+          },
+          {
+            $ref: '#/components/schemas/userObjectBasis',
+          },
+          {
+            type: 'object',
+            properties: {
+              dateCreated: {
+                description:
+                  'A Date string representing the date this user was created. This can be used as a valid Date object in JavaScript.',
+                type: 'string',
+              },
+            },
+          },
+        ],
+      },
       userObjectWithIds: {
         allOf: [
           {
-            $ref: '#/components/schemas/userObjectBasis',
+            $ref: '#/components/schemas/userObjectResponseBasis',
           },
           {
             $ref: '#/components/schemas/userObjectProjectIds',
           },
         ],
       },
-      projectObjectRequestBody: {
+      completableObjectBasis: {
+        type: 'object',
+        properties: {
+          note: {
+            type: 'string',
+          },
+          priority: {
+            type: 'number',
+          },
+          startDate: {
+            type: 'string',
+            nullable: true,
+            description:
+              'A Date string that represents when this completable should be started',
+          },
+          dueDate: {
+            type: 'string',
+            nullable: true,
+            description:
+              'A Date string that represents when this completable is due',
+          },
+          tags: {
+            $ref: '#/components/schemas/completableTags',
+          },
+        },
+      },
+      completableTags: {
+        type: 'array',
+        description: 'An array of tagIds for this completable',
+        items: {
+          type: 'string',
+        },
+      },
+      completableTitle: {
+        type: 'object',
+        properties: {
+          title: {
+            type: 'string',
+          },
+        },
+      },
+      completableRequiredTitle: {
         type: 'object',
         required: ['title'],
         properties: {
           title: {
             type: 'string',
           },
-          note: {
-            type: 'string',
-          },
-          priority: {
-            type: 'number',
-          },
-          startDate: {
-            type: 'string',
-            nullable: true,
-            description:
-              'A Date string that represents when this project should be started',
-          },
-          dueDate: {
-            type: 'string',
-            nullable: true,
-            description:
-              'A Date string that represents when this project is due',
-          },
-        },
-        example: {
-          title: 'Fix the fence',
-          note: 'Need to visit the store to see what kind of wood they have',
         },
       },
-      projectObjectBasis: {
-        type: 'object',
-        properties: {
-          title: {
-            type: 'string',
-          },
-          note: {
-            type: 'string',
-          },
-          priority: {
-            type: 'number',
-          },
-          startDate: {
-            type: 'string',
-            nullable: true,
-            description:
-              'A Date string that represents when this project should be started',
-          },
-          dueDate: {
-            type: 'string',
-            nullable: true,
-            description:
-              'A Date string that represents when this project is due',
-          },
-          dateCreated: {
-            type: 'object',
-            description:
-              'A Date object representing the date this project was created.',
-          },
-        },
-      },
-      projectObjectTaskIds: {
+      completableObjectTaskIds: {
         type: 'object',
         properties: {
           subtasks: {
@@ -236,109 +272,39 @@ const definition = {
           },
         },
       },
-      projectObjectWithIds: {
+      completableObjectPostBody: {
         allOf: [
           {
-            $ref: '#/components/schemas/projectObjectBasis',
+            $ref: '#/components/schemas/completableRequiredTitle',
           },
           {
-            $ref: '#/components/schemas/projectObjectTaskIds',
+            $ref: '#/components/schemas/completableObjectBasis',
           },
         ],
       },
-      taskObjectRequestBody: {
-        type: 'object',
-        required: ['title'],
-        properties: {
-          title: {
-            type: 'string',
-          },
-          note: {
-            type: 'string',
-          },
-          priority: {
-            type: 'number',
-          },
-          startDate: {
-            type: 'string',
-            nullable: true,
-            description:
-              'A Date string that represents when this task should be started',
-          },
-          dueDate: {
-            type: 'string',
-            nullable: true,
-            description: 'A Date string that represents when this task is due',
-          },
-        },
-        example: {
-          title: 'Get geared up for next battle',
-          note: 'Should get:\n- Helment\n- New Sword\n- New Shield',
-          priority: 2,
-        },
-      },
-      taskObjectBasis: {
-        type: 'object',
-        properties: {
-          title: {
-            type: 'string',
-          },
-          note: {
-            type: 'string',
-          },
-          priority: {
-            type: 'number',
-          },
-          dateCreated: {
-            type: 'object',
-            description:
-              'A Date object representing the date this task was created.',
-          },
-          startDate: {
-            type: 'string',
-            nullable: true,
-            description:
-              'A Date string that represents when this task should be started',
-          },
-          dueDate: {
-            type: 'string',
-            nullable: true,
-            description: 'A Date string that represents when this task is due',
-          },
-        },
-      },
-      taskObjectTaskIds: {
-        type: 'object',
-        properties: {
-          subtasks: {
-            type: 'array',
-            items: {
-              type: 'string',
-            },
-          },
-        },
-      },
-      taskObjectPrereqIds: {
-        type: 'object',
-        properties: {
-          prereqTasks: {
-            type: 'array',
-            items: {
-              type: 'string',
-            },
-          },
-        },
-      },
-      taskObjectWithIds: {
+      completableObjectPatchBody: {
         allOf: [
           {
-            $ref: '#/components/schemas/taskObjectBasis',
+            $ref: '#/components/schemas/completableTitle',
           },
           {
-            $ref: '#/components/schemas/taskObjectTaskIds',
+            $ref: '#/components/schemas/completableObjectBasis',
+          },
+        ],
+      },
+      completableObjectResponse: {
+        allOf: [
+          {
+            $ref: '#/components/schemas/document',
           },
           {
-            $ref: '#/components/schemas/taskObjectPrereqIds',
+            $ref: '#/components/schemas/completableTitle',
+          },
+          {
+            $ref: '#/components/schemas/completableObjectBasis',
+          },
+          {
+            $ref: '#/components/schemas/completableObjectTaskIds',
           },
         ],
       },

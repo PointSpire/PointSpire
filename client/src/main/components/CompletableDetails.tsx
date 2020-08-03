@@ -11,14 +11,14 @@ import {
   withStyles,
 } from '@material-ui/core';
 import { ChevronLeft, ExpandMore } from '@material-ui/icons';
-import CompletedCheckbox from './CompletableRow/CompletedCheckbox';
-import ClientData from '../logic/ClientData/ClientData';
-import SimpleTextInput from './SimpleTextInput';
-import NoteInput from './CompletableRow/NoteInput';
-import DateInput from './CompletableRow/DateInput';
-import PriorityButton from './PriorityButton/PriorityButton';
+import CompletedCheckbox from './ProjectTable/CompletableRow/CompletedCheckbox';
+import UserData from '../clientData/UserData';
+import SimpleTextInput from './ProjectTable/CompletableRow/SimpleTextInput';
+import NoteInput from './ProjectTable/CompletableRow/NoteInput';
+import DateInput from './ProjectTable/CompletableRow/DateInput';
+import PriorityButton from './ProjectTable/CompletableRow/PriorityButton';
 import ProjectTable from './ProjectTable';
-import { CompletableType } from '../logic/dbTypes';
+import { CompletableType } from '../utils/dbTypes';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -56,7 +56,7 @@ function CompletableDetailsRoute(props: CompletableDetailsProps) {
   const { completableType, completableId } = props;
 
   const [completable, setCompletable] = useState(
-    ClientData.getCompletable(completableType, completableId)
+    UserData.getCompletable(completableType, completableId)
   );
 
   const [open, setOpen] = useState(false);
@@ -64,7 +64,7 @@ function CompletableDetailsRoute(props: CompletableDetailsProps) {
   const listenerId = `${completableId}.CompletableDetails`;
 
   useEffect(() => {
-    ClientData.addCompletableListener(
+    UserData.addCompletableListener(
       completableType,
       completableId,
       listenerId,
@@ -91,7 +91,7 @@ function CompletableDetailsRoute(props: CompletableDetailsProps) {
 
     // This will be ran when the compoennt is unmounted
     return function cleanup() {
-      ClientData.removeCompletableListener(
+      UserData.removeCompletableListener(
         completableType,
         completableId,
         listenerId

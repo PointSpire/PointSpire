@@ -105,8 +105,7 @@ async function generateTestTask(): Promise<TaskContainer> {
   const selectedTask = TaskTester.selectTaskValues();
 
   // Posts the task to the DB.
-  const res = await chai
-    .request(Globals.app)
+  const res = await Globals.requester
     .post(`/api/projects/${Globals.testProject._id}/subtasks`)
     .send(selectedTask);
 
@@ -128,27 +127,24 @@ async function generateTestTask(): Promise<TaskContainer> {
  * @param {string} id the id of the task to delete
  */
 async function removeTask(id: string): Promise<boolean> {
-  await chai.request(Globals.app).delete(`/api/tasks/${id}`);
+  await Globals.requester.delete(`/api/tasks/${id}`);
   return true;
 }
 
 describe('GET', () => {
   it('should return a 405 and request an ID', done => {
     // Creates the GET request.
-    chai
-      .request(Globals.app)
-      .get('/api/tasks')
-      .end((err, res) => {
-        // Checks the response for the expected error.
-        assert.isNull(err);
-        assert.equal(res.status, 405);
-        assert.equal(
-          res.text,
-          'Please specify a task ID by using /api/tasks/2 where ' +
-            '"2" is the ID of the task.'
-        );
-        done();
-      });
+    Globals.requester.get('/api/tasks').end((err, res) => {
+      // Checks the response for the expected error.
+      assert.isNull(err);
+      assert.equal(res.status, 405);
+      assert.equal(
+        res.text,
+        'Please specify a task ID by using /api/tasks/2 where ' +
+          '"2" is the ID of the task.'
+      );
+      done();
+    });
   });
 });
 
@@ -159,9 +155,9 @@ describe('GET /id', () => {
     const testTask = container.doc;
 
     // Check for the created TaskDoc.
-    const taskResponse = await chai
-      .request(Globals.app)
-      .get(`/api/tasks/${testTask._id}`);
+    const taskResponse = await Globals.requester.get(
+      `/api/tasks/${testTask._id}`
+    );
     assert.equal(taskResponse.status, 200);
     assert.exists(taskResponse.body, 'res.body not defined.');
 
@@ -173,14 +169,11 @@ describe('GET /id', () => {
     assert.equal(foundTask.dateCreated, testTask.dateCreated);
   });
   it('Should return 400 if the id is not found', done => {
-    chai
-      .request(Globals.app)
-      .get(`/api/tasks/42`)
-      .end((err, res) => {
-        assert.isNull(err);
-        assert.equal(res.status, 400);
-        done();
-      });
+    Globals.requester.get(`/api/tasks/42`).end((err, res) => {
+      assert.isNull(err);
+      assert.equal(res.status, 400);
+      done();
+    });
   });
 });
 
@@ -192,8 +185,7 @@ describe('PATCH /id', () => {
     const selectedTask = container.values;
 
     // Creates a PATCH request to the DB
-    const res = await chai
-      .request(Globals.app)
+    const res = await Globals.requester
       .patch(`/api/tasks/${testTask._id}`)
       .send(selectedTask);
     // Makes sure the response isnt an error and
@@ -217,9 +209,9 @@ describe('DELETE /id', () => {
     const testTask = container.doc;
 
     // Creates a DELETE request to the DB.
-    const deleteRes = await chai
-      .request(Globals.app)
-      .delete(`/api/tasks/${testTask._id}`);
+    const deleteRes = await Globals.requester.delete(
+      `/api/tasks/${testTask._id}`
+    );
     assert.equal(deleteRes.status, 200);
     assert.typeOf(deleteRes.body, 'object');
 
@@ -232,8 +224,7 @@ describe('POST /id/subtasks', () => {
     try {
       const testContainer = await generateTestTask();
       const testTask = testContainer.doc;
-      const res = await chai
-        .request(Globals.app)
+      const res = await Globals.requester
         .post(`/api/tasks/${testTask._id}/subtasks`)
         .send({
           title: 'Some new task',
@@ -244,9 +235,7 @@ describe('POST /id/subtasks', () => {
       assert.equal(res.body.title, 'Some new task');
       assert.equal(res.body.note, 'Some task note');
       const newTask: TaskDoc = res.body;
-      const taskRes = await chai
-        .request(Globals.app)
-        .get(`/api/tasks/${testTask._id}`);
+      const taskRes = await Globals.requester.get(`/api/tasks/${testTask._id}`);
       const returnTask: TaskDoc = taskRes.body;
       assert.equal(returnTask.subtasks.includes(newTask._id), true);
     } catch (err) {

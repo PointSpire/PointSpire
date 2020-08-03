@@ -2,7 +2,7 @@ import React from 'react';
 import { useParams, useHistory } from 'react-router-dom';
 import { Dialog, DialogActions, Button } from '@material-ui/core';
 import CompletableDetails from '../components/CompletableDetails';
-import { manualSave } from '../logic/savingTimer';
+import { manualSave } from '../utils/savingTimer';
 
 function CompleteableDetailsRoute() {
   const { completableType, completableId = '' } = useParams();

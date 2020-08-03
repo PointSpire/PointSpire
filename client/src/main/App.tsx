@@ -2,18 +2,23 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import { createMuiTheme, ThemeProvider, Theme } from '@material-ui/core/styles';
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
-import MuiAlert, { Color as SnackBarSeverity } from '@material-ui/lab/Alert';
+import MuiAlert from '@material-ui/lab/Alert';
 import { Snackbar } from '@material-ui/core';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import TopMenuBar from './components/TopMenuBar';
-import { AllUserData } from './logic/dbTypes';
-import { getUserData, getTestUserData } from './logic/fetchMethods';
-import baseThemeOptions from './AppTheme';
-import ClientData from './logic/ClientData/ClientData';
 import IndexRoute from './routes/IndexRoute';
 import CompletableDetailsRoute from './routes/CompletableDetailsRoute';
 import ModalCompletableDetailsRoute from './routes/ModalCompletableDetailsRoute';
-import { MobileContext } from './contexts';
+import { MobileContext } from './utils/contexts';
+import { AllUserData } from './utils/dbTypes';
+import { getUserData, getTestUserData } from './utils/fetchMethods';
+import baseThemeOptions from './AppTheme';
+import UserData from './clientData/UserData';
+
+/**
+ * Used to determine the severity of an alert for the snackbar of the app.
+ */
+type SnackBarSeverity = 'error' | 'warning' | 'info' | 'success';
 
 // Set the githubClientId. See the .env file for details.
 let githubClientId: string;
@@ -51,9 +56,9 @@ const App = () => {
     }
 
     if (userData) {
-      ClientData.setProjects(userData.projects);
-      ClientData.setTasks(userData.tasks);
-      ClientData.setUser(userData.user);
+      UserData.setProjects(userData.projects);
+      UserData.setTasks(userData.tasks);
+      UserData.setUser(userData.user);
       setProjectIds(userData.user.projects);
     }
   }
