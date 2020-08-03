@@ -1,8 +1,8 @@
 import React from 'react';
-import ProjectTable from '../components/ProjectTable';
+import CompletableTable from '../components/CompletableTable';
 
 function IndexRoute() {
-  return <ProjectTable />;
+  return <CompletableTable />;
 }
 
 export default IndexRoute;

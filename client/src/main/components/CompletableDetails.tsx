@@ -11,13 +11,13 @@ import {
   withStyles,
 } from '@material-ui/core';
 import { ChevronLeft, ExpandMore } from '@material-ui/icons';
-import CompletedCheckbox from './ProjectTable/CompletableRow/CompletedCheckbox';
+import CompletedCheckbox from './CompletableTable/CompletableRow/CompletedCheckbox';
 import UserData from '../clientData/UserData';
-import SimpleTextInput from './ProjectTable/CompletableRow/SimpleTextInput';
-import NoteInput from './ProjectTable/CompletableRow/NoteInput';
-import DateInput from './ProjectTable/CompletableRow/DateInput';
-import PriorityButton from './ProjectTable/CompletableRow/PriorityButton';
-import ProjectTable from './ProjectTable';
+import SimpleTextInput from './CompletableTable/CompletableRow/SimpleTextInput';
+import NoteInput from './CompletableTable/CompletableRow/NoteInput';
+import DateInput from './CompletableTable/CompletableRow/DateInput';
+import PriorityButton from './CompletableTable/CompletableRow/PriorityButton';
+import CompletableTable from './CompletableTable';
 import { CompletableType } from '../utils/dbTypes';
 
 function styles(theme: Theme) {
@@ -158,7 +158,7 @@ function CompletableDetailsRoute(props: CompletableDetailsProps) {
         </ListItem>
       </List>
       <Collapse in={open} timeout="auto" unmountOnExit>
-        <ProjectTable
+        <CompletableTable
           rootCompletableId={completableId}
           rootCompletableType={completableType}
         />
