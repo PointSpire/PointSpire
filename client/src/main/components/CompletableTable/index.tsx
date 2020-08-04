@@ -227,14 +227,16 @@ function CompletableTable(props: CompletableTableProps) {
   }, []);
 
   // #region [rgba(0, 205, 30, 0.1)] Filtering
-  const [hiddenProjectIds, setHiddenProjectIds] = useState<Array<string>>([]);
+  const [hiddenCompletableIds, setHiddenCompletableIds] = useState<
+    Array<string>
+  >([]);
 
   /**
    * Subscribe to changes in the filters.
    */
   useEffect(() => {
     UserData.addUserPropertyListener(listenerId, 'filters', () => {
-      setHiddenProjectIds([]);
+      setHiddenCompletableIds([]);
       // TODO: This could be an issue because it will capture the state when this property listener is called
       setCompletableIds([...completableIds]);
     });
@@ -245,13 +247,13 @@ function CompletableTable(props: CompletableTableProps) {
   }, []);
 
   /**
-   * Hides the given project completely (no breadcrumb).
+   * Hides the given completable completely (no breadcrumb).
    *
-   * @param {string} projectId the ID of the project to hide
+   * @param {string} completableId the ID of the completable to hide
    */
-  function hideProject(projectId: string) {
-    hiddenProjectIds.push(projectId);
-    setHiddenProjectIds([...hiddenProjectIds]);
+  function hideCompletable(completableId: string) {
+    hiddenCompletableIds.push(completableId);
+    setHiddenCompletableIds([...hiddenCompletableIds]);
   }
   // #endregion
 
@@ -267,22 +269,6 @@ function CompletableTable(props: CompletableTableProps) {
         rootCompletableId,
         'Untitled'
       );
-
-      // Add the new task to the task objects
-      const tasks = UserData.getTasks();
-      tasks[newCompletable._id] = newCompletable;
-      UserData.setTasks(tasks);
-
-      // Add the new sub task to the completable
-      const updatedCompletable = UserData.getCompletable(
-        rootCompletableType,
-        rootCompletableId
-      );
-      updatedCompletable.subtasks.push(newCompletable._id);
-      UserData.setAndSaveCompletable(rootCompletableType, updatedCompletable);
-
-      // Set this completable as a listener of the new one
-      addSortByListener(newCompletable._id, sortBy);
       history.push(`/c/task/${newCompletable._id}`);
     } else {
       newCompletable = UserData.addProject('Untitled');
@@ -307,7 +293,7 @@ function CompletableTable(props: CompletableTableProps) {
         {completableIds
           .sort(sortingFunctions[sortBy].function(completablesType))
           .map(completableId =>
-            hiddenProjectIds.includes(completableId) ? (
+            hiddenCompletableIds.includes(completableId) ? (
               ''
             ) : (
               <CompletableRow
@@ -315,7 +301,7 @@ function CompletableTable(props: CompletableTableProps) {
                 completableType={completablesType}
                 key={completableId}
                 completableId={completableId}
-                hideCompletable={hideProject}
+                hideCompletable={hideCompletable}
               />
             )
           )}
@@ -323,7 +309,7 @@ function CompletableTable(props: CompletableTableProps) {
       <div className={classes.bottomArea}>
         <HiddenItemsCaption
           completableType="project"
-          numHiddenItems={hiddenProjectIds.length}
+          numHiddenItems={hiddenCompletableIds.length}
         />
         <Button
           className={classes.addProjectButton}
