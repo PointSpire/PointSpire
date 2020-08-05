@@ -13,7 +13,8 @@ import { MobileContext } from './utils/contexts';
 import { AllUserData } from './utils/dbTypes';
 import { getUserData, getTestUserData } from './utils/fetchMethods';
 import baseThemeOptions from './AppTheme';
-import UserData from './clientData/UserData';
+import Completables from './models/Completables';
+import User from './models/User';
 
 /**
  * Used to determine the severity of an alert for the snackbar of the app.
@@ -56,9 +57,9 @@ const App = () => {
     }
 
     if (userData) {
-      UserData.setProjects(userData.projects);
-      UserData.setTasks(userData.tasks);
-      UserData.setUser(userData.user);
+      Completables.setProjects(userData.projects);
+      Completables.setTasks(userData.tasks);
+      User.set(userData.user);
       setProjectIds(userData.user.projects);
     }
   }

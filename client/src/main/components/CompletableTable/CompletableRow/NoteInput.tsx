@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { TextField } from '@material-ui/core';
 import { resetTimer } from '../../../utils/savingTimer';
-import UserData from '../../../clientData/UserData';
 import { CompletableType } from '../../../utils/dbTypes';
+import Completables from '../../../models/Completables';
 
 export type NoteInputProps = {
   completableType: CompletableType;
@@ -19,10 +19,7 @@ export type NoteInputProps = {
  */
 function NoteInput(props: NoteInputProps): JSX.Element {
   const { completableId, completableType, label, rows } = props;
-  const initialCompletable = UserData.getCompletable(
-    completableType,
-    completableId
-  );
+  const initialCompletable = Completables.get(completableType, completableId);
   const [note, setNote] = useState(initialCompletable.note);
 
   function handleNoteChange(event: React.ChangeEvent<HTMLInputElement>): void {
@@ -32,7 +29,7 @@ function NoteInput(props: NoteInputProps): JSX.Element {
 
   function handleLoseFocus(): void {
     if (initialCompletable.note !== note) {
-      UserData.setAndSaveCompletableProperty(
+      Completables.setAndSaveProperty(
         completableType,
         completableId,
         'note',

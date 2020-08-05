@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, InputBase } from '@material-ui/core';
 import { resetTimer } from '../../../utils/savingTimer';
-import UserData from '../../../clientData/UserData';
 import { CompletableType } from '../../../utils/dbTypes';
+import Completables from '../../../models/Completables';
 
 export type SimpleTextInputProps = {
   completableType: CompletableType;
@@ -27,12 +27,10 @@ function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
     fullWidth = false,
   } = props;
   const [value, setValue] = useState(
-    UserData.getCompletable(completableType, completableId)[
-      completablePropertyName
-    ]
+    Completables.get(completableType, completableId)[completablePropertyName]
   );
   const [disabled, setDisabled] = useState(
-    UserData.getCompletable(completableType, completableId).completed
+    Completables.get(completableType, completableId).completed
   );
 
   /**
@@ -45,7 +43,7 @@ function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
    * the text input when the completable is completed.
    */
   useEffect(() => {
-    UserData.addCompletablePropertyListener(
+    Completables.addPropertyListener(
       completableType,
       completableId,
       listenerId,
@@ -57,7 +55,7 @@ function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
 
     // This will be ran when the component is unmounted
     return function cleanup() {
-      UserData.removeCompletablePropertyListener(
+      Completables.removePropertyListener(
         completableType,
         completableId,
         listenerId,
@@ -73,11 +71,11 @@ function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
 
   function handleLoseFocus(): void {
     if (
-      UserData.getCompletable(completableType, completableId)[
+      Completables.get(completableType, completableId)[
         completablePropertyName
       ] !== value
     ) {
-      UserData.setAndSaveCompletableProperty(
+      Completables.setAndSaveProperty(
         completableType,
         completableId,
         completablePropertyName,

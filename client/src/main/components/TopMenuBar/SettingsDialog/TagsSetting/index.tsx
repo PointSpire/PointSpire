@@ -6,9 +6,9 @@ import {
   WithStyles,
   Theme,
 } from '@material-ui/core';
-import UserData from '../../../../clientData/UserData';
 import { UserTags } from '../../../../utils/dbTypes';
 import SettingsTagChip from './SettingsTagChip';
+import User from '../../../../models/User';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -40,7 +40,7 @@ export type TagsSettingProps = WithStyles<typeof styles>;
 function TagsSetting(props: TagsSettingProps): JSX.Element {
   const { classes } = props;
 
-  const [userTags, setUserTags] = useState(UserData.getUser().currentTags);
+  const [userTags, setUserTags] = useState(User.get().currentTags);
 
   const listenerId = `TagsSetting`;
 
@@ -48,16 +48,12 @@ function TagsSetting(props: TagsSettingProps): JSX.Element {
    * Subscribe to changes in the user tags
    */
   useEffect(() => {
-    UserData.addUserPropertyListener(
-      listenerId,
-      'currentTags',
-      updatedUserTags => {
-        setUserTags(updatedUserTags as UserTags);
-      }
-    );
+    User.addPropertyListener(listenerId, 'currentTags', updatedUserTags => {
+      setUserTags(updatedUserTags as UserTags);
+    });
 
     return () => {
-      UserData.removeUserPropertyListener('currentTags', listenerId);
+      User.removePropertyListener('currentTags', listenerId);
     };
   });
 
@@ -68,7 +64,7 @@ function TagsSetting(props: TagsSettingProps): JSX.Element {
    */
   function createDeleteFunction(tagId: string) {
     return () => {
-      UserData.removeUserTagAndSave(tagId);
+      User.removeTagAndSave(tagId);
     };
   }
 

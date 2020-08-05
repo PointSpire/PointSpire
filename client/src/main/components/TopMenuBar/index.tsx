@@ -25,9 +25,9 @@ import LoginDialog from './LoginDialog';
 import UnstyledLink from '../UnstyledLink';
 import { AlertFunction } from '../../App';
 import { logout } from '../../utils/fetchMethods';
-import UserData from '../../clientData/UserData';
 import { manualSave, windowUnloadListener } from '../../utils/savingTimer';
 import { AppSaveStatus } from '../../clientData/AppSaveStatus';
+import User from '../../models/User';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */
@@ -78,7 +78,7 @@ function TopMenuBar(props: TopMenuBarProps): JSX.Element {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
-  const [loggedIn, setLoggedIn] = useState(!!UserData.getUser().settings);
+  const [loggedIn, setLoggedIn] = useState(!!User.get().settings);
   const [savedStatus, setSavedStatus] = useState(AppSaveStatus.getStatus());
 
   const listenerId = `TopMenuBar`;
@@ -87,12 +87,12 @@ function TopMenuBar(props: TopMenuBarProps): JSX.Element {
    * Subscribe to changes in the user object.
    */
   useEffect(() => {
-    UserData.addUserListener(listenerId, user => {
+    User.addListener(listenerId, user => {
       setLoggedIn(!!user);
     });
 
     return () => {
-      UserData.removeUserListener(listenerId);
+      User.removeListener(listenerId);
     };
   }, []);
 
@@ -127,7 +127,7 @@ function TopMenuBar(props: TopMenuBarProps): JSX.Element {
    * drawer that can pop out from the left hand side.
    */
   function checkAndSetSettingsOpen(open: boolean) {
-    const userSettings = UserData.getUser().settings;
+    const userSettings = User.get().settings;
     if (!userSettings) {
       alert('error', 'You must login first to access settings');
     } else {
@@ -189,7 +189,7 @@ function TopMenuBar(props: TopMenuBarProps): JSX.Element {
   }
 
   let settingsDialog: JSX.Element;
-  if (UserData.getUser().settings) {
+  if (User.get().settings) {
     settingsDialog = (
       <SettingsDialog
         open={settingsOpen}

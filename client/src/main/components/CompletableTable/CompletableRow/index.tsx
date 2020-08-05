@@ -24,8 +24,9 @@ import CompletedCheckbox from './CompletedCheckbox';
 import TagRow from './TagRow';
 import isFiltered from '../../../utils/filterFunctions';
 import HiddenItemsCaption from '../HiddenItemsCaption';
-import UserData from '../../../clientData/UserData';
 import { MobileContext } from '../../../utils/contexts';
+import User from '../../../models/User';
+import Completables from '../../../models/Completables';
 
 const debug = Debug('CompletableRow');
 debug.enabled = false;
@@ -104,11 +105,9 @@ const CompletableRow = (props: CompletableRowProps) => {
 
   const [sortBy, setSortBy] = useState('priority');
   const [subTasksOpen, setSubTasksOpen] = useState(false);
-  const [noteOpen, setNoteOpen] = useState(
-    UserData.getUser().settings.notesExpanded
-  );
+  const [noteOpen, setNoteOpen] = useState(User.get().settings.notesExpanded);
   const [completable, setCompletable] = useState(
-    UserData.getCompletable(completableType, completableId)
+    Completables.get(completableType, completableId)
   );
 
   const listenerId = `${completableId}.CompletableRow`;
@@ -121,17 +120,12 @@ const CompletableRow = (props: CompletableRowProps) => {
    */
   function removeSortByListeners() {
     completable.subtasks.forEach(taskId => {
-      UserData.removeCompletablePropertyListener(
-        'task',
-        taskId,
-        listenerId,
-        sortBy
-      );
+      Completables.removePropertyListener('task', taskId, listenerId, sortBy);
     });
   }
 
   function addSortByListener(taskId: string, updatedSortBy: string) {
-    UserData.addCompletablePropertyListener(
+    Completables.addPropertyListener(
       'task',
       taskId,
       listenerId,
@@ -177,20 +171,20 @@ const CompletableRow = (props: CompletableRowProps) => {
    * added or deleted, the collapse updates.
    */
   useEffect(() => {
-    UserData.addCompletablePropertyListener(
+    Completables.addPropertyListener(
       completableType,
       completableId,
       listenerId,
       'subtasks',
       () => {
         setCompletable({
-          ...UserData.getCompletable(completableType, completableId),
+          ...Completables.get(completableType, completableId),
         });
       }
     );
 
     return () => {
-      UserData.removeCompletablePropertyListener(
+      Completables.removePropertyListener(
         completableType,
         completableId,
         listenerId,
@@ -243,7 +237,7 @@ const CompletableRow = (props: CompletableRowProps) => {
    * Subscribe to changes that might cause this completable to become filtered.
    */
   useEffect(() => {
-    UserData.addCompletablePropertyListener(
+    Completables.addPropertyListener(
       completableType,
       completableId,
       listenerId,
@@ -253,7 +247,7 @@ const CompletableRow = (props: CompletableRowProps) => {
       }
     );
 
-    UserData.addCompletablePropertyListener(
+    Completables.addPropertyListener(
       completableType,
       completableId,
       listenerId,
@@ -263,7 +257,7 @@ const CompletableRow = (props: CompletableRowProps) => {
       }
     );
 
-    UserData.addCompletablePropertyListener(
+    Completables.addPropertyListener(
       completableType,
       completableId,
       listenerId,
@@ -274,19 +268,19 @@ const CompletableRow = (props: CompletableRowProps) => {
     );
 
     return () => {
-      UserData.removeCompletablePropertyListener(
+      Completables.removePropertyListener(
         completableType,
         completableId,
         listenerId,
         'startDate'
       );
-      UserData.removeCompletablePropertyListener(
+      Completables.removePropertyListener(
         completableType,
         completableId,
         listenerId,
         'completed'
       );
-      UserData.removeCompletablePropertyListener(
+      Completables.removePropertyListener(
         completableType,
         completableId,
         listenerId,
@@ -299,7 +293,7 @@ const CompletableRow = (props: CompletableRowProps) => {
    * Subscribe to changes in the filters.
    */
   useEffect(() => {
-    UserData.addUserPropertyListener(listenerId, 'filters', () => {
+    User.addPropertyListener(listenerId, 'filters', () => {
       /* Clear the hidden subtasks so that they retry their own filtering
       conditions and report back to this completable */
       setHiddenSubtaskIds([]);
@@ -308,7 +302,7 @@ const CompletableRow = (props: CompletableRowProps) => {
     });
 
     return () => {
-      UserData.removeUserPropertyListener('filters', listenerId);
+      User.removePropertyListener('filters', listenerId);
     };
   }, []);
 
@@ -359,7 +353,7 @@ const CompletableRow = (props: CompletableRowProps) => {
    * See also: https://reactjs.org/docs/hooks-effect.html#tip-optimizing-performance-by-skipping-effects
    */
   useEffect(() => {
-    UserData.addCompletableListener(
+    Completables.addListener(
       completableType,
       completableId,
       listenerId,
@@ -386,11 +380,7 @@ const CompletableRow = (props: CompletableRowProps) => {
 
     // This will be ran when the compoennt is unmounted
     return function cleanup() {
-      UserData.removeCompletableListener(
-        completableType,
-        completableId,
-        listenerId
-      );
+      Completables.removeListener(completableType, completableId, listenerId);
     };
   }, []);
 
@@ -402,7 +392,11 @@ const CompletableRow = (props: CompletableRowProps) => {
    */
   function addSubTask(newTitle: string): void {
     // Make the request for the new task
-    const newTask = UserData.addTask(completableType, completableId, newTitle);
+    const newTask = Completables.addTask(
+      completableType,
+      completableId,
+      newTitle
+    );
 
     // Set this completable as a listener of the new one
     addSortByListener(newTask._id, sortBy);
@@ -420,7 +414,7 @@ const CompletableRow = (props: CompletableRowProps) => {
   function deleteSubTask(taskId: string) {
     return () => {
       // Delete the task
-      UserData.deleteCompletable('task', taskId);
+      Completables.delete('task', taskId);
 
       // Set this completables subtasks info on ClientData which triggers state
       const updatedCompletable = { ...completable };
@@ -428,7 +422,7 @@ const CompletableRow = (props: CompletableRowProps) => {
         completable.subtasks.indexOf(taskId),
         1
       );
-      UserData.setAndSaveCompletable(completableType, updatedCompletable);
+      Completables.setAndSave(completableType, updatedCompletable);
     };
   }
 

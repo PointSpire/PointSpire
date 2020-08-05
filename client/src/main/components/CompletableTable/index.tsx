@@ -12,8 +12,9 @@ import sortingFunctions from '../../utils/sortingFunctions';
 import CompletableRow from './CompletableRow';
 import FilterButton from './FilterButton';
 import HiddenItemsCaption from './HiddenItemsCaption';
-import UserData from '../../clientData/UserData';
 import { CompletableType } from '../../utils/dbTypes';
+import Completables from '../../models/Completables';
+import User from '../../models/User';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */
@@ -71,10 +72,9 @@ function CompletableTable(props: CompletableTableProps) {
   // Returns the ids of the completables in the table
   function getCompletableIds() {
     if (rootCompletableType && rootCompletableId) {
-      return UserData.getCompletable(rootCompletableType, rootCompletableId)
-        .subtasks;
+      return Completables.get(rootCompletableType, rootCompletableId).subtasks;
     }
-    return UserData.getUser().projects;
+    return User.get().projects;
   }
 
   const [completableIds, setCompletableIds] = useState([
@@ -93,7 +93,7 @@ function CompletableTable(props: CompletableTableProps) {
    */
   function removeSortByListeners() {
     completableIds.forEach(completableId => {
-      UserData.removeCompletablePropertyListener(
+      Completables.removePropertyListener(
         completablesType,
         completableId,
         listenerId,
@@ -111,7 +111,7 @@ function CompletableTable(props: CompletableTableProps) {
    * listeners
    */
   function addSortByListener(completableId: string, updatedSortBy: string) {
-    UserData.addCompletablePropertyListener(
+    Completables.addPropertyListener(
       completablesType,
       completableId,
 
@@ -163,11 +163,11 @@ function CompletableTable(props: CompletableTableProps) {
     return () => {
       // Delete the project from ClientData. Listeners do not need to be
       // deleted because deleting the completable removes all listeners.
-      UserData.deleteCompletable(completablesType, completableId);
+      Completables.delete(completablesType, completableId);
 
       if (rootCompletableType && rootCompletableId) {
         // Set this completables subtasks info on ClientData which triggers state
-        const updatedCompletable = UserData.getCompletable(
+        const updatedCompletable = Completables.get(
           rootCompletableType,
           rootCompletableId
         );
@@ -175,7 +175,7 @@ function CompletableTable(props: CompletableTableProps) {
           updatedCompletable.subtasks.indexOf(completableId),
           1
         );
-        UserData.setAndSaveCompletable(rootCompletableType, updatedCompletable);
+        Completables.setAndSave(rootCompletableType, updatedCompletable);
       }
     };
   }
@@ -185,7 +185,7 @@ function CompletableTable(props: CompletableTableProps) {
    */
   useEffect(() => {
     if (rootCompletableType && rootCompletableId) {
-      UserData.addCompletableListener(
+      Completables.addListener(
         rootCompletableType,
         rootCompletableId,
         listenerId,
@@ -195,7 +195,7 @@ function CompletableTable(props: CompletableTableProps) {
         }
       );
     } else {
-      UserData.addUserPropertyListener(listenerId, 'projects', () => {
+      User.addPropertyListener(listenerId, 'projects', () => {
         const newCompletables = [...getCompletableIds()];
         setCompletableIds(newCompletables);
       });
@@ -203,13 +203,13 @@ function CompletableTable(props: CompletableTableProps) {
 
     return function cleanup() {
       if (rootCompletableType && rootCompletableId) {
-        UserData.removeCompletableListener(
+        Completables.removeListener(
           rootCompletableType,
           rootCompletableId,
           listenerId
         );
       } else {
-        UserData.removeUserPropertyListener('projects', listenerId);
+        User.removePropertyListener('projects', listenerId);
       }
     };
   }, []);
@@ -235,14 +235,14 @@ function CompletableTable(props: CompletableTableProps) {
    * Subscribe to changes in the filters.
    */
   useEffect(() => {
-    UserData.addUserPropertyListener(listenerId, 'filters', () => {
+    User.addPropertyListener(listenerId, 'filters', () => {
       setHiddenCompletableIds([]);
       // TODO: This could be an issue because it will capture the state when this property listener is called
       setCompletableIds([...completableIds]);
     });
 
     return () => {
-      UserData.removeUserPropertyListener('filters', listenerId);
+      User.removePropertyListener('filters', listenerId);
     };
   }, []);
 
@@ -264,14 +264,14 @@ function CompletableTable(props: CompletableTableProps) {
     let newCompletable;
 
     if (rootCompletableType && rootCompletableId) {
-      newCompletable = UserData.addTask(
+      newCompletable = Completables.addTask(
         rootCompletableType,
         rootCompletableId,
         'Untitled'
       );
       history.push(`/c/task/${newCompletable._id}`);
     } else {
-      newCompletable = UserData.addProject('Untitled');
+      newCompletable = Completables.addProject('Untitled');
       history.push(`/c/project/${newCompletable._id}`);
     }
     // Add the sorting listener

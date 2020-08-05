@@ -10,8 +10,8 @@ import {
   MenuItem,
 } from '@material-ui/core';
 import { UserTag } from '../../../../utils/dbTypes';
-import UserData from '../../../../clientData/UserData';
 import colors, { createThemeFromColorName } from '../../../../utils/colors';
+import User from '../../../../models/User';
 
 export interface EditTagDialogProps {
   open: boolean;
@@ -41,12 +41,12 @@ function EditTagDialog(props: EditTagDialogProps) {
   );
 
   function saveTag() {
-    const updatedTags = { ...UserData.getUser().currentTags };
+    const updatedTags = { ...User.get().currentTags };
     updatedTags[tagId].name = tagName;
     const colorValues = colors[tagColorName];
     // eslint-disable-next-line prefer-destructuring
     updatedTags[tagId].color = colorValues[700];
-    UserData.setAndSaveUserProperty('currentTags', updatedTags);
+    User.setAndSaveProperty('currentTags', updatedTags);
   }
 
   function handleClose() {

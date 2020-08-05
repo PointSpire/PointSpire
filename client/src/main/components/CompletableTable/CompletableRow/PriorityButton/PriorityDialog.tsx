@@ -5,7 +5,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import { DialogActions, Button } from '@material-ui/core';
 import PriorityInput from './PriorityInput';
 import { CompletableType } from '../../../../utils/dbTypes';
-import UserData from '../../../../clientData/UserData';
+import Completables from '../../../../models/Completables';
 
 type PriorityDialogProps = {
   open: boolean;
@@ -25,10 +25,8 @@ export default function PriorityDialog(
 ): JSX.Element {
   const { setOpen, open, completableId, completableType } = props;
 
-  const initialPriority = UserData.getCompletable(
-    completableType,
-    completableId
-  ).priority;
+  const initialPriority = Completables.get(completableType, completableId)
+    .priority;
   let priority: string;
   if (!initialPriority) {
     priority = '0';
@@ -60,7 +58,7 @@ export default function PriorityDialog(
   }
 
   function savePriority(): void {
-    UserData.setAndSaveCompletableProperty(
+    Completables.setAndSaveProperty(
       completableType,
       completableId,
       'priority',
@@ -81,10 +79,8 @@ export default function PriorityDialog(
     }
   }
 
-  const completableTitle = UserData.getCompletable(
-    completableType,
-    completableId
-  ).title;
+  const completableTitle = Completables.get(completableType, completableId)
+    .title;
 
   return (
     <Dialog

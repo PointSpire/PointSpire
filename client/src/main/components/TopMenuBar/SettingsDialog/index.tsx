@@ -19,7 +19,7 @@ import FontSizeSetting from './FontSizeSetting';
 import TagsSetting from './TagsSetting';
 import baseThemeOptions from '../../../AppTheme';
 import { setCookie, ClientCookies } from '../../../utils/clientCookies';
-import UserData from '../../../clientData/UserData';
+import User from '../../../models/User';
 
 type SettingsDialogProps = {
   open: boolean;
@@ -40,7 +40,7 @@ function SettingsDialog(props: SettingsDialogProps): JSX.Element {
   }>({ fontSize: appTheme.typography.fontSize });
 
   const [userSettings, setUserSettings] = useState({
-    ...UserData.getUser().settings,
+    ...User.get().settings,
   });
 
   /**
@@ -68,7 +68,7 @@ function SettingsDialog(props: SettingsDialogProps): JSX.Element {
     saveClientSettings();
 
     // Save their settings on the server
-    UserData.setAndSaveUserProperty('settings', userSettings);
+    User.setAndSaveProperty('settings', userSettings);
     alert('success', 'Successfully saved settings!');
   }
 

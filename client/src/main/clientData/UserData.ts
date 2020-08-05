@@ -4,7 +4,7 @@ import {
   TaskObjects,
   Completable,
   CompletableType,
-  User,
+  UserDoc,
 } from '../utils/dbTypes';
 import scheduleCallback from '../utils/savingTimer';
 import {
@@ -31,11 +31,11 @@ export type CompletableListenerCallback = (
   completable: Completable | null
 ) => void;
 
-export type UserListenerCallback = (user: User | null) => void;
+export type UserListenerCallback = (user: UserDoc | null) => void;
 
 export type PropertyListenerCallback = (updatedValue: unknown) => void;
 
-type PropertyListeners = {
+export type PropertyListeners = {
   [propertyName: string]: {
     [listenerId: string]: PropertyListenerCallback;
   };
@@ -68,7 +68,7 @@ class UserData {
 
   private static tasks: TaskObjects;
 
-  private static user: User;
+  private static user: UserDoc;
 
   private static projectListeners: CompletableListeners = {};
 
@@ -109,9 +109,9 @@ class UserData {
    * user object has changed. This does not trigger the individual property
    * listeners. (Although it may need to in the future perhaps).
    *
-   * @param {User} updatedUser the updated user object
+   * @param {UserDoc} updatedUser the updated user object
    */
-  private static notifyUserListeners(updatedUser: User | null) {
+  private static notifyUserListeners(updatedUser: UserDoc | null) {
     Object.values(this.userListeners.listeners).forEach(callback => {
       callback(updatedUser);
     });
@@ -206,9 +206,9 @@ class UserData {
    * Generates a function that saves the user to the server and logs what
    * happened to the console.
    *
-   * @param {User} updatedUser the updated user object
+   * @param {UserDoc} updatedUser the updated user object
    */
-  private static saveUser(updatedUser: User) {
+  private static saveUser(updatedUser: UserDoc) {
     return async () => {
       return patchUser(updatedUser)
         .then(result => {
@@ -338,9 +338,9 @@ class UserData {
    * Sets the user object to the provided value triggers callbacks but doesn't
    * save to the server.
    *
-   * @param {User} user the fresh user object from the server
+   * @param {UserDoc} user the fresh user object from the server
    */
-  static setUser(user: User): void {
+  static setUser(user: UserDoc): void {
     this.user = user;
 
     // Set the setting if it doesn't exist yet
@@ -354,7 +354,7 @@ class UserData {
   /**
    * Returns a copy of the user object in ClientData.
    */
-  static getUser(): User {
+  static getUser(): UserDoc {
     return { ...this.user };
   }
 

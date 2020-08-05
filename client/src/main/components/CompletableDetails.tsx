@@ -12,13 +12,13 @@ import {
 } from '@material-ui/core';
 import { ChevronLeft, ExpandMore } from '@material-ui/icons';
 import CompletedCheckbox from './CompletableTable/CompletableRow/CompletedCheckbox';
-import UserData from '../clientData/UserData';
 import SimpleTextInput from './CompletableTable/CompletableRow/SimpleTextInput';
 import NoteInput from './CompletableTable/CompletableRow/NoteInput';
 import DateInput from './CompletableTable/CompletableRow/DateInput';
 import PriorityButton from './CompletableTable/CompletableRow/PriorityButton';
 import CompletableTable from './CompletableTable';
 import { CompletableType } from '../utils/dbTypes';
+import Completables from '../models/Completables';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -56,7 +56,7 @@ function CompletableDetailsRoute(props: CompletableDetailsProps) {
   const { completableType, completableId } = props;
 
   const [completable, setCompletable] = useState(
-    UserData.getCompletable(completableType, completableId)
+    Completables.get(completableType, completableId)
   );
 
   const [open, setOpen] = useState(false);
@@ -64,7 +64,7 @@ function CompletableDetailsRoute(props: CompletableDetailsProps) {
   const listenerId = `${completableId}.CompletableDetails`;
 
   useEffect(() => {
-    UserData.addCompletableListener(
+    Completables.addListener(
       completableType,
       completableId,
       listenerId,
@@ -91,11 +91,7 @@ function CompletableDetailsRoute(props: CompletableDetailsProps) {
 
     // This will be ran when the compoennt is unmounted
     return function cleanup() {
-      UserData.removeCompletableListener(
-        completableType,
-        completableId,
-        listenerId
-      );
+      Completables.removeListener(completableType, completableId, listenerId);
     };
   }, []);
 

@@ -8,7 +8,7 @@ import {
 } from '@material-ui/core';
 import PriorityDialog from './PriorityDialog';
 import { CompletableType } from '../../../../utils/dbTypes';
-import UserData from '../../../../clientData/UserData';
+import Completables from '../../../../models/Completables';
 
 function styles() {
   return createStyles({
@@ -38,10 +38,7 @@ function PriorityButton(props: PriorityButtonProps): JSX.Element {
   const { classes, completableId, completableType } = props;
   const [open, setOpen] = useState(false);
 
-  const initialCompletable = UserData.getCompletable(
-    completableType,
-    completableId
-  );
+  const initialCompletable = Completables.get(completableType, completableId);
 
   const [disabled, setDisabled] = useState(initialCompletable.completed);
   const [priority, setPriority] = useState(initialCompletable.priority);
@@ -60,7 +57,7 @@ function PriorityButton(props: PriorityButtonProps): JSX.Element {
    * the priority button when the completable is completed.
    */
   useEffect(() => {
-    UserData.addCompletablePropertyListener(
+    Completables.addPropertyListener(
       completableType,
       completableId,
       listenerId,
@@ -72,7 +69,7 @@ function PriorityButton(props: PriorityButtonProps): JSX.Element {
 
     // This will be ran when the component is unmounted
     return function cleanup() {
-      UserData.removeCompletablePropertyListener(
+      Completables.removePropertyListener(
         completableType,
         completableId,
         listenerId,
@@ -85,7 +82,7 @@ function PriorityButton(props: PriorityButtonProps): JSX.Element {
    * Add the property listener for the priority value.
    */
   useEffect(() => {
-    UserData.addCompletablePropertyListener(
+    Completables.addPropertyListener(
       completableType,
       completableId,
       listenerId,
@@ -97,7 +94,7 @@ function PriorityButton(props: PriorityButtonProps): JSX.Element {
 
     // This will be ran when the component is unmounted
     return function cleanup() {
-      UserData.removeCompletablePropertyListener(
+      Completables.removePropertyListener(
         completableType,
         completableId,
         listenerId,

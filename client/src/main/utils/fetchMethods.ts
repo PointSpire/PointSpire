@@ -5,7 +5,7 @@
 import {
   Project,
   AllUserData,
-  User,
+  UserDoc,
   tasksAreEqual,
   projectsAreEqual,
 } from './dbTypes';
@@ -149,10 +149,10 @@ export async function patchTask(task: Task): Promise<boolean> {
 /**
  * Makes a patch request to the server with the given user.
  *
- * @param {User} user the updated user object to send to the server
+ * @param {UserDoc} user the updated user object to send to the server
  * @returns {boolean} true if successful and false if not
  */
-export async function patchUser(user: User): Promise<boolean> {
+export async function patchUser(user: UserDoc): Promise<boolean> {
   const res = await fetch(`${baseServerUrl}/api/users/${user._id}`, {
     method: 'PATCH',
     headers: fetchData.basicHeader,
@@ -206,7 +206,7 @@ export async function getUserData(): Promise<AllUserData | null> {
       }),
       credentials: 'include',
     });
-    const user: User = (await userDocRes.json()) as User;
+    const user: UserDoc = (await userDocRes.json()) as UserDoc;
     const getUserUrl = `${fetchData.baseServerUrl}/api/users/${user._id}`;
     const res = await fetch(getUserUrl);
     const data = (await res.json()) as AllUserData;
@@ -243,11 +243,11 @@ export async function getTestUserData(): Promise<AllUserData> {
   return data;
 }
 
-export function getUser(id: string): Promise<User> {
-  return new Promise<User>((resolve, reject) => {
+export function getUser(id: string): Promise<UserDoc> {
+  return new Promise<UserDoc>((resolve, reject) => {
     fetch(fetchData.buildUrl(`${fetchData.baseServerUrl}/api/users/~`, id))
       .then(res => res.json())
-      .then(data => resolve(data as User))
+      .then(data => resolve(data as UserDoc))
       .catch(err => reject(err));
   });
 }
