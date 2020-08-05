@@ -1,5 +1,4 @@
 import Debug from 'debug';
-import { PropertyListeners } from '../clientData/UserData';
 import Completable from './Completable';
 import scheduleCallback from '../utils/savingTimer';
 import {
@@ -12,7 +11,7 @@ import {
 } from '../utils/fetchMethods';
 import Project from './Project';
 import Task from './Task';
-import { PropertyListenerCallback } from '../utils/dbTypes';
+import { PropertyListenerCallback, PropertyListeners } from '../utils/dbTypes';
 import User from './User';
 
 const debug = Debug('Completables.ts');

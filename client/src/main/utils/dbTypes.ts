@@ -20,6 +20,12 @@ export interface IndexableProperties {
   [key: string]: unknown;
 }
 
+export type PropertyListeners = {
+  [propertyName: string]: {
+    [listenerId: string]: PropertyListenerCallback;
+  };
+};
+
 export type PropertyListenerCallback = (updatedValue: unknown) => void;
 
 /**

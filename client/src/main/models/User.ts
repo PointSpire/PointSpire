@@ -3,8 +3,8 @@ import {
   IndexableProperties,
   Document,
   PropertyListenerCallback,
+  PropertyListeners,
 } from '../utils/dbTypes';
-import { PropertyListeners } from '../clientData/UserData';
 import { patchUser, deleteTag } from '../utils/fetchMethods';
 import scheduleCallback from '../utils/savingTimer';
 import Completables from './Completables';
