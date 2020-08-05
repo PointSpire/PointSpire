@@ -10,7 +10,7 @@ import {
   WithStyles,
   withStyles,
 } from '@material-ui/core';
-import { ChevronLeft, ExpandMore } from '@material-ui/icons';
+import { Add, Remove } from '@material-ui/icons';
 import CompletedCheckbox from './CompletableTable/CompletableRow/CompletedCheckbox';
 import SimpleTextInput from './CompletableTable/CompletableRow/SimpleTextInput';
 import NoteInput from './CompletableTable/CompletableRow/NoteInput';
@@ -150,7 +150,7 @@ function CompletableDetailsRoute(props: CompletableDetailsProps) {
         </ListItem>
         <ListItem button onClick={subtasksClickHandler}>
           <ListItemText primary="Subtasks" />
-          {open ? <ChevronLeft /> : <ExpandMore />}
+          {open ? <Remove /> : <Add />}
         </ListItem>
       </List>
       <Collapse in={open} timeout="auto" unmountOnExit>
