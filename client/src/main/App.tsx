@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Debug from 'debug';
 import './App.css';
 import { createMuiTheme, ThemeProvider, Theme } from '@material-ui/core/styles';
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
@@ -15,6 +16,9 @@ import { getUserData, getTestUserData } from './utils/fetchMethods';
 import baseThemeOptions from './AppTheme';
 import Completables from './models/Completables';
 import User from './models/User';
+
+const debug = Debug('App.tsx');
+debug.enabled = false;
 
 /**
  * Used to determine the severity of an alert for the snackbar of the app.
@@ -46,7 +50,7 @@ const App = () => {
   const mobile = useMediaQuery(appTheme.breakpoints.down('sm'));
 
   /**
-   * Gets user data from server
+   * Gets user data from server.
    */
   async function getData() {
     let userData: AllUserData | null;
@@ -55,6 +59,8 @@ const App = () => {
     } else {
       userData = await getUserData();
     }
+
+    debug('userData is: ', userData);
 
     if (userData) {
       Completables.setProjects(userData.projects);

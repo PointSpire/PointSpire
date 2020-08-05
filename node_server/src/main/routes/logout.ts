@@ -8,10 +8,15 @@ const router = express.Router();
  * @returns {Router} the Router for the `/logout` endpoint
  */
 export default function createLogoutRouter(): Router {
+  router.options('/', (req, res, next) => {
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    next();
+  });
+
   /**
-   * Logs out the user by destroying the session object.
+   * Logs out the user by destroying the session object and clearing cookies.
    */
-  router.use('/', (req, res, next) => {
+  router.get('/', (req, res, next) => {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     if (req.session) {
       req.session.destroy(err => {

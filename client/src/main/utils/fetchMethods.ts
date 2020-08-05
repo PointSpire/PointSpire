@@ -2,6 +2,7 @@
  * This file is used to store the fetch requests that access the database
  */
 
+import Debug from 'debug';
 import {
   Project,
   AllUserData,
@@ -16,6 +17,9 @@ import {
   deleteAllCookies,
 } from './clientCookies';
 import Task from '../models/Task';
+
+const debug = Debug('fetchMethods.ts');
+debug.enabled = false;
 
 const fetchData = {
   baseServerUrl:
@@ -167,7 +171,7 @@ export async function patchUser(user: UserDoc): Promise<boolean> {
 export async function logout() {
   const url = `${baseServerUrl}/logout`;
   const res = await fetch(url, {
-    method: 'DELETE',
+    method: 'GET',
     headers: fetchData.basicHeader,
   });
   deleteAllCookies();
@@ -194,27 +198,42 @@ export async function getUserData(): Promise<AllUserData | null> {
   if (githubCodeMatch) {
     githubCode = githubCodeMatch && githubCodeMatch[1];
   }
+
+  debug('loggedIn cookie is: ', getCookie(ClientCookies.loggedIn));
+
   if (getCookie(ClientCookies.loggedIn) !== 'true' && githubCode !== '') {
-    const url = `${fetchData.baseServerUrl}/auth/github`;
-    const userDocRes = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        code: githubCode,
-      }),
-      credentials: 'include',
-    });
-    const user: UserDoc = (await userDocRes.json()) as UserDoc;
-    const getUserUrl = `${fetchData.baseServerUrl}/api/users/${user._id}`;
-    const res = await fetch(getUserUrl);
-    const data = (await res.json()) as AllUserData;
+    debug('Entered auth section of getUserData');
+    try {
+      const url = `${fetchData.baseServerUrl}/auth/github`;
+      const userDocRes = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: githubCode,
+        }),
+        credentials: 'include',
+      });
+      const user: UserDoc = (await userDocRes.json()) as UserDoc;
+      debug('The returned userDoc after authentication is: ', user);
+      const getUserUrl = `${fetchData.baseServerUrl}/api/users/${user._id}`;
+      const res = await fetch(getUserUrl);
+      const data = (await res.json()) as AllUserData;
 
-    // Store a cookie that shows the user is logged in
-    setCookie(ClientCookies.loggedIn, 'true');
+      // Store a cookie that shows the user is logged in
+      setCookie(ClientCookies.loggedIn, 'true');
 
-    return data;
+      return data;
+    } catch (err) {
+      // Return null because the githubCode was invalid
+      return null;
+    }
+  }
+
+  if (getCookie(ClientCookies.loggedIn) !== 'true') {
+    // The user is not logged in, so return null
+    return null;
   }
 
   // Try to get from the server with a session cookie if the user has one
@@ -225,9 +244,16 @@ export async function getUserData(): Promise<AllUserData | null> {
       credentials: 'include',
     });
     const data = (await res.json()) as AllUserData;
+    debug('Returned data is: ', data);
+    setCookie(ClientCookies.loggedIn, 'true');
     return data;
   } catch {
     // Return null if there isn't any data, meaning they need to login first.
+    debug(
+      `The user didn't have a session on the server so they need to login` +
+        ` first.`
+    );
+    setCookie(ClientCookies.loggedIn, 'false');
     return null;
   }
 }
