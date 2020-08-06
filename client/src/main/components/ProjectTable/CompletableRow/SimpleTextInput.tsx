@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { TextField } from '@material-ui/core';
-import { resetTimer } from '../utils/savingTimer';
-import UserData from '../clientData/UserData';
-import { CompletableType } from '../utils/dbTypes';
+import { resetTimer } from '../../../utils/savingTimer';
+import UserData from '../../../clientData/UserData';
+import { CompletableType } from '../../../utils/dbTypes';
 
 export type SimpleTextInputProps = {
   completableType: CompletableType;

@@ -1,11 +1,10 @@
+import Debug from 'debug';
 import {
   ProjectObjects,
   TaskObjects,
   Completable,
   CompletableType,
   User,
-  Project,
-  Task,
 } from '../utils/dbTypes';
 import scheduleCallback from '../utils/savingTimer';
 import {
@@ -16,7 +15,13 @@ import {
   deleteTaskById,
   postNewProject,
   postNewTask,
+  deleteTag,
 } from '../utils/fetchMethods';
+import Project from '../models/Project';
+import Task from '../models/Task';
+
+const debug = Debug('UserData.ts');
+debug.enabled = true;
 
 /**
  * The callback which will be called if any changes are made to a Completable.
@@ -174,7 +179,7 @@ class UserData {
       } else {
         patchCompletable = patchTask;
       }
-      patchCompletable(completable)
+      return patchCompletable(completable)
         .then(result => {
           if (result) {
             // eslint-disable-next-line
@@ -204,8 +209,8 @@ class UserData {
    * @param {User} updatedUser the updated user object
    */
   private static saveUser(updatedUser: User) {
-    return () => {
-      patchUser(updatedUser)
+    return async () => {
+      return patchUser(updatedUser)
         .then(result => {
           if (result) {
             // eslint-disable-next-line
@@ -294,8 +299,6 @@ class UserData {
    *
    * This doesn't trigger any callbacks because there shouldn't be any on the
    * entire projects object to help performance.
-   *
-   * This should be used at application startup, and when adding new projects.
    *
    * @param {ProjectObjects} projects the updated projects object
    */
@@ -433,13 +436,16 @@ class UserData {
    * @param {string} parentId the ID of the parent of the new task
    * @param {string} title the title of the new task
    */
-  static async addTask(
+  static addTask(
     parentType: CompletableType,
     parentId: string,
     title: string
-  ): Promise<Task> {
-    // Get the new task from the server
-    const newTask = await postNewTask(parentType, parentId, title);
+  ): Task {
+    const newTask = new Task();
+    newTask.title = title;
+    scheduleCallback(`${newTask._id}.addTaskToServer`, async () => {
+      await postNewTask(parentType, parentId, newTask);
+    });
 
     // Set the new task locally, and don't save to the server
     this.setCompletable('task', newTask);
@@ -464,9 +470,13 @@ class UserData {
    *
    * @param {string} title the title of the new project
    */
-  static async addProject(title: string): Promise<Project> {
+  static addProject(title: string): Project {
     // Get the new project from the server
-    const newProject = await postNewProject(this.user._id, title);
+    const newProject = new Project();
+    newProject.title = title;
+    scheduleCallback(`${newProject._id}.addTaskToServer`, async () => {
+      await postNewProject(this.user._id, newProject);
+    });
 
     // Set the new project locally, and don't save to the server
     this.setCompletable('project', newProject);
@@ -477,6 +487,64 @@ class UserData {
     this.setUserProperty('projects', newProjectIds);
 
     return newProject;
+  }
+
+  /**
+   * Removes the tag with the given ID from the user, and any projects or tasks
+   * of the user. This saves those changes the server and triggers listeners
+   * for all associated properties of the projects, tasks, and the user.
+   *
+   * @param {string} tagId the ID of the tag to remove
+   */
+  static removeUserTagAndSave(tagId: string): void {
+    if (this.user.currentTags[tagId]) {
+      delete this.user.currentTags[tagId];
+    }
+
+    // Change the user property for currentTags
+    this.setUserProperty('currentTags', { ...this.user.currentTags });
+
+    // Remove the tag from the user's filters if it is there
+    const filterTagIndex = this.user.filters.tagIdsToShow.indexOf(tagId);
+    if (filterTagIndex !== -1) {
+      this.user.filters.tagIdsToShow.splice(filterTagIndex, 1);
+      this.setUserProperty('filters', { ...this.user.filters });
+    }
+
+    // Find all projects with the tag and change them
+    Object.values(this.projects).forEach(project => {
+      if (project.tags) {
+        const tagIndex = project.tags.findIndex(id => id === tagId);
+        if (tagIndex !== -1) {
+          project.tags.splice(tagIndex, 1);
+          this.setCompletableProperty(
+            'project',
+            project._id,
+            'tags',
+            project.tags
+          );
+        }
+      } else {
+        debug(
+          `The project with ID: "${project._id}" and title: "${project.title}"` +
+            ` did not have a "tags" property.`
+        );
+      }
+    });
+
+    // Find all tasks with the tag and change them
+    Object.values(this.tasks).forEach(task => {
+      const tagIndex = task.tags.findIndex(id => id === tagId);
+      if (tagIndex !== -1) {
+        task.tags.splice(tagIndex, 1);
+        this.setCompletableProperty('task', task._id, 'tags', task.tags);
+      }
+    });
+
+    // Schedule the deletion request for the server
+    scheduleCallback(`${this.user._id}.deleteTag.${tagId}`, async () => {
+      await deleteTag(this.user._id, tagId);
+    });
   }
 
   /**
@@ -493,7 +561,7 @@ class UserData {
   static deleteCompletable(type: CompletableType, completableId: string): void {
     let completables;
     let completableListeners;
-    let deleteCompletableOnServer: (id: string) => void;
+    let deleteCompletableOnServer: (id: string) => Promise<Task | null>;
     if (type === 'project') {
       completables = this.projects;
       completableListeners = this.projectListeners;
@@ -509,8 +577,8 @@ class UserData {
     }
 
     // Schedule the server deletion of the completable
-    scheduleCallback(`${completableId}.delete`, () => {
-      deleteCompletableOnServer(completableId);
+    scheduleCallback(`${completableId}.delete`, async () => {
+      await deleteCompletableOnServer(completableId);
     });
 
     delete completables[completableId];

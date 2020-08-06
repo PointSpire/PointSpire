@@ -7,7 +7,7 @@ const router = express.Router();
 
 /**
  * Simple message controller for response messages.
- * Its not really necessary, but fun to write. ;)
+ * Its not really necessary, but fun to write.
  */
 const messenger = {
   queryError: 'Theres an error in the query',
@@ -80,7 +80,7 @@ function createTasksRouter(db: typeof mongoose): Router {
    *        content:
    *          'application/json':
    *            schema:
-   *              $ref: '#/components/schemas/taskObjectWithIds'
+   *              $ref: '#/components/schemas/completableObjectResponse'
    *      400:
    *        description: The task ID didn't correspond to one in the database or there was an error while accessing the database.
    *  parameters:
@@ -108,14 +108,14 @@ function createTasksRouter(db: typeof mongoose): Router {
    *      content:
    *        'application/json':
    *          schema:
-   *            $ref: '#/components/schemas/taskObjectRequestBody'
+   *            $ref: '#/components/schemas/completableObjectPatchBody'
    *    responses:
    *      200:
    *        description: The update was successful and the updated task was returned
    *        content:
    *          'application/json':
    *            schema:
-   *              $ref: '#/components/schemas/taskObjectWithIds'
+   *              $ref: '#/components/schemas/completableObjectResponse'
    *      400:
    *        description: There was an error while finding the task or the task ID did not return a project.
    *  parameters:
@@ -156,14 +156,14 @@ function createTasksRouter(db: typeof mongoose): Router {
    *      content:
    *        'application/json':
    *          schema:
-   *            $ref: '#/components/schemas/taskObjectRequestBody'
+   *            $ref: '#/components/schemas/completableObjectPostBody'
    *    responses:
    *      201:
    *        description: The task was succesfully created and the new task is returned
    *        content:
    *          'application/json':
    *            schema:
-   *              $ref: '#/components/schemas/taskObjectWithIds'
+   *              $ref: '#/components/schemas/completableObjectResponse'
    *      400:
    *        description: There was an error while getting the task or saving the new task.
    *  parameters:
@@ -205,7 +205,7 @@ function createTasksRouter(db: typeof mongoose): Router {
    *        content:
    *          'application/json':
    *            schema:
-   *              $ref: '#/components/schemas/taskObjectWithIds'
+   *              $ref: '#/components/schemas/completableObjectResponse'
    *      400:
    *        description: The task id was not found or there was an error while deleting the task.
    *  parameters:

@@ -13,7 +13,7 @@ import {
   withStyles,
 } from '@material-ui/core';
 import RemIcon from '@material-ui/icons/Clear';
-import { Task } from '../../utils/dbTypes';
+import Task from '../../models/Task';
 
 function styles(theme: Theme) {
   return createStyles({

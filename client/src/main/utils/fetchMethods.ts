@@ -6,7 +6,6 @@ import {
   Project,
   AllUserData,
   User,
-  Task,
   tasksAreEqual,
   projectsAreEqual,
 } from './dbTypes';
@@ -16,6 +15,7 @@ import {
   getCookie,
   deleteAllCookies,
 } from './clientCookies';
+import Task from '../models/Task';
 
 const fetchData = {
   baseServerUrl:
@@ -162,6 +162,24 @@ export async function patchUser(user: User): Promise<boolean> {
 }
 
 /**
+ * Handles logout of app
+ */
+export async function logout() {
+  const { basicHeader } = fetchData;
+  const url = `${baseServerUrl}/logout`;
+  const res = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+    headers: basicHeader,
+  });
+  deleteAllCookies();
+  if (res.status === 200) {
+    // reload application
+    window.location.replace(window.location.pathname);
+  }
+}
+
+/**
  * Gets the user data from the server by using the current code in the user's
  * url path. If the code isn't there, then it makes a request to `/api/users`
  * expecting the user to have a cookie with a valid session ID in it, so the
@@ -246,18 +264,15 @@ export function getRequest<T>(url: string, id: string): Promise<T> {
 }
 
 /**
- * Makes a post request to the server to add a new project with the given title.
+ * Makes a post request to the server to add a new project.
  *
  * @param {string} userId the ID of the user to add this project to
- * @param {string} projectTitle the title of the new project
+ * @param {Project} project the newly created project
  */
 export async function postNewProject(
   userId: string,
-  projectTitle: string
+  project: Project
 ): Promise<Project> {
-  const tempProject = {
-    title: projectTitle,
-  };
   const url = fetchData.buildUrl(
     `${fetchData.baseServerUrl}/api/users/~/projects`,
     userId
@@ -265,7 +280,7 @@ export async function postNewProject(
   const projectRes = await fetch(url, {
     method: 'POST',
     headers: fetchData.basicHeader,
-    body: JSON.stringify(tempProject),
+    body: JSON.stringify(project),
   });
   const newProject = (await projectRes.json()) as Project;
   return newProject;
@@ -302,15 +317,23 @@ export async function patchProject(project: Task): Promise<boolean> {
  * @param {string} projectId the ID of the project to delete
  * @returns {Promise<Project>} the successfully deleted Project
  */
-export async function deleteProject(projectId: string): Promise<Project> {
-  const { basicHeader } = fetchData;
-  const fullUrl = `${baseServerUrl}/api/projects/${projectId}`;
-  const res = await fetch(fullUrl, {
-    method: 'DELETE',
-    headers: basicHeader,
-  });
-  const returnedProject = (await res.json()) as Project;
-  return returnedProject;
+export async function deleteProject(
+  projectId: string
+): Promise<Project | null> {
+  try {
+    const { basicHeader } = fetchData;
+    const fullUrl = `${baseServerUrl}/api/projects/${projectId}`;
+    const res = await fetch(fullUrl, {
+      method: 'DELETE',
+      headers: basicHeader,
+    });
+    const returnedProject = (await res.json()) as Project;
+    return returnedProject;
+  } catch (err) {
+    // eslint-disable-next-line
+    console.error(err);
+    return null;
+  }
 }
 
 /**
@@ -321,13 +344,12 @@ export async function deleteProject(projectId: string): Promise<Project> {
  * is being attached to
  * @param {string} parentId the id of the parent
  * @param {string} taskTitle the title of the new task
- * @returns {Promise<Task>} the Task that the server produced
  */
 export async function postNewTask(
   parentType: 'task' | 'project',
   parentId: string,
-  taskTitle: string
-): Promise<Task> {
+  task: Task
+): Promise<void> {
   const { basicHeader } = fetchData;
   let fullUrl: string;
   if (parentType === 'project') {
@@ -335,63 +357,70 @@ export async function postNewTask(
   } else {
     fullUrl = `${baseServerUrl}/api/tasks/${parentId}/subtasks`;
   }
-  const newTask = {
-    title: taskTitle,
-  };
   const taskRes = await fetch(fullUrl, {
     method: 'POST',
     headers: basicHeader,
-    body: JSON.stringify(newTask),
+    body: JSON.stringify(task),
   });
   const returnedTask = (await taskRes.json()) as Task;
   const parsedTask = sanitizeCompletable(returnedTask);
+  if (!tasksAreEqual(task, parsedTask)) {
+    // eslint-disable-next-line
+    console.error('Returned task after saving was not equal');
+  }
+}
 
-  return parsedTask;
+/**
+ * Deletes a task by ID on the server.
+ *
+ * @param {string} taskId the ID of the task to delete
+ */
+export async function deleteTaskById(taskId: string): Promise<Task | null> {
+  try {
+    const { basicHeader } = fetchData;
+    const fullUrl = `${baseServerUrl}/api/tasks/${taskId}`;
+    const res = await fetch(fullUrl, {
+      method: 'DELETE',
+      headers: basicHeader,
+    });
+    const returnedTask = (await res.json()) as Task;
+    // eslint-disable-next-line
+    console.log('Task with ID: ', taskId, ' was successfully deleted');
+    return returnedTask;
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error(err);
+    return null;
+  }
 }
 
 /**
  * Deletes the given task from the server and returns the successfully deleted
- * task.
+ * task. If there is an error, it is printed to the console.
  *
  * @param {Task} task the task to delete
- * @returns {Promise<Task>} the successfully deleted Task
+ * @returns {Promise<Task | null>} the successfully deleted Task or null if
+ * there was an error
  */
-export async function deleteTask(task: Task): Promise<Task> {
-  const { basicHeader } = fetchData;
-  const fullUrl = `${baseServerUrl}/api/tasks/${task._id}`;
-  const res = await fetch(fullUrl, {
-    method: 'DELETE',
-    headers: basicHeader,
-  });
-  const returnedTask = (await res.json()) as Task;
-  return returnedTask;
-}
-
-export async function deleteTaskById(taskId: string): Promise<Task> {
-  const { basicHeader } = fetchData;
-  const fullUrl = `${baseServerUrl}/api/tasks/${taskId}`;
-  const res = await fetch(fullUrl, {
-    method: 'DELETE',
-    headers: basicHeader,
-  });
-  const returnedTask = (await res.json()) as Task;
-  return returnedTask;
+export async function deleteTask(task: Task): Promise<Task | null> {
+  return deleteTaskById(task._id);
 }
 
 /**
- * Handles logout of app
+ * Deletes the given tag ID from the user and from the projects and tasks of
+ * that user on the DB.
+ *
+ * @param {string} userId the ID of the user
+ * @param {string} tagId the ID of the tag to delete
  */
-export async function logout() {
-  const { basicHeader } = fetchData;
-  const url = `${baseServerUrl}/logout`;
+export async function deleteTag(
+  userId: string,
+  tagId: string
+): Promise<boolean> {
+  const url = `${baseServerUrl}/api/users/${userId}/tags/${tagId}`;
   const res = await fetch(url, {
-    method: 'GET',
-    credentials: 'include',
-    headers: basicHeader,
+    method: 'DELETE',
+    headers: fetchData.basicHeader,
   });
-  deleteAllCookies();
-  if (res.status === 200) {
-    // reload application
-    window.location.replace(window.location.pathname);
-  }
+  return res.status === 200;
 }

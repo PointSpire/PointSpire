@@ -1,17 +1,23 @@
-import React, { useState, MouseEvent } from 'react';
-import { IconButton, Menu, MenuItem } from '@material-ui/core';
+import React, { useState } from 'react';
+import {
+  IconButton,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+} from '@material-ui/core';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
+import DeleteIcon from '@material-ui/icons/Delete';
+import AddIcon from '@material-ui/icons/Add';
+import MenuIcon from '@material-ui/icons/Menu';
 import SortMenu from './SortMenu';
 
 export type TaskMenuProps = {
   deleteTask: () => void;
-  addSubTask: (title: string) => Promise<void>;
+  addSubTask: (title: string) => void;
   sortBy: string;
   setSortBy: (sortBy: string) => void;
-  openPrereqTaskDialog: (
-    e: MouseEvent<HTMLElement>,
-    prereqTasks: string[] | null
-  ) => void;
+  openPrereqTaskDialog: () => void;
 };
 
 /**
@@ -45,10 +51,7 @@ function TaskMenu(props: TaskMenuProps): JSX.Element {
   }
 
   function handleAddSubTask(): void {
-    addSubTask('Untitled').catch(err => {
-      // eslint-disable-next-line
-      console.error(err);
-    });
+    addSubTask('Untitled');
   }
 
   function handleClose(): void {
@@ -71,14 +74,28 @@ function TaskMenu(props: TaskMenuProps): JSX.Element {
         onClose={handleClose}
       >
         <MenuItem onClick={handleSortMenuClick}>
-          {'< '}
-          Sort By
+          <ListItemIcon>
+            <MenuIcon />
+          </ListItemIcon>
+          <ListItemText primary="Sort By" />
+        </MenuItem>
+        <MenuItem onClick={handleAddSubTask}>
+          <ListItemIcon>
+            <AddIcon />
+          </ListItemIcon>
+          <ListItemText primary="Add SubTask" />
+        </MenuItem>
+        <MenuItem onClick={handleDelete}>
+          <ListItemIcon>
+            <DeleteIcon />
+          </ListItemIcon>
+          <ListItemText primary="Delete" />
         </MenuItem>
         <MenuItem onClick={handleAddSubTask}>Add SubTask</MenuItem>
         <MenuItem onClick={handleDelete}>Delete</MenuItem>
         <MenuItem
-          onClick={event => {
-            openPrereqTaskDialog(event, null);
+          onClick={() => {
+            openPrereqTaskDialog();
             setAnchorEl(null);
           }}
         >

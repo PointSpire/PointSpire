@@ -8,15 +8,17 @@ chai.use(chaiHttp);
 // Use the assert style
 const assert = chai.assert;
 
+before(() => {
+  // Setup the global request and keep it open
+  Globals.requester = chai.request(Globals.app).keepOpen();
+});
+
 describe('POST /api/users', () => {
   it('should create a new user and add a test project', async () => {
     try {
-      const userResponse = await chai
-        .request(Globals.app)
-        .post('/api/users')
-        .send({
-          userName: 'testUser',
-        });
+      const userResponse = await Globals.requester.post('/api/users').send({
+        userName: 'testUser',
+      });
       assert.equal(userResponse.status, 201);
       assert.typeOf(userResponse.body, 'object');
       assert.typeOf(userResponse.body._id, 'string');

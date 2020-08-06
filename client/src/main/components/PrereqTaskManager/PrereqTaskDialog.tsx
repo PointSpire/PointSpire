@@ -30,7 +30,6 @@ function styles(theme: Theme) {
 }
 
 export interface PrereqTaskDialogProps extends WithStyles<typeof styles> {
-  savePrereqId: string;
   completableId: string;
   completableType: CompletableType;
   openDialog: boolean;
