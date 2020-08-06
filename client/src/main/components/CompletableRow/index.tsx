@@ -1,4 +1,5 @@
-import React, { useState, useEffect, MouseEvent } from 'react';
+// import React, { useState, useEffect, MouseEvent } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   WithStyles,
   createStyles,
@@ -246,21 +247,25 @@ const CompletableRow = (props: CompletableRowProps) => {
     };
   }
 
-  const handleOpenPrereqTaskDialog = (
-    e: MouseEvent<HTMLElement>,
-    prereqs: string[] | null
-  ) => {
-    if (prereqs) {
-      if (e.currentTarget.id === saveButtonId) {
-        const tempCompletable = completable;
-        tempCompletable.prereqTasks = prereqs;
-        UserData.setAndSaveCompletable(completableType, tempCompletable);
-        setCompletable(tempCompletable);
-        setPrereqTasksOpen(!prereTasksOpen);
-      }
-    } else {
-      setPrereqTasksOpen(!prereTasksOpen);
-    }
+  // const handleOpenPrereqTaskDialog = (
+  //   e: MouseEvent<HTMLElement>,
+  //   prereqs: string[] | null
+  // ) => {
+  //   if (prereqs) {
+  //     if (e.currentTarget.id === saveButtonId) {
+  //       const tempCompletable = completable;
+  //       tempCompletable.prereqTasks = prereqs;
+  //       UserData.setAndSaveCompletable(completableType, tempCompletable);
+  //       setCompletable(tempCompletable);
+  //       setPrereqTasksOpen(!prereTasksOpen);
+  //     }
+  //   } else {
+  //     setPrereqTasksOpen(!prereTasksOpen);
+  //   }
+  // };
+
+  const handleOpenPrereqTaskDialog = () => {
+    setPrereqTasksOpen(!prereTasksOpen);
   };
 
   return (

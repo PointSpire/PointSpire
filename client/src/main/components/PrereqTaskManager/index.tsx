@@ -1,4 +1,4 @@
-import React, { useState, MouseEvent, ChangeEvent } from 'react';
+import React, { useState, ChangeEvent } from 'react';
 import {
   Grid,
   Divider,
@@ -20,7 +20,7 @@ import RemIcon from '@material-ui/icons/Clear';
 import AutoComplete, {
   AutocompleteCloseReason,
 } from '@material-ui/lab/Autocomplete';
-import { CompletableType } from '../../utils/dbTypes';
+// import { CompletableType } from '../../utils/dbTypes';
 import UserData from '../../clientData/UserData';
 
 // #region [ rgba(0,100,200,0.05) ] External functions and sytle function
@@ -95,13 +95,15 @@ function styles(theme: Theme) {
 
 // #region [ rgba(200,100,0,0.05) ] Interfaces
 export interface PrereqTaskManagerProps extends WithStyles<typeof styles> {
-  savePrereqId: string;
-  completableId: string;
-  completableType: CompletableType;
-  closeDialog: (
-    e: MouseEvent<HTMLElement>,
-    prereqTasks: string[] | null
-  ) => void;
+  // savePrereqId: string;
+  // completableId: string;
+  // completableType: CompletableType;
+  currentPrereqs: string[];
+  // closeDialog: (
+  //   e: MouseEvent<HTMLElement>,
+  //   prereqTasks: string[] | null
+  // ) => void;
+  updatePrereqs: (newPrereqs: string[]) => void;
 }
 
 interface OptionType {
@@ -120,17 +122,19 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
   // #region [ rgba(100, 180, 0, 0.05) ] Property Def
   const {
     classes,
-    completableId,
-    completableType,
-    savePrereqId,
-    closeDialog,
+    // completableId,
+    // completableType,
+    currentPrereqs,
+    // savePrereqId,
+    // closeDialog,
+    updatePrereqs,
   } = props;
-  const completable = UserData.getCompletable(completableType, completableId);
+  // const completable = UserData.getCompletable(completableType, completableId);
   const allTasks = UserData.getTasks();
   const allProjects = UserData.getProjects();
-  const [currentPrereqs, setCurrentPrereqTasks] = useState<string[]>(
-    completable.prereqTasks
-  );
+  // const [currentPrereqs, setCurrentPrereqTasks] = useState<string[]>(
+  //   completable.prereqTasks
+  // );
   const [openPopper, setOpen] = useState<boolean>(false);
 
   const prereqProjects = Object.values(allProjects).filter(project =>
@@ -164,7 +168,7 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
     selected: OptionType[]
   ) => {
     if (selected.length !== currentPrereqs.length) {
-      setCurrentPrereqTasks(selected.map(sel => sel._id));
+      updatePrereqs(selected.map(sel => sel._id));
     }
   };
 
@@ -179,14 +183,11 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
 
   const handleItemRemove = (itemId: string) => {
     const tempPrereqs = currentPrereqs.filter(item => itemId !== item);
-    setCurrentPrereqTasks(tempPrereqs);
+    updatePrereqs(tempPrereqs);
   };
 
   const handleAddAllTaskObjects = () => {
-    setCurrentPrereqTasks([
-      ...Object.keys(allTasks),
-      ...Object.keys(allProjects),
-    ]);
+    updatePrereqs([...Object.keys(allTasks), ...Object.keys(allProjects)]);
   };
   // #endregion
 
@@ -281,35 +282,9 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
         <Button variant="text" onClick={handleAddAllTaskObjects}>
           Add All
         </Button>
-        <Button variant="text" onClick={() => setCurrentPrereqTasks([])}>
+        <Button variant="text" onClick={() => updatePrereqs([])}>
           Remove All
         </Button>
-      </Grid>
-      <Grid
-        container
-        direction="row-reverse"
-        className={classes.gridItem}
-        alignItems="flex-start"
-      >
-        <Grid item>
-          <Button
-            className={classes.saveButton}
-            id={savePrereqId}
-            variant="text"
-            onClick={e => closeDialog(e, currentPrereqs)}
-          >
-            Save
-          </Button>
-        </Grid>
-        <Grid item>
-          <Button
-            className={classes.cancelButton}
-            variant="text"
-            onClick={e => closeDialog(e, null)}
-          >
-            Cancel
-          </Button>
-        </Grid>
       </Grid>
     </Grid>
   );

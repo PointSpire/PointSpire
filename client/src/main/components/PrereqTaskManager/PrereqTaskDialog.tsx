@@ -1,4 +1,4 @@
-import React, { MouseEvent } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -9,6 +9,7 @@ import {
   Typography,
   WithStyles,
   withStyles,
+  Button,
 } from '@material-ui/core';
 import { CompletableType } from '../../utils/dbTypes';
 import UserData from '../../clientData/UserData';
@@ -33,10 +34,7 @@ export interface PrereqTaskDialogProps extends WithStyles<typeof styles> {
   completableId: string;
   completableType: CompletableType;
   openDialog: boolean;
-  closeDialog: (
-    e: React.MouseEvent<HTMLElement>,
-    prereqTasks: string[] | null
-  ) => void;
+  closeDialog: () => void;
 }
 
 /**
@@ -49,30 +47,73 @@ const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
     openDialog,
     completableId,
     completableType,
-    savePrereqId,
     closeDialog,
   } = props;
-  const completable = UserData.getCompletable(completableType, completableId);
+  const [completable, setCompletable] = useState(
+    UserData.getCompletable(completableType, completableId)
+  );
+  const [currentPrereqs, setPrereqs] = useState<string[]>(
+    completable.prereqTasks
+  );
+  const listenerId = `${completableId}-PrereqDialog`;
+
+  useEffect(() => {
+    UserData.addCompletableListener(
+      completableType,
+      completableId,
+      listenerId,
+      updatedCompletable => {
+        if (updatedCompletable) {
+          // eslint-disable-next-line
+          console.log(
+            'Completable ID: ',
+            updatedCompletable._id,
+            '\nCompletable Updated.'
+          );
+          setCompletable(updatedCompletable);
+        }
+      }
+    );
+
+    return function cleanup() {
+      UserData.removeCompletableListener(
+        completableType,
+        completableId,
+        listenerId
+      );
+    };
+  }, []);
+
+  const closeAndSave = () => {
+    const updatedCompletable = completable;
+    updatedCompletable.prereqTasks = currentPrereqs;
+    UserData.setAndSaveCompletable(completableType, updatedCompletable);
+    setCompletable(updatedCompletable);
+    closeDialog();
+  };
 
   return (
-    <Dialog
-      maxWidth="lg"
-      open={openDialog}
-      onClose={(e: MouseEvent<HTMLElement>) => closeDialog(e, null)}
-    >
+    <Dialog maxWidth="lg" open={openDialog} onClose={closeDialog}>
       <DialogTitle className={classes.title}>
         Prerequisite Tasks Menu
       </DialogTitle>
       <DialogContent className={classes.content}>
         <Typography align="center">{completable.title}</Typography>
         <PrereqTaskManager
-          savePrereqId={savePrereqId}
-          completableId={completableId}
-          completableType={completableType}
-          closeDialog={closeDialog}
+          // completableId={completableId}
+          // completableType={completableType}
+          currentPrereqs={currentPrereqs}
+          updatePrereqs={newPrereqs => setPrereqs(newPrereqs)}
         />
       </DialogContent>
-      <DialogActions />
+      <DialogActions>
+        <Button variant="text" onClick={closeDialog}>
+          Cancel
+        </Button>
+        <Button variant="text" onClick={closeAndSave}>
+          Save
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 };
