@@ -1,21 +1,27 @@
-// import React, { useState, MouseEvent, ChangeEvent } from 'react';
-import React, { useState, MouseEvent } from 'react';
+import React, { useState, MouseEvent, ChangeEvent } from 'react';
 import {
   Grid,
   Divider,
-  // Typography,
+  Typography,
   createStyles,
   withStyles,
   Theme,
   WithStyles,
   Button,
-  // TextField,
-  // Paper,
+  Paper,
+  IconButton,
+  TextField,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
 } from '@material-ui/core';
-// import { Autocomplete } from '@material-ui/lab';
+import RemIcon from '@material-ui/icons/Clear';
+import AutoComplete, {
+  AutocompleteCloseReason,
+} from '@material-ui/lab/Autocomplete';
 import { CompletableType } from '../../utils/dbTypes';
 import UserData from '../../clientData/UserData';
-import CustomAutoComp from './CustomAutoComp';
 
 // #region [ rgba(0,100,200,0.05) ] External functions and sytle function
 function styles(theme: Theme) {
@@ -32,9 +38,6 @@ function styles(theme: Theme) {
       borderColor: theme.palette.primary.dark,
       borderWidth: '4px',
     },
-    paperSearchBar: {
-      backgroundColor: theme.palette.primary.light,
-    },
     saveButton: {
       backgroundColor: theme.palette.primary.light,
       '&:hover': {
@@ -42,24 +45,50 @@ function styles(theme: Theme) {
       },
     },
     cancelButton: {
-      backgroundColor: theme.palette.warning.light,
+      backgroundColor: theme.palette.secondary.light,
       '&:hover': {
-        backgroundColor: theme.palette.warning.dark,
+        backgroundColor: theme.palette.secondary.dark,
       },
-    },
-    searchButtonBase: {
-      color: theme.palette.secondary.main,
-      alignItems: 'center',
-      width: '30px',
-      height: '30px',
     },
     dividerBase: {
       margin: theme.spacing(0.5),
     },
-    autoCompBase: {
-      minWidth: theme.spacing(10),
-      maxWidth: theme.spacing(50),
+    prereqPaper: {
+      margin: theme.spacing(1),
     },
+    // #region New CSS classes
+    prereqPopBase: {
+      width: '100%',
+    },
+    autoCompBase: {
+      minWidth: '200px',
+      maxWidth: '400px',
+    },
+    valueItemTitle: {
+      display: 'inline',
+    },
+    selectedList: {
+      maxHeight: '100px',
+    },
+    valueItemIcon: {
+      display: 'inline',
+      alignItems: 'left',
+      '&:hover': {
+        backgroundColor: theme.palette.secondary.light,
+      },
+    },
+    autoCompInput: {
+      backgroundColor: 'red',
+    },
+    autoCompPopperRoot: {
+      backgroundColor: theme.palette.primary.main,
+      position: 'absolute',
+      top: 0,
+    },
+    autoCompFocused: {
+      backgroundColor: theme.palette.background.paper,
+    },
+    // #endregion
   });
 }
 // #endregion
@@ -75,11 +104,11 @@ export interface PrereqTaskManagerProps extends WithStyles<typeof styles> {
   ) => void;
 }
 
-// interface OptionType {
-//   type: 'task' | 'project';
-//   title: string;
-//   _id: string;
-// }
+interface OptionType {
+  type: 'task' | 'project';
+  title: string;
+  _id: string;
+}
 // #endregion
 
 /**
@@ -99,37 +128,59 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
   const completable = UserData.getCompletable(completableType, completableId);
   const allTasks = UserData.getTasks();
   const allProjects = UserData.getProjects();
-  const [currentPrereqTasks, setCurrentPrereqTasks] = useState<string[]>(
+  const [currentPrereqs, setCurrentPrereqTasks] = useState<string[]>(
     completable.prereqTasks
   );
+  const [openPopper, setOpen] = useState<boolean>(false);
 
-  // const options = [
-  //   ...Object.values(allTasks).map(task => {
-  //     return {
-  //       type: 'task',
-  //       title: task.title,
-  //       _id: task._id,
-  //     };
-  //   }),
-  //   ...Object.values(allProjects).map(project => {
-  //     return {
-  //       type: 'project',
-  //       title: project.title,
-  //       _id: project._id,
-  //     };
-  //   }),
-  // ] as OptionType[];
+  const prereqProjects = Object.values(allProjects).filter(project =>
+    currentPrereqs.includes(project._id)
+  );
+  const prereqTasks = Object.values(allTasks).filter(task =>
+    currentPrereqs.includes(task._id)
+  );
+
+  const options = [
+    ...Object.values(allTasks).map(task => {
+      return {
+        type: 'task',
+        title: task.title,
+        _id: task._id,
+      };
+    }),
+    ...Object.values(allProjects).map(project => {
+      return {
+        type: 'project',
+        title: project.title,
+        _id: project._id,
+      };
+    }),
+  ] as OptionType[];
   // #endregion
 
   // #region [ rgba(200, 0, 180, 0.05) ] Component Methods
-  // const handleAutoCompleteChange = (
-  //   _e: ChangeEvent<{}>,
-  //   selected: OptionType[]
-  // ) => {
-  //   if (selected.length !== currentPrereqTasks.length) {
-  //     setCurrentPrereqTasks(selected.map(sel => sel._id));
-  //   }
-  // };
+  const handleAutoCompleteChange = (
+    _e: ChangeEvent<{}>,
+    selected: OptionType[]
+  ) => {
+    if (selected.length !== currentPrereqs.length) {
+      setCurrentPrereqTasks(selected.map(sel => sel._id));
+    }
+  };
+
+  const handleClose = (
+    _e: ChangeEvent<{}>,
+    reason: AutocompleteCloseReason
+  ) => {
+    if (reason === 'blur' || reason === 'escape') {
+      setOpen(false);
+    }
+  };
+
+  const handleItemRemove = (itemId: string) => {
+    const tempPrereqs = currentPrereqs.filter(item => itemId !== item);
+    setCurrentPrereqTasks(tempPrereqs);
+  };
 
   const handleAddAllTaskObjects = () => {
     setCurrentPrereqTasks([
@@ -144,24 +195,86 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
   return (
     <Grid container direction="column">
       <Grid item>
-        {/* <Autocomplete
-          className={classes.autoCompBase}
-          disableCloseOnSelect
-          options={options}
-          value={options.filter(compl =>
-            currentPrereqTasks.includes(compl._id)
+        <Paper>
+          <AutoComplete
+            className={classes.autoCompBase}
+            classes={{
+              popper: classes.autoCompPopperRoot,
+              root: classes.autoCompFocused,
+            }}
+            open={openPopper}
+            multiple
+            fullWidth
+            clearOnBlur={false}
+            options={options}
+            popupIcon={null}
+            onClose={handleClose}
+            onOpen={() => setOpen(true)}
+            value={options.filter(compl => currentPrereqs.includes(compl._id))}
+            getOptionLabel={option => option.title}
+            groupBy={
+              option => (option.type === 'project' ? 'Project' : 'Task')
+              // eslint-disable-next-line react/jsx-curly-newline
+            }
+            renderOption={option => (
+              <Typography id={option._id}>{option.title}</Typography>
+            )}
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            renderInput={params => <TextField {...params} label="Search" />}
+            renderTags={() => null}
+            onChange={handleAutoCompleteChange}
+          />
+          {currentPrereqs && currentPrereqs.length > 0 ? (
+            <div>
+              <Typography align="center">Projects</Typography>
+              <Paper>
+                <List dense>
+                  {prereqProjects && prereqProjects.length > 0 ? (
+                    prereqProjects.map(project => (
+                      <ListItem key={`project-prereq-${project._id}`}>
+                        <ListItemText primary={project.title} />
+                        <ListItemSecondaryAction>
+                          <IconButton
+                            onClick={() => handleItemRemove(project._id)}
+                            edge="end"
+                          >
+                            <RemIcon />
+                          </IconButton>
+                        </ListItemSecondaryAction>
+                      </ListItem>
+                    ))
+                  ) : (
+                    <Typography>No Projects</Typography>
+                  )}
+                </List>
+              </Paper>
+              <Typography align="center">Tasks</Typography>
+              <Paper>
+                <List dense>
+                  {prereqTasks && prereqTasks.length > 0 ? (
+                    prereqTasks.map(task => (
+                      <ListItem key={`task-prereq-${task._id}`}>
+                        <ListItemText primary={task.title} />
+                        <ListItemSecondaryAction>
+                          <IconButton
+                            onClick={() => handleItemRemove(task._id)}
+                            edge="end"
+                          >
+                            <RemIcon />
+                          </IconButton>
+                        </ListItemSecondaryAction>
+                      </ListItem>
+                    ))
+                  ) : (
+                    <Typography>No Tasks</Typography>
+                  )}
+                </List>
+              </Paper>
+            </div>
+          ) : (
+            <Typography>No Prerequisites</Typography>
           )}
-          multiple
-          getOptionLabel={option => option.title}
-          groupBy={option => (option.type === 'task' ? 'Task' : 'Project')}
-          renderOption={option => (
-            <Typography id={option._id}>{option.title}</Typography>
-          )}
-          // eslint-disable-next-line react/jsx-props-no-spreading
-          renderInput={params => <TextField {...params} label="Search" />}
-          onChange={handleAutoCompleteChange}
-        /> */}
-        <CustomAutoComp prereqs={currentPrereqTasks} />
+        </Paper>
       </Grid>
       <Divider orientation="horizontal" className={classes.dividerBase} />
       <Grid container direction="row">
@@ -183,7 +296,7 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
             className={classes.saveButton}
             id={savePrereqId}
             variant="text"
-            onClick={e => closeDialog(e, currentPrereqTasks)}
+            onClick={e => closeDialog(e, currentPrereqs)}
           >
             Save
           </Button>
