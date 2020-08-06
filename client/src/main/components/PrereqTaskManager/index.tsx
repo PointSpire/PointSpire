@@ -9,19 +9,13 @@ import {
   WithStyles,
   Button,
   Paper,
-  IconButton,
   TextField,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
 } from '@material-ui/core';
-import RemIcon from '@material-ui/icons/Clear';
 import AutoComplete, {
   AutocompleteCloseReason,
 } from '@material-ui/lab/Autocomplete';
-// import { CompletableType } from '../../utils/dbTypes';
 import UserData from '../../clientData/UserData';
+import PrereqList from './PrereqList';
 
 // #region [ rgba(0,100,200,0.05) ] External functions and sytle function
 function styles(theme: Theme) {
@@ -95,14 +89,7 @@ function styles(theme: Theme) {
 
 // #region [ rgba(200,100,0,0.05) ] Interfaces
 export interface PrereqTaskManagerProps extends WithStyles<typeof styles> {
-  // savePrereqId: string;
-  // completableId: string;
-  // completableType: CompletableType;
   currentPrereqs: string[];
-  // closeDialog: (
-  //   e: MouseEvent<HTMLElement>,
-  //   prereqTasks: string[] | null
-  // ) => void;
   updatePrereqs: (newPrereqs: string[]) => void;
 }
 
@@ -120,21 +107,9 @@ interface OptionType {
  */
 const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
   // #region [ rgba(100, 180, 0, 0.05) ] Property Def
-  const {
-    classes,
-    // completableId,
-    // completableType,
-    currentPrereqs,
-    // savePrereqId,
-    // closeDialog,
-    updatePrereqs,
-  } = props;
-  // const completable = UserData.getCompletable(completableType, completableId);
+  const { classes, currentPrereqs, updatePrereqs } = props;
   const allTasks = UserData.getTasks();
   const allProjects = UserData.getProjects();
-  // const [currentPrereqs, setCurrentPrereqTasks] = useState<string[]>(
-  //   completable.prereqTasks
-  // );
   const [openPopper, setOpen] = useState<boolean>(false);
 
   const prereqProjects = Object.values(allProjects).filter(project =>
@@ -144,6 +119,10 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
     currentPrereqs.includes(task._id)
   );
 
+  /**
+   * Used by the AutoComplete component to display and
+   * track the selections made by the user.
+   */
   const options = [
     ...Object.values(allTasks).map(task => {
       return {
@@ -172,7 +151,7 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
     }
   };
 
-  const handleClose = (
+  const handleAutoCompleteClose = (
     _e: ChangeEvent<{}>,
     reason: AutocompleteCloseReason
   ) => {
@@ -181,11 +160,19 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
     }
   };
 
+  /**
+   * Removes the completable ID from the currentPrereqs when the 'X' button is
+   * pressed next to the completable title.
+   * @param {string} itemId Id of the Completable.
+   */
   const handleItemRemove = (itemId: string) => {
     const tempPrereqs = currentPrereqs.filter(item => itemId !== item);
     updatePrereqs(tempPrereqs);
   };
 
+  /**
+   * Adds all the completable IDs to the currentPrereqs.
+   */
   const handleAddAllTaskObjects = () => {
     updatePrereqs([...Object.keys(allTasks), ...Object.keys(allProjects)]);
   };
@@ -209,7 +196,7 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
             clearOnBlur={false}
             options={options}
             popupIcon={null}
-            onClose={handleClose}
+            onClose={handleAutoCompleteClose}
             onOpen={() => setOpen(true)}
             value={options.filter(compl => currentPrereqs.includes(compl._id))}
             getOptionLabel={option => option.title}
@@ -226,59 +213,25 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
             onChange={handleAutoCompleteChange}
           />
           {currentPrereqs && currentPrereqs.length > 0 ? (
-            <div>
-              <Typography align="center">Projects</Typography>
-              <Paper>
-                <List dense>
-                  {prereqProjects && prereqProjects.length > 0 ? (
-                    prereqProjects.map(project => (
-                      <ListItem key={`project-prereq-${project._id}`}>
-                        <ListItemText primary={project.title} />
-                        <ListItemSecondaryAction>
-                          <IconButton
-                            onClick={() => handleItemRemove(project._id)}
-                            edge="end"
-                          >
-                            <RemIcon />
-                          </IconButton>
-                        </ListItemSecondaryAction>
-                      </ListItem>
-                    ))
-                  ) : (
-                    <Typography>No Projects</Typography>
-                  )}
-                </List>
-              </Paper>
-              <Typography align="center">Tasks</Typography>
-              <Paper>
-                <List dense>
-                  {prereqTasks && prereqTasks.length > 0 ? (
-                    prereqTasks.map(task => (
-                      <ListItem key={`task-prereq-${task._id}`}>
-                        <ListItemText primary={task.title} />
-                        <ListItemSecondaryAction>
-                          <IconButton
-                            onClick={() => handleItemRemove(task._id)}
-                            edge="end"
-                          >
-                            <RemIcon />
-                          </IconButton>
-                        </ListItemSecondaryAction>
-                      </ListItem>
-                    ))
-                  ) : (
-                    <Typography>No Tasks</Typography>
-                  )}
-                </List>
-              </Paper>
-            </div>
+            <Paper className={classes.areaPaper}>
+              <PrereqList
+                prereqType="project"
+                prereqs={prereqProjects}
+                handleRemove={handleItemRemove}
+              />
+              <PrereqList
+                prereqType="task"
+                prereqs={prereqTasks}
+                handleRemove={handleItemRemove}
+              />
+            </Paper>
           ) : (
             <Typography>No Prerequisites</Typography>
           )}
         </Paper>
       </Grid>
       <Divider orientation="horizontal" className={classes.dividerBase} />
-      <Grid container direction="row">
+      <Grid container direction="row" justify="space-evenly">
         <Button variant="text" onClick={handleAddAllTaskObjects}>
           Add All
         </Button>
