@@ -21,7 +21,7 @@ import PriorityButton from './PriorityButton';
 import TaskExpanderButton from './TaskExpanderButton';
 import NoteButton from './NoteButton';
 import CompletedCheckbox from './CompletedCheckbox';
-import TagRow from './TagRow';
+import TagRow from '../../TagRow';
 import isFiltered from '../../../utils/filterFunctions';
 import HiddenItemsCaption from '../HiddenItemsCaption';
 import { MobileContext } from '../../../utils/contexts';
@@ -539,27 +539,29 @@ const CompletableRow = (props: CompletableRowProps) => {
                       />
                     </Grid>
                   </Grid>
-                  <Grid container item className={classes.flexGrow}>
-                    <TagRow
-                      completableType={completableType}
-                      completableId={completableId}
-                    />
-                  </Grid>
 
                   {!mobile && (
-                    <Grid
-                      item
-                      className={classes.flexGrow}
-                      key={`${completable._id}.note`}
-                    >
-                      <Collapse in={noteOpen} timeout="auto">
-                        <NoteInput
-                          completableId={completableId}
+                    <>
+                      <Grid container item className={classes.flexGrow}>
+                        <TagRow
                           completableType={completableType}
-                          label="Note"
+                          completableId={completableId}
                         />
-                      </Collapse>
-                    </Grid>
+                      </Grid>
+                      <Grid
+                        item
+                        className={classes.flexGrow}
+                        key={`${completable._id}.note`}
+                      >
+                        <Collapse in={noteOpen} timeout="auto">
+                          <NoteInput
+                            completableId={completableId}
+                            completableType={completableType}
+                            label="Note"
+                          />
+                        </Collapse>
+                      </Grid>
+                    </>
                   )}
                 </Grid>
               </Card>

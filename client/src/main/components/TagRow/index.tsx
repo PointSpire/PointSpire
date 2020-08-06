@@ -8,10 +8,10 @@ import {
 } from '@material-ui/core';
 import { ObjectID } from 'bson';
 import { Autocomplete } from '@material-ui/lab';
-import { CompletableType, UserTags } from '../../../../utils/dbTypes';
+import { CompletableType, UserTags } from '../../utils/dbTypes';
 import TagChip from './TagChip';
-import Completables from '../../../../models/Completables';
-import User from '../../../../models/User';
+import Completables from '../../models/Completables';
+import User from '../../models/User';
 
 function styles() {
   return createStyles({

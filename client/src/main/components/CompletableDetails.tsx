@@ -19,6 +19,7 @@ import PriorityButton from './CompletableTable/CompletableRow/PriorityButton';
 import CompletableTable from './CompletableTable';
 import { CompletableType } from '../utils/dbTypes';
 import Completables from '../models/Completables';
+import TagRow from './TagRow';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -117,6 +118,12 @@ function CompletableDetailsRoute(props: CompletableDetailsProps) {
             completableId={completableId}
             completablePropertyName="title"
             fullWidth
+          />
+        </ListItem>
+        <ListItem>
+          <TagRow
+            completableId={completableId}
+            completableType={completableType}
           />
         </ListItem>
         <ListItem>
