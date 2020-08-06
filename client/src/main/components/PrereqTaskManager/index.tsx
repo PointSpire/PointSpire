@@ -1,18 +1,21 @@
-import React, { useState, MouseEvent, ChangeEvent } from 'react';
+// import React, { useState, MouseEvent, ChangeEvent } from 'react';
+import React, { useState, MouseEvent } from 'react';
 import {
   Grid,
   Divider,
-  Typography,
+  // Typography,
   createStyles,
   withStyles,
   Theme,
   WithStyles,
   Button,
-  TextField,
+  // TextField,
+  // Paper,
 } from '@material-ui/core';
-import { Autocomplete } from '@material-ui/lab';
+// import { Autocomplete } from '@material-ui/lab';
 import { CompletableType } from '../../utils/dbTypes';
 import UserData from '../../clientData/UserData';
+import CustomAutoComp from './CustomAutoComp';
 
 // #region [ rgba(0,100,200,0.05) ] External functions and sytle function
 function styles(theme: Theme) {
@@ -72,11 +75,11 @@ export interface PrereqTaskManagerProps extends WithStyles<typeof styles> {
   ) => void;
 }
 
-interface OptionType {
-  type: 'task' | 'project';
-  title: string;
-  _id: string;
-}
+// interface OptionType {
+//   type: 'task' | 'project';
+//   title: string;
+//   _id: string;
+// }
 // #endregion
 
 /**
@@ -100,33 +103,33 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
     completable.prereqTasks
   );
 
-  const options = [
-    ...Object.values(allTasks).map(task => {
-      return {
-        type: 'task',
-        title: task.title,
-        _id: task._id,
-      };
-    }),
-    ...Object.values(allProjects).map(project => {
-      return {
-        type: 'project',
-        title: project.title,
-        _id: project._id,
-      };
-    }),
-  ] as OptionType[];
+  // const options = [
+  //   ...Object.values(allTasks).map(task => {
+  //     return {
+  //       type: 'task',
+  //       title: task.title,
+  //       _id: task._id,
+  //     };
+  //   }),
+  //   ...Object.values(allProjects).map(project => {
+  //     return {
+  //       type: 'project',
+  //       title: project.title,
+  //       _id: project._id,
+  //     };
+  //   }),
+  // ] as OptionType[];
   // #endregion
 
   // #region [ rgba(200, 0, 180, 0.05) ] Component Methods
-  const handleAutoCompleteChange = (
-    _e: ChangeEvent<{}>,
-    selected: OptionType[]
-  ) => {
-    if (selected.length !== currentPrereqTasks.length) {
-      setCurrentPrereqTasks(selected.map(sel => sel._id));
-    }
-  };
+  // const handleAutoCompleteChange = (
+  //   _e: ChangeEvent<{}>,
+  //   selected: OptionType[]
+  // ) => {
+  //   if (selected.length !== currentPrereqTasks.length) {
+  //     setCurrentPrereqTasks(selected.map(sel => sel._id));
+  //   }
+  // };
 
   const handleAddAllTaskObjects = () => {
     setCurrentPrereqTasks([
@@ -141,7 +144,7 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
   return (
     <Grid container direction="column">
       <Grid item>
-        <Autocomplete
+        {/* <Autocomplete
           className={classes.autoCompBase}
           disableCloseOnSelect
           options={options}
@@ -157,7 +160,8 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
           // eslint-disable-next-line react/jsx-props-no-spreading
           renderInput={params => <TextField {...params} label="Search" />}
           onChange={handleAutoCompleteChange}
-        />
+        /> */}
+        <CustomAutoComp prereqs={currentPrereqTasks} />
       </Grid>
       <Divider orientation="horizontal" className={classes.dividerBase} />
       <Grid container direction="row">
