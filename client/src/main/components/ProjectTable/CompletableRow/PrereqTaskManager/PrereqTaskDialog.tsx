@@ -4,11 +4,6 @@ import {
   DialogContent,
   DialogTitle,
   DialogActions,
-  createStyles,
-  Theme,
-  Typography,
-  WithStyles,
-  withStyles,
   Button,
 } from '@material-ui/core';
 import { CompletableType } from '../../../../utils/dbTypes';
@@ -16,18 +11,7 @@ import UserData from '../../../../clientData/UserData';
 import PrereqTaskManager from '.';
 import Task from '../../../../models/Task';
 
-function styles(theme: Theme) {
-  return createStyles({
-    title: {
-      background: theme.palette.primary.main,
-    },
-    selectedCompl: {
-      fontSize: '1.15rem',
-    },
-  });
-}
-
-export interface PrereqTaskDialogProps extends WithStyles<typeof styles> {
+export interface PrereqTaskDialogProps {
   completableId: string;
   completableType: CompletableType;
   openDialog: boolean;
@@ -39,13 +23,7 @@ export interface PrereqTaskDialogProps extends WithStyles<typeof styles> {
  * @param {PrereqTaskDialogProps} props PrereqTaskDialog properties.
  */
 const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
-  const {
-    classes,
-    openDialog,
-    completableId,
-    completableType,
-    closeDialog,
-  } = props;
+  const { openDialog, completableId, completableType, closeDialog } = props;
   const [completable, setCompletable] = useState<Task>(
     UserData.getCompletable(completableType, completableId)
   );
@@ -94,15 +72,11 @@ const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
 
   return (
     <Dialog maxWidth="lg" open={openDialog} onClose={closeDialog}>
-      <DialogTitle className={classes.title}>
-        Prerequisite Tasks Menu
+      <DialogTitle>
+        {`Prerequisite Tasks for ${completableType}` +
+          ` "${completable.title}"`}
       </DialogTitle>
-      <DialogContent>
-        <Typography className={classes.selectedCompl}>
-          {`Selected ${completableType === 'task' ? 'Task' : 'Project'} : ${
-            completable.title
-          }`}
-        </Typography>
+      <DialogContent dividers>
         <PrereqTaskManager
           currentPrereqs={currentPrereqs}
           updatePrereqs={newPrereqs => setPrereqs(newPrereqs)}
@@ -120,4 +94,4 @@ const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
   );
 };
 
-export default withStyles(styles, { withTheme: true })(PrereqTaskDialog);
+export default PrereqTaskDialog;
