@@ -1,4 +1,4 @@
-import React, { MouseEvent, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Tooltip } from '@material-ui/core';
 import { CompletableType } from '../../../../utils/dbTypes';
 import UserData from '../../../../clientData/UserData';
@@ -6,19 +6,16 @@ import UserData from '../../../../clientData/UserData';
 export interface PrereqTaskDisplay2Props {
   completableId: string;
   completableType: CompletableType;
-  openPrereqTaskDialog: (
-    e: MouseEvent<HTMLElement>,
-    prereqs: string[] | null
-  ) => void;
+  openPrereqTaskDialog: () => void;
 }
 
-const PrereqTaskDisplay2 = (props: PrereqTaskDisplay2Props): JSX.Element => {
+const PrereqTaskDisplay = (props: PrereqTaskDisplay2Props): JSX.Element => {
   const { completableId, completableType, openPrereqTaskDialog } = props;
   const completable = UserData.getCompletable(completableType, completableId);
 
   const [disabled, setDisabled] = useState(completable.completed);
 
-  const listenerId = `${completableId}.prereqDisplayButton.completed`;
+  const completedListenerId = `${completableId}.prereqDisplay.completed`;
 
   /**
    * Add the property listener for the completed value so that it disables
@@ -28,7 +25,7 @@ const PrereqTaskDisplay2 = (props: PrereqTaskDisplay2Props): JSX.Element => {
     UserData.addCompletablePropertyListener(
       completableType,
       completableId,
-      listenerId,
+      completedListenerId,
       'completed',
       updatedValue => {
         setDisabled(updatedValue as boolean);
@@ -36,11 +33,11 @@ const PrereqTaskDisplay2 = (props: PrereqTaskDisplay2Props): JSX.Element => {
     );
 
     // This will be ran when the component is unmounted
-    return function cleanup() {
+    return function cleanup(): void {
       UserData.removeCompletablePropertyListener(
         completableType,
         completableId,
-        listenerId,
+        completedListenerId,
         'completed'
       );
     };
@@ -51,14 +48,14 @@ const PrereqTaskDisplay2 = (props: PrereqTaskDisplay2Props): JSX.Element => {
       <Button
         disabled={disabled}
         variant="outlined"
-        onClick={e => openPrereqTaskDialog(e, null)}
+        onClick={openPrereqTaskDialog}
       >
         {`Prereqs ${
-          completable.prereqTasks ? completable.prereqTasks.length : '0'
+          completable.prereqTasks ? completable.prereqTasks.length : 0
         }`}
       </Button>
     </Tooltip>
   );
 };
 
-export default PrereqTaskDisplay2;
+export default PrereqTaskDisplay;

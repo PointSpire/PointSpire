@@ -98,7 +98,7 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
   const handleAutoCompleteChange = (
     _e: ChangeEvent<{}>,
     selected: OptionType[]
-  ) => {
+  ): void => {
     if (selected.length !== currentPrereqs.length) {
       updatePrereqs(selected.map(sel => sel._id));
     }
@@ -112,7 +112,7 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
   const handleAutoCompleteClose = (
     _e: ChangeEvent<{}>,
     reason: AutocompleteCloseReason
-  ) => {
+  ): void => {
     if (reason === 'blur' || reason === 'escape') {
       setOpen(false);
     }
@@ -123,7 +123,7 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
    * pressed next to the completable title.
    * @param {string} itemId Id of the Completable.
    */
-  const handleItemRemove = (itemId: string) => {
+  const handleItemRemove = (itemId: string): void => {
     const tempPrereqs = currentPrereqs.filter(item => itemId !== item);
     updatePrereqs(tempPrereqs);
   };
@@ -131,7 +131,7 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
   /**
    * Adds all the completable IDs to the currentPrereqs.
    */
-  const handleAddAllTaskObjects = () => {
+  const handleAddAllTaskObjects = (): void => {
     updatePrereqs([...Object.keys(allTasks), ...Object.keys(allProjects)]);
   };
   // #endregion
@@ -157,10 +157,7 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
             onOpen={() => setOpen(true)}
             value={options.filter(compl => currentPrereqs.includes(compl._id))}
             getOptionLabel={option => option.title}
-            groupBy={
-              option => (option.type === 'project' ? 'Project' : 'Task')
-              // eslint-disable-next-line react/jsx-curly-newline
-            }
+            groupBy={option => (option.type === 'project' ? 'Project' : 'Task')}
             renderOption={option => (
               <Typography id={option._id}>{option.title}</Typography>
             )}

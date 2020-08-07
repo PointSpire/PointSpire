@@ -14,17 +14,15 @@ import {
 import { CompletableType } from '../../../../utils/dbTypes';
 import UserData from '../../../../clientData/UserData';
 import PrereqTaskManager from '.';
+import Task from '../../../../models/Task';
 
 function styles(theme: Theme) {
   return createStyles({
-    root: {
-      background: theme.palette.background.default,
-    },
     title: {
       background: theme.palette.primary.main,
     },
-    content: {
-      background: theme.palette.background.default,
+    selectedCompl: {
+      fontSize: '1.15rem',
     },
   });
 }
@@ -48,7 +46,7 @@ const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
     completableType,
     closeDialog,
   } = props;
-  const [completable, setCompletable] = useState(
+  const [completable, setCompletable] = useState<Task>(
     UserData.getCompletable(completableType, completableId)
   );
   const [currentPrereqs, setPrereqs] = useState<string[]>(
@@ -67,14 +65,14 @@ const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
           console.log(
             'Completable ID: ',
             updatedCompletable._id,
-            '\nCompletable Updated.'
+            '\nCompletable Prerequisites Updated.'
           );
           setCompletable(updatedCompletable);
         }
       }
     );
 
-    return function cleanup() {
+    return function cleanup(): void {
       UserData.removeCompletableListener(
         completableType,
         completableId,
@@ -86,7 +84,7 @@ const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
   /**
    * Saves the prereqs when the 'save' button is pressed.
    */
-  const closeAndSave = () => {
+  const closeAndSave = (): void => {
     const updatedCompletable = completable;
     updatedCompletable.prereqTasks = currentPrereqs;
     UserData.setAndSaveCompletable(completableType, updatedCompletable);
@@ -99,8 +97,12 @@ const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
       <DialogTitle className={classes.title}>
         Prerequisite Tasks Menu
       </DialogTitle>
-      <DialogContent className={classes.content}>
-        <Typography align="center">{completable.title}</Typography>
+      <DialogContent>
+        <Typography className={classes.selectedCompl}>
+          {`Selected ${completableType === 'task' ? 'Task' : 'Project'} : ${
+            completable.title
+          }`}
+        </Typography>
         <PrereqTaskManager
           currentPrereqs={currentPrereqs}
           updatePrereqs={newPrereqs => setPrereqs(newPrereqs)}

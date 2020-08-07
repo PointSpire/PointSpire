@@ -33,7 +33,7 @@ export interface PrereqListProps extends WithStyles<typeof styles> {
  * Builds the list of current prerequisites.
  * @param {PrereqListProps} props Properties.
  */
-const PrereqList = (props: PrereqListProps) => {
+const PrereqList = (props: PrereqListProps): JSX.Element => {
   const { classes, prereqType, prereqs, handleRemove } = props;
   const title = prereqType === 'task' ? 'Tasks' : 'Projects';
   return (

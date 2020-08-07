@@ -16,9 +16,9 @@ import {
 import SortMenu from './SortMenu';
 
 export type TaskMenuProps = {
+  sortBy: string;
   deleteTask: () => void;
   addSubTask: (title: string) => void;
-  sortBy: string;
   setSortBy: (sortBy: string) => void;
   openPrereqTaskDialog: () => void;
 };
@@ -31,9 +31,9 @@ export type TaskMenuProps = {
  */
 function TaskMenu(props: TaskMenuProps): JSX.Element {
   const {
+    sortBy,
     deleteTask,
     addSubTask,
-    sortBy,
     setSortBy,
     openPrereqTaskDialog,
   } = props;
@@ -61,7 +61,7 @@ function TaskMenu(props: TaskMenuProps): JSX.Element {
     setAnchorEl(null);
   }
 
-  function handleOpenPrereqs() {
+  function handleOpenPrereqs(): void {
     openPrereqTaskDialog();
     setAnchorEl(null);
   }
