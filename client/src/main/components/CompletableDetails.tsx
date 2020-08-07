@@ -20,6 +20,7 @@ import CompletableTable from './CompletableTable';
 import { CompletableType } from '../utils/dbTypes';
 import Completables from '../models/Completables';
 import TagRow from './TagRow';
+import BreadCrumb from './BreadCrumb';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -103,6 +104,9 @@ function CompletableDetailsRoute(props: CompletableDetailsProps) {
   return (
     <>
       <List>
+        <ListItem>
+          <BreadCrumb />
+        </ListItem>
         <ListItem>
           <ListItemIcon>
             <CompletedCheckbox
