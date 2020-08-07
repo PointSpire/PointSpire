@@ -11,8 +11,8 @@ import {
   withStyles,
   Button,
 } from '@material-ui/core';
-import { CompletableType } from '../../utils/dbTypes';
-import UserData from '../../clientData/UserData';
+import { CompletableType } from '../../../../utils/dbTypes';
+import UserData from '../../../../clientData/UserData';
 import PrereqTaskManager from '.';
 
 function styles(theme: Theme) {
@@ -83,6 +83,9 @@ const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
     };
   }, []);
 
+  /**
+   * Saves the prereqs when the 'save' button is pressed.
+   */
   const closeAndSave = () => {
     const updatedCompletable = completable;
     updatedCompletable.prereqTasks = currentPrereqs;

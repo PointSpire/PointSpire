@@ -24,8 +24,8 @@ import TagRow from './TagRow';
 import isFiltered from '../../../utils/filterFunctions';
 import HiddenItemsCaption from '../HiddenItemsCaption';
 import UserData from '../../../clientData/UserData';
-import PrereqTaskDialog from '../../PrereqTaskManager/PrereqTaskDialog';
-import PrereqTaskDisplay from '../../PrereqTaskManager/PrereqTaskDisplay';
+import PrereqTaskDialog from './PrereqTaskManager/PrereqTaskDialog';
+import PrereqTaskDisplay from './PrereqTaskManager/PrereqTaskDisplay';
 
 const debug = Debug('CompletableRow');
 debug.enabled = false;
@@ -433,7 +433,7 @@ const CompletableRow = (props: CompletableRowProps) => {
     };
   }
 
-  const handleOpenPrereqTaskDialog = () => {
+  const handlePrereqsDialog = () => {
     setPrereqTasksOpen(!prereTasksOpen);
   };
 
@@ -495,7 +495,7 @@ const CompletableRow = (props: CompletableRowProps) => {
                   <PrereqTaskDisplay
                     completableId={completableId}
                     completableType={completableType}
-                    openPrereqTaskDialog={handleOpenPrereqTaskDialog}
+                    openPrereqTaskDialog={handlePrereqsDialog}
                   />
                 </Grid>
                 <Grid item>
@@ -526,10 +526,10 @@ const CompletableRow = (props: CompletableRowProps) => {
                     setSortBy={updateSortBy}
                     deleteTask={deleteThisCompletable}
                     addSubTask={addSubTask}
-                    openPrereqTaskDialog={handleOpenPrereqTaskDialog}
+                    openPrereqTaskDialog={handlePrereqsDialog}
                   />
                   <PrereqTaskDialog
-                    closeDialog={handleOpenPrereqTaskDialog}
+                    closeDialog={handlePrereqsDialog}
                     completableId={completableId}
                     completableType={completableType}
                     openDialog={prereTasksOpen}

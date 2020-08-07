@@ -1,7 +1,7 @@
 import React, { MouseEvent, useState, useEffect } from 'react';
 import { Button, Tooltip } from '@material-ui/core';
-import { CompletableType } from '../../utils/dbTypes';
-import UserData from '../../clientData/UserData';
+import { CompletableType } from '../../../../utils/dbTypes';
+import UserData from '../../../../clientData/UserData';
 
 export interface PrereqTaskDisplay2Props {
   completableId: string;

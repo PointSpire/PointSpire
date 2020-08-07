@@ -1,7 +1,6 @@
 import React, { useState, ChangeEvent } from 'react';
 import {
   Grid,
-  Divider,
   Typography,
   createStyles,
   withStyles,
@@ -14,75 +13,23 @@ import {
 import AutoComplete, {
   AutocompleteCloseReason,
 } from '@material-ui/lab/Autocomplete';
-import UserData from '../../clientData/UserData';
+import UserData from '../../../../clientData/UserData';
 import PrereqList from './PrereqList';
 
 // #region [ rgba(0,100,200,0.05) ] External functions and sytle function
 function styles(theme: Theme) {
   return createStyles({
-    gridItem: {
-      padding: theme.spacing(1),
-    },
     areaPaper: {
       padding: theme.spacing(1),
       backgroundColor: theme.palette.background.paper,
     },
-    paperList: {
-      padding: theme.spacing(2.3),
-      borderColor: theme.palette.primary.dark,
-      borderWidth: '4px',
-    },
-    saveButton: {
-      backgroundColor: theme.palette.primary.light,
-      '&:hover': {
-        backgroundColor: theme.palette.primary.dark,
-      },
-    },
-    cancelButton: {
-      backgroundColor: theme.palette.secondary.light,
-      '&:hover': {
-        backgroundColor: theme.palette.secondary.dark,
-      },
-    },
-    dividerBase: {
-      margin: theme.spacing(0.5),
-    },
-    prereqPaper: {
-      margin: theme.spacing(1),
-    },
-    // #region New CSS classes
-    prereqPopBase: {
-      width: '100%',
-    },
     autoCompBase: {
-      minWidth: '200px',
-      maxWidth: '400px',
-    },
-    valueItemTitle: {
-      display: 'inline',
-    },
-    selectedList: {
-      maxHeight: '100px',
-    },
-    valueItemIcon: {
-      display: 'inline',
-      alignItems: 'left',
-      '&:hover': {
-        backgroundColor: theme.palette.secondary.light,
-      },
-    },
-    autoCompInput: {
-      backgroundColor: 'red',
+      minWidth: '300px',
+      maxWidth: '500px',
     },
     autoCompPopperRoot: {
       backgroundColor: theme.palette.primary.main,
-      position: 'absolute',
-      top: 0,
     },
-    autoCompFocused: {
-      backgroundColor: theme.palette.background.paper,
-    },
-    // #endregion
   });
 }
 // #endregion
@@ -106,7 +53,7 @@ interface OptionType {
  * up and more efficient.
  */
 const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
-  // #region [ rgba(100, 180, 0, 0.05) ] Property Def
+  // #region [ rgba(100, 180, 0, 0.05) ] Property Definitions
   const { classes, currentPrereqs, updatePrereqs } = props;
   const allTasks = UserData.getTasks();
   const allProjects = UserData.getProjects();
@@ -142,6 +89,12 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
   // #endregion
 
   // #region [ rgba(200, 0, 180, 0.05) ] Component Methods
+  /**
+   * Updates the selected prereqs state when the AutoComplete
+   * component changes the slected options.
+   * @param _e Unused Event argument.
+   * @param selected Array of selected Options.
+   */
   const handleAutoCompleteChange = (
     _e: ChangeEvent<{}>,
     selected: OptionType[]
@@ -151,6 +104,11 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
     }
   };
 
+  /**
+   * Closes the dialog when either 'ESC' is pressed or the user clicks away.
+   * @param _e Unused Event argument.
+   * @param reason The Reason the AutoComplete was closed.
+   */
   const handleAutoCompleteClose = (
     _e: ChangeEvent<{}>,
     reason: AutocompleteCloseReason
@@ -188,7 +146,6 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
             className={classes.autoCompBase}
             classes={{
               popper: classes.autoCompPopperRoot,
-              root: classes.autoCompFocused,
             }}
             open={openPopper}
             multiple
@@ -211,6 +168,7 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
             renderInput={params => <TextField {...params} label="Search" />}
             renderTags={() => null}
             onChange={handleAutoCompleteChange}
+            closeIcon={null}
           />
           {currentPrereqs && currentPrereqs.length > 0 ? (
             <Paper className={classes.areaPaper}>
@@ -230,7 +188,6 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
           )}
         </Paper>
       </Grid>
-      <Divider orientation="horizontal" className={classes.dividerBase} />
       <Grid container direction="row" justify="space-evenly">
         <Button variant="text" onClick={handleAddAllTaskObjects}>
           Add All

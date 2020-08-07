@@ -13,7 +13,7 @@ import {
   withStyles,
 } from '@material-ui/core';
 import RemIcon from '@material-ui/icons/Clear';
-import Task from '../../models/Task';
+import Task from '../../../../models/Task';
 
 function styles(theme: Theme) {
   return createStyles({
@@ -29,6 +29,10 @@ export interface PrereqListProps extends WithStyles<typeof styles> {
   handleRemove: (prereqId: string) => void;
 }
 
+/**
+ * Builds the list of current prerequisites.
+ * @param {PrereqListProps} props Properties.
+ */
 const PrereqList = (props: PrereqListProps) => {
   const { classes, prereqType, prereqs, handleRemove } = props;
   const title = prereqType === 'task' ? 'Tasks' : 'Projects';

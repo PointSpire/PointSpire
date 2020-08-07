@@ -6,10 +6,13 @@ import {
   ListItemIcon,
   ListItemText,
 } from '@material-ui/core';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
-import DeleteIcon from '@material-ui/icons/Delete';
-import AddIcon from '@material-ui/icons/Add';
-import MenuIcon from '@material-ui/icons/Menu';
+import {
+  Assignment as AssignIcon,
+  Add as AddIcon,
+  Menu as MenuIcon,
+  Delete as DeleteIcon,
+  MoreVert as MoreVertIcon,
+} from '@material-ui/icons';
 import SortMenu from './SortMenu';
 
 export type TaskMenuProps = {
@@ -58,6 +61,11 @@ function TaskMenu(props: TaskMenuProps): JSX.Element {
     setAnchorEl(null);
   }
 
+  function handleOpenPrereqs() {
+    openPrereqTaskDialog();
+    setAnchorEl(null);
+  }
+
   return (
     <div>
       <IconButton
@@ -91,15 +99,11 @@ function TaskMenu(props: TaskMenuProps): JSX.Element {
           </ListItemIcon>
           <ListItemText primary="Delete" />
         </MenuItem>
-        <MenuItem onClick={handleAddSubTask}>Add SubTask</MenuItem>
-        <MenuItem onClick={handleDelete}>Delete</MenuItem>
-        <MenuItem
-          onClick={() => {
-            openPrereqTaskDialog();
-            setAnchorEl(null);
-          }}
-        >
-          Prerequisites
+        <MenuItem onClick={handleOpenPrereqs}>
+          <ListItemIcon>
+            <AssignIcon />
+          </ListItemIcon>
+          <ListItemText>Prerequisites</ListItemText>
         </MenuItem>
       </Menu>
       <SortMenu
