@@ -2,20 +2,17 @@ import React, { useState, useEffect } from 'react';
 import Debug from 'debug';
 import './App.css';
 import { createMuiTheme, ThemeProvider, Theme } from '@material-ui/core/styles';
-import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import MuiAlert from '@material-ui/lab/Alert';
 import { Snackbar } from '@material-ui/core';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import TopMenuBar from './components/TopMenuBar';
-import IndexRoute from './routes/IndexRoute';
-import CompletableDetailsRoute from './routes/CompletableDetailsRoute';
-import ModalCompletableDetailsRoute from './routes/ModalCompletableDetailsRoute';
-import { MobileContext } from './utils/contexts';
 import { AllUserData } from './utils/dbTypes';
 import { getUserData, getTestUserData } from './utils/fetchMethods';
 import baseThemeOptions from './AppTheme';
 import Completables from './models/Completables';
 import User from './models/User';
+import AppContent from './components/AppContent';
+import MobileProvider from './components/MobileProvider';
 
 const debug = Debug('App.tsx');
 debug.enabled = false;
@@ -94,51 +91,30 @@ const App = () => {
 
   return (
     <div className="App">
-      <MobileContext.Provider value={mobile}>
-        <ThemeProvider theme={appTheme}>
-          <BrowserRouter>
-            <TopMenuBar
-              githubClientId={githubClientId}
-              alert={alert}
-              appTheme={appTheme}
-              setTheme={setAppTheme}
-            />
-            {mobile ? (
-              <Switch>
-                <Route exact path="/">
-                  {projectIds && <IndexRoute />}
-                </Route>
-                <Route
-                  path="/c/:completableType/:completableId"
-                  render={({ location: { key } }) =>
-                    projectIds && <CompletableDetailsRoute key={key} />
-                  }
-                />
-              </Switch>
-            ) : (
-              <>
-                <Route path="/">{projectIds && <IndexRoute />}</Route>
-                <Route path="/c/:completableType/:completableId">
-                  <ModalCompletableDetailsRoute />
-                </Route>
-              </>
-            )}
-            <Snackbar
-              open={snackBarOpen}
-              autoHideDuration={3000}
-              onClose={() => setSnackBarOpen(false)}
+      <ThemeProvider theme={appTheme}>
+        <MobileProvider mobile={mobile}>
+          <TopMenuBar
+            githubClientId={githubClientId}
+            alert={alert}
+            appTheme={appTheme}
+            setTheme={setAppTheme}
+          />
+          <AppContent projectIds={projectIds} />
+          <Snackbar
+            open={snackBarOpen}
+            autoHideDuration={3000}
+            onClose={() => setSnackBarOpen(false)}
+          >
+            <MuiAlert
+              elevation={6}
+              variant="filled"
+              severity={snackBarSeverity}
             >
-              <MuiAlert
-                elevation={6}
-                variant="filled"
-                severity={snackBarSeverity}
-              >
-                {snackBarText}
-              </MuiAlert>
-            </Snackbar>
-          </BrowserRouter>
-        </ThemeProvider>
-      </MobileContext.Provider>
+              {snackBarText}
+            </MuiAlert>
+          </Snackbar>
+        </MobileProvider>
+      </ThemeProvider>
     </div>
   );
 };

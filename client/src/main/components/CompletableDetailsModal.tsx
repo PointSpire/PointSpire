@@ -1,10 +1,10 @@
 import React from 'react';
 import { useParams, useHistory } from 'react-router-dom';
 import { Dialog, DialogActions, Button } from '@material-ui/core';
-import CompletableDetails from '../components/CompletableDetails';
+import CompletableDetails from './CompletableDetails';
 import { manualSave } from '../utils/savingTimer';
 
-function CompleteableDetailsRoute() {
+function CompletableDetailsModal() {
   const { completableType, completableId = '' } = useParams();
   const history = useHistory();
 
@@ -33,4 +33,4 @@ function CompleteableDetailsRoute() {
   );
 }
 
-export default CompleteableDetailsRoute;
+export default CompletableDetailsModal;
