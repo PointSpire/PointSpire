@@ -11,14 +11,22 @@ import {
   createStyles,
   WithStyles,
   withStyles,
+  ListItemIcon,
 } from '@material-ui/core';
-import RemIcon from '@material-ui/icons/Clear';
+import {
+  Clear as RemIcon,
+  CheckBox as CompletedIcon,
+  CheckBoxOutlineBlank as NotCompIcon,
+} from '@material-ui/icons';
 import Task from '../../../../models/Task';
 
 function styles(theme: Theme) {
   return createStyles({
     root: {
       margin: theme.spacing(0.8),
+    },
+    boxChecked: {
+      color: theme.palette.primary.main,
     },
   });
 }
@@ -43,6 +51,13 @@ const PrereqList = (props: PrereqListProps): JSX.Element => {
         {prereqs && prereqs.length > 0 ? (
           prereqs.map(item => (
             <ListItem key={`project-prereq-${item._id}`}>
+              <ListItemIcon>
+                {item.completed ? (
+                  <CompletedIcon className={classes.boxChecked} />
+                ) : (
+                  <NotCompIcon />
+                )}
+              </ListItemIcon>
               <ListItemText primary={item.title} />
               <ListItemSecondaryAction>
                 <IconButton onClick={() => handleRemove(item._id)} edge="end">

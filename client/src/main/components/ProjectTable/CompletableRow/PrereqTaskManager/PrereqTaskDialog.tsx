@@ -78,6 +78,7 @@ const PrereqTaskDialog = (props: PrereqTaskDialogProps): JSX.Element => {
       </DialogTitle>
       <DialogContent dividers>
         <PrereqTaskManager
+          completableId={completableId}
           currentPrereqs={currentPrereqs}
           updatePrereqs={newPrereqs => setPrereqs(newPrereqs)}
         />

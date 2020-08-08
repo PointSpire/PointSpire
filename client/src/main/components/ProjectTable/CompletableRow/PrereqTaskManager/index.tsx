@@ -9,10 +9,18 @@ import {
   Button,
   Paper,
   TextField,
+  Icon,
+  Checkbox,
+  FormGroup,
+  FormControlLabel,
 } from '@material-ui/core';
 import AutoComplete, {
   AutocompleteCloseReason,
 } from '@material-ui/lab/Autocomplete';
+import {
+  CheckBox as CompletedIcon,
+  CheckBoxOutlineBlank as NotCompIcon,
+} from '@material-ui/icons';
 import UserData from '../../../../clientData/UserData';
 import PrereqList from './PrereqList';
 
@@ -30,12 +38,22 @@ function styles(theme: Theme) {
     autoCompPopperRoot: {
       backgroundColor: theme.palette.primary.main,
     },
+    autoCompOption: {
+      display: 'inline',
+    },
+    autoCompIcon: {
+      paddingRight: theme.spacing(2),
+    },
+    boxChecked: {
+      color: theme.palette.primary.main,
+    },
   });
 }
 // #endregion
 
 // #region [ rgba(200,100,0,0.05) ] Interfaces
 export interface PrereqTaskManagerProps extends WithStyles<typeof styles> {
+  completableId: string;
   currentPrereqs: string[];
   updatePrereqs: (newPrereqs: string[]) => void;
 }
@@ -43,6 +61,7 @@ export interface PrereqTaskManagerProps extends WithStyles<typeof styles> {
 interface OptionType {
   type: 'task' | 'project';
   title: string;
+  completed: boolean;
   _id: string;
 }
 // #endregion
@@ -54,16 +73,25 @@ interface OptionType {
  */
 const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
   // #region [ rgba(100, 180, 0, 0.05) ] Property Definitions
-  const { classes, currentPrereqs, updatePrereqs } = props;
+  const { classes, currentPrereqs, completableId, updatePrereqs } = props;
   const allTasks = UserData.getTasks();
   const allProjects = UserData.getProjects();
   const [openPopper, setOpen] = useState<boolean>(false);
+  const [showCompleted, setShowCompleted] = useState<boolean>(false);
 
   const prereqProjects = Object.values(allProjects).filter(project =>
-    currentPrereqs.includes(project._id)
+    showCompleted
+      ? currentPrereqs.includes(project._id) && project._id !== completableId
+      : currentPrereqs.includes(project._id) &&
+        project._id !== completableId &&
+        !project.completed
   );
   const prereqTasks = Object.values(allTasks).filter(task =>
-    currentPrereqs.includes(task._id)
+    showCompleted
+      ? currentPrereqs.includes(task._id) && task._id !== completableId
+      : currentPrereqs.includes(task._id) &&
+        task._id !== completableId &&
+        !task.completed
   );
 
   /**
@@ -75,6 +103,7 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
       return {
         type: 'task',
         title: task.title,
+        completed: task.completed,
         _id: task._id,
       };
     }),
@@ -82,13 +111,14 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
       return {
         type: 'project',
         title: project.title,
+        completed: project.completed,
         _id: project._id,
       };
     }),
   ] as OptionType[];
   // #endregion
 
-  // #region [ rgba(200, 0, 180, 0.05) ] Component Methods
+  // #region [ rgba(200, 0, 180, 0.05) ] Component Handlers
   /**
    * Updates the selected prereqs state when the AutoComplete
    * component changes the slected options.
@@ -141,6 +171,20 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
   return (
     <Grid container direction="column">
       <Grid item>
+        <FormGroup>
+          <FormControlLabel
+            label="Show Completed"
+            control={
+              <Checkbox
+                checked={showCompleted}
+                onChange={() => setShowCompleted(!showCompleted)}
+                name="ShowCompletedCheck"
+              />
+            }
+          />
+        </FormGroup>
+      </Grid>
+      <Grid item>
         <Paper>
           <AutoComplete
             className={classes.autoCompBase}
@@ -151,15 +195,41 @@ const PrereqTaskManager = (props: PrereqTaskManagerProps): JSX.Element => {
             multiple
             fullWidth
             clearOnBlur={false}
-            options={options}
+            options={
+              showCompleted
+                ? options.filter(opt => opt._id !== completableId)
+                : options.filter(
+                    opt => opt._id !== completableId && !opt.completed
+                  )
+            }
             popupIcon={null}
             onClose={handleAutoCompleteClose}
             onOpen={() => setOpen(true)}
             value={options.filter(compl => currentPrereqs.includes(compl._id))}
             getOptionLabel={option => option.title}
-            groupBy={option => (option.type === 'project' ? 'Project' : 'Task')}
+            // getOptionSelected={option => {
+            //   return showCompleted
+            //     ? currentPrereqs.includes(option._id)
+            //     : currentPrereqs.includes(option._id) && !option.completed;
+            // }}
+            groupBy={option => {
+              return option.type === 'project' ? 'Projects' : 'Tasks';
+            }}
             renderOption={option => (
-              <Typography id={option._id}>{option.title}</Typography>
+              <Grid container direction="row" spacing={0} wrap="nowrap">
+                <Grid item>
+                  <Icon className={classes.autoCompIcon}>
+                    {option.completed ? (
+                      <CompletedIcon className={classes.boxChecked} />
+                    ) : (
+                      <NotCompIcon />
+                    )}
+                  </Icon>
+                </Grid>
+                <Grid item>
+                  <Typography id={option._id}>{option.title}</Typography>
+                </Grid>
+              </Grid>
             )}
             // eslint-disable-next-line react/jsx-props-no-spreading
             renderInput={params => <TextField {...params} label="Search" />}
