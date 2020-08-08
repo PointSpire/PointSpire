@@ -24,6 +24,8 @@ import TagRow from './TagRow';
 import isFiltered from '../../../utils/filterFunctions';
 import HiddenItemsCaption from '../HiddenItemsCaption';
 import UserData from '../../../clientData/UserData';
+import PrereqTaskDialog from './PrereqTaskManager/PrereqTaskDialog';
+import PrereqTaskDisplay from './PrereqTaskManager/PrereqTaskDisplay';
 
 const debug = Debug('CompletableRow');
 debug.enabled = false;
@@ -108,6 +110,7 @@ const CompletableRow = (props: CompletableRowProps) => {
   const [completable, setCompletable] = useState(
     UserData.getCompletable(completableType, completableId)
   );
+  const [prereTasksOpen, setPrereqTasksOpen] = useState(false);
 
   const listenerId = `${completableId}.CompletableRow`;
 
@@ -430,6 +433,10 @@ const CompletableRow = (props: CompletableRowProps) => {
     };
   }
 
+  const handlePrereqsDialog = () => {
+    setPrereqTasksOpen(!prereTasksOpen);
+  };
+
   return (
     <>
       <div className={thisIsFiltered ? classes.breadCrumbRoot : classes.root}>
@@ -485,6 +492,13 @@ const CompletableRow = (props: CompletableRowProps) => {
                   />
                 </Grid>
                 <Grid item>
+                  <PrereqTaskDisplay
+                    completableId={completableId}
+                    completableType={completableType}
+                    openPrereqTaskDialog={handlePrereqsDialog}
+                  />
+                </Grid>
+                <Grid item>
                   <PriorityButton
                     completableType={completableType}
                     completableId={completableId}
@@ -512,6 +526,13 @@ const CompletableRow = (props: CompletableRowProps) => {
                     setSortBy={updateSortBy}
                     deleteTask={deleteThisCompletable}
                     addSubTask={addSubTask}
+                    openPrereqTaskDialog={handlePrereqsDialog}
+                  />
+                  <PrereqTaskDialog
+                    closeDialog={handlePrereqsDialog}
+                    completableId={completableId}
+                    completableType={completableType}
+                    openDialog={prereTasksOpen}
                   />
                 </Grid>
               </Grid>

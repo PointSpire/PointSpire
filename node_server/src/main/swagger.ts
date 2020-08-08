@@ -272,6 +272,17 @@ const definition = {
           },
         },
       },
+      projectObjectPrereqIds: {
+        type: 'object',
+        properties: {
+          prereqTasks: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+          },
+        },
+      },
       completableObjectPostBody: {
         allOf: [
           {
@@ -279,6 +290,9 @@ const definition = {
           },
           {
             $ref: '#/components/schemas/completableObjectBasis',
+          },
+          {
+            $ref: '#/components/schemas/projectObjectPrereqIds',
           },
         ],
       },

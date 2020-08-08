@@ -204,8 +204,8 @@ function ProjectTable(props: ProjectTableProps) {
   /**
    * Adds a new project with a default title.
    */
-  async function addProject(): Promise<void> {
-    const newProject = await UserData.addProject('Untitled');
+  function addProject(): void {
+    const newProject = UserData.addProject('Untitled');
 
     // Add the sorting listener
     addSortByListener(newProject._id, sortBy);

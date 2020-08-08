@@ -33,6 +33,20 @@ export function prioritySortDescending(type: CompletableType) {
   };
 }
 
+export function prioritySortAscending(type: CompletableType) {
+  const completables = getCompletables(type);
+  debug(`prioritySortAscending completables is: `, completables);
+  return (completable1Id: string, completable2Id: string): number => {
+    if (!completables[completable1Id]) {
+      debug(`Completable with ID: ${completable1Id} came back undefined`);
+    }
+    return (
+      completables[completable2Id].priority -
+      completables[completable1Id].priority
+    );
+  };
+}
+
 /**
  * Generates a sorting function that can be used to sort completables by
  * dueDate.
@@ -79,6 +93,34 @@ export function titleSortDescending(type: CompletableType) {
 }
 
 /**
+ * Sorts completables by the number of prerequisite tasks.
+ *
+ * @param {CompletableType} type the type of the completables
+ */
+export function prereqSortDescending(type: CompletableType) {
+  const completables = getCompletables(type);
+  return (completableId1: string, completableId2: string): number => {
+    const completable1 = completables[completableId1];
+    const completable2 = completables[completableId2];
+    return completable2.prereqTasks.length - completable1.prereqTasks.length;
+  };
+}
+
+/**
+ * Sorts completables by the number of prerequisite tasks.
+ *
+ * @param {CompletableType} type the type of the completables
+ */
+export function prereqSortAscending(type: CompletableType) {
+  const completables = getCompletables(type);
+  return (completableId1: string, completableId2: string): number => {
+    const completable1 = completables[completableId1];
+    const completable2 = completables[completableId2];
+    return completable1.prereqTasks.length - completable2.prereqTasks.length;
+  };
+}
+
+/**
  * Sorting functions that can be used to sort completables. Includes the
  * correct label name and the key is the completable property name.
  */
@@ -100,6 +142,10 @@ const sortingFunctions: SortingFunctions = {
     labelName: 'Priority',
     function: prioritySortDescending,
   },
+  priorityReversed: {
+    labelName: 'Priority Rev',
+    function: prioritySortAscending,
+  },
   dueDate: {
     labelName: 'Due Date',
     function: dueDateSortDescending,
@@ -111,6 +157,14 @@ const sortingFunctions: SortingFunctions = {
   title: {
     labelName: 'Title',
     function: titleSortDescending,
+  },
+  prereqs: {
+    labelName: 'prerequisites',
+    function: prereqSortDescending,
+  },
+  prereqsReversed: {
+    labelName: 'prereq Rev',
+    function: prereqSortAscending,
   },
 };
 

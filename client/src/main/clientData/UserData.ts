@@ -368,7 +368,7 @@ class UserData {
   static setAndSaveCompletable(
     type: 'project' | 'task',
     completable: Completable
-  ) {
+  ): void {
     this.setCompletable(type, completable);
     scheduleCallback(
       `${completable._id}.saveCompletable`,
@@ -384,7 +384,7 @@ class UserData {
    * object
    * @param {unknown} value the updated value of the property
    */
-  static setAndSaveUserProperty(propertyName: string, value: unknown) {
+  static setAndSaveUserProperty(propertyName: string, value: unknown): void {
     this.setUserProperty(propertyName, value);
     scheduleCallback(`user.saveUser`, this.saveUser(this.user));
   }
@@ -420,7 +420,7 @@ class UserData {
     );
   }
 
-  static getCompletable(type: CompletableType, completableId: string) {
+  static getCompletable(type: CompletableType, completableId: string): Task {
     if (type === 'project') {
       return this.projects[completableId];
     }
@@ -558,7 +558,7 @@ class UserData {
    * @param {CompletableType} type the type of the completable
    * @param {string} completableId the ID of the completable to delete
    */
-  static deleteCompletable(type: CompletableType, completableId: string) {
+  static deleteCompletable(type: CompletableType, completableId: string): void {
     let completables;
     let completableListeners;
     let deleteCompletableOnServer: (id: string) => Promise<Task | null>;
@@ -604,7 +604,7 @@ class UserData {
     completableId: string,
     listenerId: string,
     callback: CompletableListenerCallback
-  ) {
+  ): void {
     const completableListeners = this.getCompletableListeners(type);
     if (!completableListeners[completableId]) {
       completableListeners[completableId] = {
@@ -624,7 +624,10 @@ class UserData {
    * @param {UserListenerCallback} callback the callback to run when the
    * user object is changed
    */
-  static addUserListener(listenerId: string, callback: UserListenerCallback) {
+  static addUserListener(
+    listenerId: string,
+    callback: UserListenerCallback
+  ): void {
     this.userListeners.listeners[listenerId] = callback;
   }
 
@@ -643,7 +646,7 @@ class UserData {
     listenerId: string,
     propertyName: string,
     callback: PropertyListenerCallback
-  ) {
+  ): void {
     if (!this.userListeners.propertyListeners[propertyName]) {
       this.userListeners.propertyListeners[propertyName] = {};
     }
@@ -670,7 +673,7 @@ class UserData {
     listenerId: string,
     propertyName: string,
     callback: PropertyListenerCallback
-  ) {
+  ): void {
     const completableListeners = this.getCompletableListeners(type);
     if (!completableListeners[completableId]) {
       completableListeners[completableId] = {
@@ -686,13 +689,16 @@ class UserData {
     ] = callback;
   }
 
-  static removeUserListener(listenerId: string) {
+  static removeUserListener(listenerId: string): void {
     if (this.userListeners.listeners[listenerId]) {
       delete this.userListeners.listeners[listenerId];
     }
   }
 
-  static removeUserPropertyListener(propertyName: string, listenerId: string) {
+  static removeUserPropertyListener(
+    propertyName: string,
+    listenerId: string
+  ): void {
     if (
       this.userListeners.propertyListeners[propertyName] &&
       this.userListeners.propertyListeners[propertyName][listenerId]
@@ -705,7 +711,7 @@ class UserData {
     type: CompletableType,
     completableId: string,
     listenerId: string
-  ) {
+  ): void {
     const completableListeners = this.getCompletableListeners(type);
     if (
       completableListeners[completableId] &&
@@ -720,7 +726,7 @@ class UserData {
     completableId: string,
     listenerId: string,
     propertyName: string
-  ) {
+  ): void {
     const completableListeners = this.getCompletableListeners(type);
     if (
       completableListeners[completableId] &&

@@ -1,4 +1,4 @@
-import React, { useState, MouseEvent } from 'react';
+import React, { useState } from 'react';
 import {
   IconButton,
   Menu,
@@ -6,21 +6,21 @@ import {
   ListItemIcon,
   ListItemText,
 } from '@material-ui/core';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
-import DeleteIcon from '@material-ui/icons/Delete';
-import AddIcon from '@material-ui/icons/Add';
-import MenuIcon from '@material-ui/icons/Menu';
+import {
+  Assignment as AssignIcon,
+  Add as AddIcon,
+  Menu as MenuIcon,
+  Delete as DeleteIcon,
+  MoreVert as MoreVertIcon,
+} from '@material-ui/icons';
 import SortMenu from './SortMenu';
 
 export type TaskMenuProps = {
+  sortBy: string;
   deleteTask: () => void;
   addSubTask: (title: string) => void;
-  sortBy: string;
   setSortBy: (sortBy: string) => void;
-  openPrereqTaskDialog?: (
-    e: MouseEvent<HTMLElement>,
-    prereqTasks: string[] | null
-  ) => void;
+  openPrereqTaskDialog: () => void;
 };
 
 /**
@@ -31,9 +31,9 @@ export type TaskMenuProps = {
  */
 function TaskMenu(props: TaskMenuProps): JSX.Element {
   const {
+    sortBy,
     deleteTask,
     addSubTask,
-    sortBy,
     setSortBy,
     openPrereqTaskDialog,
   } = props;
@@ -58,6 +58,11 @@ function TaskMenu(props: TaskMenuProps): JSX.Element {
   }
 
   function handleClose(): void {
+    setAnchorEl(null);
+  }
+
+  function handleOpenPrereqs(): void {
+    openPrereqTaskDialog();
     setAnchorEl(null);
   }
 
@@ -94,18 +99,12 @@ function TaskMenu(props: TaskMenuProps): JSX.Element {
           </ListItemIcon>
           <ListItemText primary="Delete" />
         </MenuItem>
-        {openPrereqTaskDialog ? (
-          <MenuItem
-            onClick={event => {
-              openPrereqTaskDialog(event, null);
-              setAnchorEl(null);
-            }}
-          >
-            Prerequisites
-          </MenuItem>
-        ) : (
-          ''
-        )}
+        <MenuItem onClick={handleOpenPrereqs}>
+          <ListItemIcon>
+            <AssignIcon />
+          </ListItemIcon>
+          <ListItemText>Prerequisites</ListItemText>
+        </MenuItem>
       </Menu>
       <SortMenu
         sortBy={sortBy}
