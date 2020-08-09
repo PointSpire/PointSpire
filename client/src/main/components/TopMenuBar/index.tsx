@@ -17,6 +17,7 @@ import {
   withStyles,
   WithStyles,
 } from '@material-ui/core/styles';
+import ImportExportIcon from '@material-ui/icons/ImportExport';
 import MenuIcon from '@material-ui/icons/Menu';
 import SettingsIcon from '@material-ui/icons/Settings';
 import HelpIcon from '@material-ui/icons/Help';
@@ -28,6 +29,7 @@ import { logout } from '../../utils/fetchMethods';
 import { manualSave, windowUnloadListener } from '../../utils/savingTimer';
 import { AppSaveStatus } from '../../clientData/AppSaveStatus';
 import User from '../../models/User';
+import ImportExportDialog from './ImportExportDialog';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 
 ejecting from create-react-app */
@@ -61,23 +63,11 @@ export interface TopMenuBarProps extends WithStyles<typeof styles> {
 
 function TopMenuBar(props: TopMenuBarProps): JSX.Element {
   const { alert, setTheme, appTheme, githubClientId, classes } = props;
-  /**
-   * The items for the drawer that pops out of the left hand side.
-   */
-  const menuItems = {
-    settings: {
-      text: 'Settings',
-      icon: <SettingsIcon />,
-    },
-    help: {
-      text: 'Help',
-      icon: <HelpIcon />,
-    },
-  };
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [importExportOpen, setImportExportOpen] = useState(false);
   const [loggedIn, setLoggedIn] = useState(!!User.get().settings);
   const [savedStatus, setSavedStatus] = useState(AppSaveStatus.getStatus());
 
@@ -156,6 +146,26 @@ function TopMenuBar(props: TopMenuBarProps): JSX.Element {
   }
 
   /**
+   * Creates a handler that can be used to change the `importExportOpen` state.
+   *
+   * @param {boolean} open true if this should set the ImportExportDialog to
+   * open, and false if not
+   */
+  function createSetImportExportOpenHandler(open: boolean) {
+    return (event: React.KeyboardEvent | React.MouseEvent) => {
+      if (
+        event.type === 'keydown' &&
+        ((event as React.KeyboardEvent).key === 'Tab' ||
+          (event as React.KeyboardEvent).key === 'Shift')
+      ) {
+        return;
+      }
+
+      setImportExportOpen(open);
+    };
+  }
+
+  /**
    * Creates a handler that sets the sate of the `loginOpen` state.
    *
    * @param {boolean} open
@@ -204,6 +214,27 @@ function TopMenuBar(props: TopMenuBarProps): JSX.Element {
   }
 
   /**
+   * The items for the drawer that pops out of the left hand side.
+   */
+  const menuItems = {
+    settings: {
+      text: 'Settings',
+      icon: <SettingsIcon />,
+      onClick: createSetSettingsOpenHandler(true),
+    },
+    importExport: {
+      text: 'Import / Export Data',
+      icon: <ImportExportIcon />,
+      onClick: createSetImportExportOpenHandler(true),
+    },
+    help: {
+      text: 'Help',
+      icon: <HelpIcon />,
+      onClick: undefined,
+    },
+  };
+
+  /**
    * The list of items in the menu rendered in JSX.
    */
   const menuList = (
@@ -215,15 +246,7 @@ function TopMenuBar(props: TopMenuBarProps): JSX.Element {
     >
       <List>
         {Object.values(menuItems).map(menuItem => (
-          <ListItem
-            key={menuItem.text}
-            button
-            onClick={
-              menuItem.text === menuItems.settings.text
-                ? createSetSettingsOpenHandler(true)
-                : undefined
-            }
-          >
+          <ListItem key={menuItem.text} button onClick={menuItem.onClick}>
             <ListItemIcon>{menuItem.icon}</ListItemIcon>
             <ListItemText primary={menuItem.text} />
           </ListItem>
@@ -280,6 +303,10 @@ function TopMenuBar(props: TopMenuBarProps): JSX.Element {
         setOpen={setLoginOpen}
       />
       {settingsDialog}
+      <ImportExportDialog
+        open={importExportOpen}
+        setOpen={setImportExportOpen}
+      />
     </div>
   );
 }
