@@ -2,24 +2,17 @@ import React from 'react';
 import { useParams, useHistory } from 'react-router-dom';
 import { Dialog, DialogActions, Button } from '@material-ui/core';
 import CompletableDetails from './CompletableDetails';
-import { manualSave } from '../utils/savingTimer';
 
 function CompletableDetailsModal() {
-  const { completableType, completableId = '' } = useParams();
+  const { completableType, completableId } = useParams();
   const history = useHistory();
 
   function handleClose() {
-    manualSave();
     history.push('/');
   }
 
   return (
-    <Dialog
-      open={completableId !== ''}
-      fullWidth
-      maxWidth="md"
-      onClose={handleClose}
-    >
+    <Dialog open fullWidth maxWidth="md" onClose={handleClose}>
       <CompletableDetails
         completableType={completableType}
         completableId={completableId}

@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import Debug from 'debug';
 import { TextField } from '@material-ui/core';
+import { ObjectId } from 'bson';
 import { resetTimer } from '../../../utils/savingTimer';
 import { CompletableType } from '../../../utils/dbTypes';
 import Completables from '../../../models/Completables';
+
+const debug = Debug('SimpletTextInput.tsx');
+debug.enabled = false;
 
 export type SimpleTextInputProps = {
   completableType: CompletableType;
@@ -32,13 +37,13 @@ function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
   /**
    * The ID for this listener when set on some property or completable.
    */
-  const listenerId = `${completableId}.SimpleTextInput.${completablePropertyName}`;
+  const listenerId = new ObjectId().toHexString();
 
-  /**
-   * Add the property listener for the completed value so that it disables
-   * the text input when the completable is completed.
-   */
   useEffect(() => {
+    /**
+     * Add the property listener for the completed value so that it disables
+     * the text input when the completable is completed.
+     */
     Completables.addPropertyListener(
       completableType,
       completableId,
@@ -49,6 +54,16 @@ function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
       }
     );
 
+    Completables.addPropertyListener(
+      completableType,
+      completableId,
+      listenerId,
+      completablePropertyName,
+      updatedValue => {
+        setValue(updatedValue as string);
+      }
+    );
+
     // This will be ran when the component is unmounted
     return function cleanup() {
       Completables.removePropertyListener(
@@ -56,6 +71,13 @@ function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
         completableId,
         listenerId,
         'completed'
+      );
+
+      Completables.removePropertyListener(
+        completableType,
+        completableId,
+        listenerId,
+        completablePropertyName
       );
     };
   }, []);

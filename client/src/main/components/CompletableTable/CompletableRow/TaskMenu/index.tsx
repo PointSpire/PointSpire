@@ -68,18 +68,20 @@ function TaskMenu(props: TaskMenuProps): JSX.Element {
     setSortAnchorEl(event.currentTarget);
   }
 
+  function handleClose(): void {
+    setAnchorEl(null);
+  }
+
   function handleAddSubTask(): void {
     addSubTask('Untitled');
+    handleClose();
   }
 
   const history = useHistory();
 
   function handleEdit(): void {
     history.push(`/c/${completableType}/${completableId}`);
-  }
-
-  function handleClose(): void {
-    setAnchorEl(null);
+    handleClose();
   }
 
   return (

@@ -15,7 +15,7 @@ import { PropertyListenerCallback, PropertyListeners } from '../utils/dbTypes';
 import User from './User';
 
 const debug = Debug('Completables.ts');
-debug.enabled = true;
+debug.enabled = false;
 
 export type CompletableType = 'project' | 'task';
 
@@ -90,6 +90,15 @@ export default abstract class Completables {
     updatedValue: unknown
   ): void {
     const completableListeners = this.getListeners(type);
+    debug(
+      'Property listeners are being notified for completable with ID: "',
+      completableId,
+      '" and propertyName of: "',
+      propertyName,
+      '" to the updated value of "',
+      updatedValue,
+      '"'
+    );
     if (
       completableListeners[completableId] &&
       completableListeners[completableId].propertyListeners[propertyName]
