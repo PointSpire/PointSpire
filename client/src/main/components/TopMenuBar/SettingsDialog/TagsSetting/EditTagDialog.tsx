@@ -12,6 +12,7 @@ import {
 import { UserTag } from '../../../../utils/dbTypes';
 import colors, { createThemeFromColorName } from '../../../../utils/colors';
 import User from '../../../../models/User';
+import capitalizeFirstLetter from '../../../../utils/stringFunctions';
 
 export interface EditTagDialogProps {
   open: boolean;
@@ -67,10 +68,6 @@ function EditTagDialog(props: EditTagDialogProps) {
   function handleColorChange(event: React.ChangeEvent<{ value: unknown }>) {
     const colorName = event.target.value as string;
     setTagColorName(colorName);
-  }
-
-  function capitalizeFirstLetter(str: string): string {
-    return str[0].toUpperCase() + str.slice(1);
   }
 
   return (

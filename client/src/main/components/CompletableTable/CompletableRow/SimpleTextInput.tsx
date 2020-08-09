@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, InputBase } from '@material-ui/core';
+import { TextField } from '@material-ui/core';
 import { resetTimer } from '../../../utils/savingTimer';
 import { CompletableType } from '../../../utils/dbTypes';
 import Completables from '../../../models/Completables';
@@ -10,8 +10,6 @@ export type SimpleTextInputProps = {
   completablePropertyName: string;
   label: string;
   className?: string;
-  onClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
-  mobile?: boolean;
   fullWidth?: boolean;
 };
 
@@ -22,8 +20,6 @@ function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
     completableId,
     completableType,
     completablePropertyName,
-    onClick,
-    mobile = false,
     fullWidth = false,
   } = props;
   const [value, setValue] = useState(
@@ -85,28 +81,16 @@ function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
   }
 
   return (
-    <>
-      {mobile ? (
-        <InputBase
-          className={className}
-          readOnly
-          disabled={disabled}
-          value={value}
-          onClick={onClick}
-        />
-      ) : (
-        <TextField
-          className={className}
-          disabled={disabled}
-          size="small"
-          fullWidth={fullWidth}
-          label={label}
-          value={value}
-          onChange={handleChange}
-          onBlur={handleLoseFocus}
-        />
-      )}
-    </>
+    <TextField
+      className={className}
+      disabled={disabled}
+      size="small"
+      fullWidth={fullWidth}
+      label={label}
+      value={value}
+      onChange={handleChange}
+      onBlur={handleLoseFocus}
+    />
   );
 }
 

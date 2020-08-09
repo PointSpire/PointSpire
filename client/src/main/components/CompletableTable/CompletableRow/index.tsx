@@ -14,7 +14,6 @@ import Debug from 'debug';
 import { CompletableType } from '../../../utils/dbTypes';
 import NoteInput from './NoteInput';
 import DateInput from './DateInput';
-import SimpleTextInput from './SimpleTextInput';
 import TaskMenu from './TaskMenu';
 import sortingFunctions from '../../../utils/sortingFunctions';
 import PriorityButton from './PriorityButton';
@@ -27,6 +26,7 @@ import HiddenItemsCaption from '../HiddenItemsCaption';
 import { MobileContext } from '../../../utils/contexts';
 import User from '../../../models/User';
 import Completables from '../../../models/Completables';
+import CompletableTitle from '../../CompletableTitle';
 
 const debug = Debug('CompletableRow');
 debug.enabled = false;
@@ -431,10 +431,10 @@ const CompletableRow = (props: CompletableRowProps) => {
 
   /**
    * Clicking on the completable row on mobile routes to the
-   * CompletableDetailsRoute
+   * CompletableDetails for that completable.
    */
   function detailedViewHandler(): void {
-    history.push(`/c/${completableType}/${completableId}`);
+    history.push(`${completableType}/${completableId}`);
   }
 
   return (
@@ -489,17 +489,9 @@ const CompletableRow = (props: CompletableRowProps) => {
                       className={classes.root}
                       key={`${completable._id}.title`}
                     >
-                      <SimpleTextInput
-                        label={
-                          completableType === 'project'
-                            ? 'Project Title'
-                            : 'Task Title'
-                        }
-                        completableType={completableType}
+                      <CompletableTitle
                         completableId={completableId}
-                        completablePropertyName="title"
-                        onClick={detailedViewHandler}
-                        mobile={mobile}
+                        completableType={completableType}
                       />
                     </Grid>
                     {!mobile && (

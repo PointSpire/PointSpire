@@ -10,10 +10,9 @@ type AppContentProps = {
 };
 
 /**
- * Represents the main view of the app. In other words, everything except for
- * the TopMenuBar.
+ * Controls the routing for the application.
  */
-function AppContent(props: AppContentProps): JSX.Element {
+function AppRoutes(props: AppContentProps): JSX.Element {
   const { projectIds } = props;
   return (
     <MobileContext.Consumer>
@@ -43,4 +42,4 @@ function AppContent(props: AppContentProps): JSX.Element {
   );
 }
 
-export default AppContent;
+export default AppRoutes;

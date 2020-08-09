@@ -11,7 +11,7 @@ import { getUserData, getTestUserData } from './utils/fetchMethods';
 import baseThemeOptions from './AppTheme';
 import Completables from './models/Completables';
 import User from './models/User';
-import AppContent from './components/AppContent';
+import AppRoutes from './components/AppRoutes';
 import MobileProvider from './components/MobileProvider';
 
 const debug = Debug('App.tsx');
@@ -99,7 +99,7 @@ const App = () => {
             appTheme={appTheme}
             setTheme={setAppTheme}
           />
-          <AppContent projectIds={projectIds} />
+          <AppRoutes projectIds={projectIds} />
           <Snackbar
             open={snackBarOpen}
             autoHideDuration={3000}

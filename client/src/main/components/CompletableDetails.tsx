@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, FunctionComponent } from 'react';
 import {
   List,
   ListItem,
@@ -54,7 +54,14 @@ export interface CompletableDetailsProps extends WithStyles<typeof styles> {
   completableId: string;
 }
 
-function CompletableDetailsRoute(props: CompletableDetailsProps) {
+/**
+ * Represents the details of a completable in a list format.
+ *
+ * @param {CompletableDetailsProps} props the props for the component
+ */
+const CompletableDetails: FunctionComponent<CompletableDetailsProps> = (
+  props: CompletableDetailsProps
+) => {
   const { completableType, completableId } = props;
 
   const [completable, setCompletable] = useState(
@@ -105,7 +112,10 @@ function CompletableDetailsRoute(props: CompletableDetailsProps) {
     <>
       <List>
         <ListItem>
-          <BreadCrumb />
+          <BreadCrumb
+            completableId={completableId}
+            completableType={completableType}
+          />
         </ListItem>
         <ListItem>
           <ListItemIcon>
@@ -172,6 +182,6 @@ function CompletableDetailsRoute(props: CompletableDetailsProps) {
       </Collapse>
     </>
   );
-}
+};
 
-export default withStyles(styles, { withTheme: true })(CompletableDetailsRoute);
+export default withStyles(styles, { withTheme: true })(CompletableDetails);
