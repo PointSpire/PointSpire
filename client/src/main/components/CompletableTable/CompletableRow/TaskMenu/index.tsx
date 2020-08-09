@@ -100,7 +100,7 @@ function TaskMenu(props: TaskMenuProps): JSX.Element {
             onClose={handleClose}
           >
             {mobile ? (
-              <MenuItem onClick={handleEdit}>
+              <MenuItem onClick={handleEdit} key="edit">
                 <ListItemIcon>
                   <EditIcon />
                 </ListItemIcon>
@@ -108,13 +108,13 @@ function TaskMenu(props: TaskMenuProps): JSX.Element {
               </MenuItem>
             ) : (
               [
-                <MenuItem onClick={handleSortMenuClick}>
+                <MenuItem onClick={handleSortMenuClick} key="sortBy">
                   <ListItemIcon>
                     <MenuIcon />
                   </ListItemIcon>
                   <ListItemText primary="Sort By" />
                 </MenuItem>,
-                <MenuItem onClick={handleAddSubTask}>
+                <MenuItem onClick={handleAddSubTask} key="add">
                   <ListItemIcon>
                     <AddIcon />
                   </ListItemIcon>
@@ -123,7 +123,7 @@ function TaskMenu(props: TaskMenuProps): JSX.Element {
               ]
             )}
 
-            <MenuItem onClick={handleDelete}>
+            <MenuItem onClick={handleDelete} key="delete">
               <ListItemIcon>
                 <DeleteIcon />
               </ListItemIcon>

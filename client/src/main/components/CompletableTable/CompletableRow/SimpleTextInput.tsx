@@ -20,7 +20,7 @@ function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
     completableId,
     completableType,
     completablePropertyName,
-    fullWidth = false,
+    fullWidth = true,
   } = props;
   const [value, setValue] = useState(
     Completables.get(completableType, completableId)[completablePropertyName]
