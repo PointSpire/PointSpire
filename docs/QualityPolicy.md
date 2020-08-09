@@ -7,12 +7,12 @@ This document covers various quality guidelines in the development process for P
 ## Git
 
 - Pull request reviews: If there is time, then a full review using the Pull Request Review Template below should be used. Otherwise, a quick note on the pull request with any comments can be posted.
-- `master` branch: Pull requests should always have idealy at least one review before a merge. If after 24 hours there are no reviews, it can be merged. Also should only be fast-forwards with whatever is pulling into it. 
-- `development` branch: Should be used during sprints and merged into master at the end of a sprint. Pull requests should have idealy at least one review before a merge. If after 24 hours there are no reviews, it can be merged.
-- `documents` branch: Can be used to update just documentation. This should merge into master, then merge from master into development if it is during a sprint. This branch should never be deleted.
-- User story and task branches should be created off of the current development branch. If a user story will be completed all at once, then it can simply be named with `US<user story number>-ShortDescription`. For example `US60-SwaggerAPIFrontEnd`. If a branch should be made for a specific task it should have the user story then the task number, so `US<user stoory number>T<task number>-ShortDescription`. For example `US65T72-GithubAuthenticationBackend`.
-- Once a user story or task branch is pulled into the development branch, it should be deleted to reduce branch clutter.
-- Commits should follow the [standard commit guidelines](https://chris.beams.io/posts/git-commit/) with the added stipulation that every commit should have the user story and task number prepended to the commit title. For example a commit title could be `US66T74 Update .travis.yml to include client`. This makes it easier to determine the reasoning behind a commit in the short title because you can always reference the user story or task that the commit is working to accomplish.
+- `master` branch: Pull requests should always have reviews from the 3 primary team members before a merge. Also should only be fast-forwards with whatever is pulling into it. 
+- `development` branch: Pull requests should have idealy at least one review before a merge. If after 24 hours there are no reviews, it can be merged. Once the development branch has at least one pull request merged, a pull request can be made to the master branch. More pull requests can be made into development while an active pull request into master has been made. This branch should not be deleted.
+- `documents` branch: Can be used to update just documentation. This should merge into master, then merge from master into development. This branch should never be deleted.
+- User Stories: User stories should be made in Issues on the project while tagging the main project for PointSpire. Branches should be named according to the issue they are referencing: `I<issue number>-ShortDescription`. For example `I60-SwaggerAPIFrontEnd`.
+- Once an issue branch is pulled into the development branch, it should be deleted to reduce branch clutter.
+- Commits should follow the [standard commit guidelines](https://chris.beams.io/posts/git-commit/) with the added stipulation that every commit should have the isssue prepended to the commit title. For example a commit title could be `I60 Update .travis.yml to include client`. This makes it easier to determine the reasoning behind a commit in the short title because you can always reference the issue that the commit is working to accomplish.
 
 ### Pull Request Review Template:
 
