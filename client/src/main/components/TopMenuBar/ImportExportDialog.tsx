@@ -6,6 +6,8 @@ import {
   DialogContent,
   DialogActions,
   Button,
+  List,
+  ListItem,
 } from '@material-ui/core';
 import FileSaver from 'file-saver';
 import { AllUserData } from '../../utils/dbTypes';
@@ -63,6 +65,14 @@ function ImportExportDialog(props: ImportExportDialogProps) {
     FileSaver.saveAs(blob, `${createDateString()} - pointspire-backup.json`);
   }
 
+  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    debug('handleFileChange triggered');
+    const fileInput = event.target;
+    if (fileInput.files && fileInput.files[0]) {
+      debug(fileInput.files[0].name);
+    }
+  }
+
   return (
     <Dialog
       open={open}
@@ -72,9 +82,24 @@ function ImportExportDialog(props: ImportExportDialogProps) {
     >
       <DialogTitle id="import-export-dialog-title">Import / Export</DialogTitle>
       <DialogContent dividers>
-        <Button variant="outlined" color="primary" onClick={saveJsonFile}>
-          Save Backup of Data
-        </Button>
+        <List>
+          <ListItem>
+            <Button color="primary" variant="contained" component="label">
+              Import Backup
+              <input
+                onChange={handleFileChange}
+                accept=".json"
+                type="file"
+                style={{ display: 'none' }}
+              />
+            </Button>
+          </ListItem>
+          <ListItem>
+            <Button variant="contained" color="primary" onClick={saveJsonFile}>
+              Save Backup of Data
+            </Button>
+          </ListItem>
+        </List>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose} color="primary">
