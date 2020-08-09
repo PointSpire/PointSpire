@@ -8,9 +8,13 @@ import {
 } from '@material-ui/core';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import DeleteIcon from '@material-ui/icons/Delete';
+import EditIcon from '@material-ui/icons/Edit';
 import AddIcon from '@material-ui/icons/Add';
 import MenuIcon from '@material-ui/icons/Menu';
+import { useHistory } from 'react-router-dom';
 import SortMenu from './SortMenu';
+import { MobileContext } from '../../../../utils/contexts';
+import { CompletableType } from '../../../../models/Completables';
 
 export type TaskMenuProps = {
   deleteTask: () => void;
@@ -21,8 +25,9 @@ export type TaskMenuProps = {
     e: MouseEvent<HTMLElement>,
     prereqTasks: string[] | null
   ) => void;
-  detailedView: () => void;
   clickProp?: boolean;
+  completableId: string;
+  completableType: CompletableType;
 };
 
 /**
@@ -38,8 +43,9 @@ function TaskMenu(props: TaskMenuProps): JSX.Element {
     sortBy,
     setSortBy,
     openPrereqTaskDialog,
-    detailedView,
     clickProp = true,
+    completableType,
+    completableId,
   } = props;
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -66,66 +72,85 @@ function TaskMenu(props: TaskMenuProps): JSX.Element {
     addSubTask('Untitled');
   }
 
+  const history = useHistory();
+
+  function handleEdit(): void {
+    history.push(`/c/${completableType}/${completableId}`);
+  }
+
   function handleClose(): void {
     setAnchorEl(null);
   }
 
   return (
-    <div>
-      <IconButton
-        onClick={handleClick}
-        aria-controls="simple-menu"
-        aria-haspopup="true"
-      >
-        <MoreVertIcon />
-      </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        keepMounted
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
-        <MenuItem onClick={handleSortMenuClick}>
-          <ListItemIcon>
-            <MenuIcon />
-          </ListItemIcon>
-          <ListItemText primary="Sort By" />
-        </MenuItem>
-        <MenuItem onClick={handleAddSubTask}>
-          <ListItemIcon>
-            <AddIcon />
-          </ListItemIcon>
-          <ListItemText primary="Add SubTask" />
-        </MenuItem>
-        <MenuItem onClick={handleDelete}>
-          <ListItemIcon>
-            <DeleteIcon />
-          </ListItemIcon>
-          <ListItemText primary="Delete" />
-        </MenuItem>
-        <MenuItem onClick={detailedView}>Edit</MenuItem>
-        <MenuItem onClick={handleAddSubTask}>Add SubTask</MenuItem>
-        <MenuItem onClick={handleDelete}>Delete</MenuItem>
-        {openPrereqTaskDialog ? (
-          <MenuItem
-            onClick={event => {
-              openPrereqTaskDialog(event, null);
-              setAnchorEl(null);
-            }}
+    <MobileContext.Consumer>
+      {mobile => (
+        <>
+          <IconButton
+            onClick={handleClick}
+            aria-controls="simple-menu"
+            aria-haspopup="true"
           >
-            Prerequisites
-          </MenuItem>
-        ) : (
-          ''
-        )}
-      </Menu>
-      <SortMenu
-        sortBy={sortBy}
-        setSortBy={setSortBy}
-        anchorEl={sortAnchorEl}
-        setAnchorEl={setSortAnchorEl}
-      />
-    </div>
+            <MoreVertIcon />
+          </IconButton>
+          <Menu
+            anchorEl={anchorEl}
+            keepMounted
+            open={Boolean(anchorEl)}
+            onClose={handleClose}
+          >
+            {mobile ? (
+              <MenuItem onClick={handleEdit}>
+                <ListItemIcon>
+                  <EditIcon />
+                </ListItemIcon>
+                <ListItemText>Edit</ListItemText>
+              </MenuItem>
+            ) : (
+              [
+                <MenuItem onClick={handleSortMenuClick}>
+                  <ListItemIcon>
+                    <MenuIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Sort By" />
+                </MenuItem>,
+                <MenuItem onClick={handleAddSubTask}>
+                  <ListItemIcon>
+                    <AddIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Add SubTask" />
+                </MenuItem>,
+              ]
+            )}
+
+            <MenuItem onClick={handleDelete}>
+              <ListItemIcon>
+                <DeleteIcon />
+              </ListItemIcon>
+              <ListItemText primary="Delete" />
+            </MenuItem>
+            {openPrereqTaskDialog ? (
+              <MenuItem
+                onClick={event => {
+                  openPrereqTaskDialog(event, null);
+                  setAnchorEl(null);
+                }}
+              >
+                Prerequisites
+              </MenuItem>
+            ) : (
+              ''
+            )}
+          </Menu>
+          <SortMenu
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            anchorEl={sortAnchorEl}
+            setAnchorEl={setSortAnchorEl}
+          />
+        </>
+      )}
+    </MobileContext.Consumer>
   );
 }
 

@@ -9,7 +9,6 @@ import {
   Collapse,
   Typography,
 } from '@material-ui/core';
-import { useHistory } from 'react-router-dom';
 import Debug from 'debug';
 import { CompletableType } from '../../../utils/dbTypes';
 import NoteInput from './NoteInput';
@@ -426,17 +425,6 @@ const CompletableRow = (props: CompletableRowProps) => {
     };
   }
 
-  // Hook used for programatic routing in react-router
-  const history = useHistory();
-
-  /**
-   * Clicking on the completable row on mobile routes to the
-   * CompletableDetails for that completable.
-   */
-  function detailedViewHandler(): void {
-    history.push(`${completableType}/${completableId}`);
-  }
-
   return (
     <MobileContext.Consumer>
       {mobile => (
@@ -527,7 +515,8 @@ const CompletableRow = (props: CompletableRowProps) => {
                         deleteTask={deleteThisCompletable}
                         addSubTask={addSubTask}
                         clickProp={!mobile}
-                        detailedView={detailedViewHandler}
+                        completableId={completableId}
+                        completableType={completableType}
                       />
                     </Grid>
                   </Grid>
