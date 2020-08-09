@@ -10,6 +10,7 @@ import {
   Typography,
 } from '@material-ui/core';
 import Debug from 'debug';
+import { useHistory } from 'react-router-dom';
 import { CompletableType } from '../../../utils/dbTypes';
 import NoteInput from './NoteInput';
 import DateInput from './DateInput';
@@ -383,6 +384,8 @@ const CompletableRow = (props: CompletableRowProps) => {
     };
   }, []);
 
+  const history = useHistory();
+
   /**
    * Adds a new task to this completable on the server and in ClientData which
    * triggers state.
@@ -402,6 +405,9 @@ const CompletableRow = (props: CompletableRowProps) => {
 
     // Open up the subtasks
     setSubTasksOpen(true);
+
+    // Open the new task editing modal
+    history.push(`/c/task/${newTask._id}`);
   }
 
   /**
