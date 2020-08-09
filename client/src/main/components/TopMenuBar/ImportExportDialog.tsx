@@ -8,6 +8,9 @@ import {
   Button,
 } from '@material-ui/core';
 import FileSaver from 'file-saver';
+import { AllUserData } from '../../utils/dbTypes';
+import User from '../../models/User';
+import Completables from '../../models/Completables';
 
 const debug = Debug('ImportExportDialog.tsx');
 debug.enabled = true;
@@ -42,22 +45,21 @@ function ImportExportDialog(props: ImportExportDialogProps) {
     );
   }
 
+  function getAllUserData(): AllUserData {
+    return {
+      user: User.get(),
+      projects: Completables.getProjects(),
+      tasks: Completables.getTasks(),
+    };
+  }
+
+  /**
+   * Saves a JSON file to the client which contains AllUserData.
+   */
   function saveJsonFile() {
-    const blob = new Blob(
-      [
-        JSON.stringify(
-          {
-            someTestValue: 3,
-            someOtherValue: 4,
-          },
-          null,
-          2
-        ),
-      ],
-      {
-        type: 'application/jsoon;charset=utf-8',
-      }
-    );
+    const blob = new Blob([JSON.stringify(getAllUserData(), null, 2)], {
+      type: 'application/jsoon;charset=utf-8',
+    });
     FileSaver.saveAs(blob, `${createDateString()} - pointspire-backup.json`);
   }
 
@@ -70,7 +72,9 @@ function ImportExportDialog(props: ImportExportDialogProps) {
     >
       <DialogTitle id="import-export-dialog-title">Import / Export</DialogTitle>
       <DialogContent dividers>
-        <Button onClick={saveJsonFile}>Save Backup of Data</Button>
+        <Button variant="outlined" color="primary" onClick={saveJsonFile}>
+          Save Backup of Data
+        </Button>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose} color="primary">
