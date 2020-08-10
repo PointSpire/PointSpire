@@ -583,6 +583,48 @@ function createUsersRouter(db: typeof mongoose): Router {
     }
   });
 
+  /**
+   * @swagger
+   * /users/validate:
+   *   post:
+   *     summary: 'Validates that the provided object is a valid User object'
+   *     tags:
+   *       - User
+   *     requestBody:
+   *       description: 'The object to test'
+   *       required: true
+   *     responses:
+   *       '200':
+   *         description: 'The user validation has completed and the result is in the response.'
+   *         content:
+   *          'application/json':
+   *            schema:
+   *              $ref: '#/components/schemas/validationResponse'
+   *       '400':
+   *         description: 'The body was not provided'
+   */
+  router.post('/validate', (req, res) => {
+    if (req.body) {
+      const userDocToTest = new User(req.body);
+      userDocToTest.validate(err => {
+        if (err) {
+          res.status(200).json({
+            validated: false,
+            err,
+          });
+        } else {
+          res.status(200).json({
+            validated: true,
+          });
+        }
+      });
+    } else {
+      res
+        .status(400)
+        .send('Body not provided. Please provide body to validate.');
+    }
+  });
+
   return router;
 }
 

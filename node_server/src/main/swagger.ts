@@ -308,6 +308,18 @@ const definition = {
           },
         ],
       },
+      validationResponse: {
+        type: 'object',
+        properties: {
+          validated: {
+            type: 'boolean',
+          },
+          err: {
+            type: 'object',
+            required: false,
+          },
+        },
+      },
     },
   },
 };
