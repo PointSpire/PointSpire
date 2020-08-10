@@ -8,9 +8,10 @@ import {
 } from '@material-ui/core';
 import { ObjectID } from 'bson';
 import { Autocomplete } from '@material-ui/lab';
-import UserData from '../../../../clientData/UserData';
-import { CompletableType, UserTags } from '../../../../utils/dbTypes';
+import { CompletableType, UserTags } from '../../utils/dbTypes';
 import TagChip from './TagChip';
+import Completables from '../../models/Completables';
+import User from '../../models/User';
 
 function styles() {
   return createStyles({
@@ -32,18 +33,18 @@ function TagRow(props: TagRowProps) {
   const { classes, completableId, completableType } = props;
 
   const [tags, setTags] = useState<Array<string>>(
-    UserData.getCompletable(completableType, completableId).tags
-      ? UserData.getCompletable(completableType, completableId).tags
+    Completables.get(completableType, completableId).tags
+      ? Completables.get(completableType, completableId).tags
       : []
   );
 
-  const [userTags, setUserTags] = useState(UserData.getUser().currentTags);
+  const [userTags, setUserTags] = useState(User.get().currentTags);
 
   const listenerId = `${completableId}.TagRow`;
 
   // Subscribe to changes in the tags of the completable
   useEffect(() => {
-    UserData.addCompletablePropertyListener(
+    Completables.addPropertyListener(
       completableType,
       completableId,
       listenerId,
@@ -54,7 +55,7 @@ function TagRow(props: TagRowProps) {
     );
 
     return () => {
-      UserData.removeCompletablePropertyListener(
+      Completables.removePropertyListener(
         completableType,
         completableId,
         listenerId,
@@ -65,16 +66,12 @@ function TagRow(props: TagRowProps) {
 
   // Subscribe to changes in the user's tags
   useEffect(() => {
-    UserData.addUserPropertyListener(
-      listenerId,
-      'currentTags',
-      updatedUserTags => {
-        setUserTags({ ...(updatedUserTags as UserTags) });
-      }
-    );
+    User.addPropertyListener(listenerId, 'currentTags', updatedUserTags => {
+      setUserTags({ ...(updatedUserTags as UserTags) });
+    });
 
     return () => {
-      UserData.removeUserPropertyListener('currentTags', listenerId);
+      User.removePropertyListener('currentTags', listenerId);
     };
   }, []);
 
@@ -104,7 +101,7 @@ function TagRow(props: TagRowProps) {
         color: colors.yellow[700],
         name: newTagName,
       };
-      UserData.setAndSaveUserProperty('currentTags', userTags);
+      User.setAndSaveProperty('currentTags', userTags);
     } else {
       // The tag does exist, so set it's ID
       tagId = userTagIds[tagIndex];
@@ -112,12 +109,9 @@ function TagRow(props: TagRowProps) {
 
     // Save the new tag to the completable
     tags.push(tagId);
-    UserData.setAndSaveCompletableProperty(
-      completableType,
-      completableId,
-      'tags',
-      [...tags]
-    );
+    Completables.setAndSaveProperty(completableType, completableId, 'tags', [
+      ...tags,
+    ]);
   }
 
   function getTagNamesOnCompletable(): string[] {
@@ -156,7 +150,7 @@ function TagRow(props: TagRowProps) {
     } else {
       // There isn't a new tag name, so update the completable directly
       const updatedTags = getTagIdsFromTagNames(tagNames);
-      UserData.setAndSaveCompletableProperty(
+      Completables.setAndSaveProperty(
         completableType,
         completableId,
         'tags',

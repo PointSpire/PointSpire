@@ -72,6 +72,10 @@ function createUsersRouter(db: typeof mongoose): Router {
   router.get('/', (req, res) => {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     if (req.session && req.session.userId) {
+      console.log(
+        'There was a session for the user and that is: ',
+        req.session
+      );
       res.redirect(`/api/users/${req.session.userId}`);
     } else {
       // Clear their cookies if they don't have a session

@@ -10,8 +10,9 @@ import {
   MenuItem,
 } from '@material-ui/core';
 import { UserTag } from '../../../../utils/dbTypes';
-import UserData from '../../../../clientData/UserData';
 import colors, { createThemeFromColorName } from '../../../../utils/colors';
+import User from '../../../../models/User';
+import capitalizeFirstLetter from '../../../../utils/stringFunctions';
 
 export interface EditTagDialogProps {
   open: boolean;
@@ -41,12 +42,12 @@ function EditTagDialog(props: EditTagDialogProps) {
   );
 
   function saveTag() {
-    const updatedTags = { ...UserData.getUser().currentTags };
+    const updatedTags = { ...User.get().currentTags };
     updatedTags[tagId].name = tagName;
     const colorValues = colors[tagColorName];
     // eslint-disable-next-line prefer-destructuring
     updatedTags[tagId].color = colorValues[700];
-    UserData.setAndSaveUserProperty('currentTags', updatedTags);
+    User.setAndSaveProperty('currentTags', updatedTags);
   }
 
   function handleClose() {
@@ -67,10 +68,6 @@ function EditTagDialog(props: EditTagDialogProps) {
   function handleColorChange(event: React.ChangeEvent<{ value: unknown }>) {
     const colorName = event.target.value as string;
     setTagColorName(colorName);
-  }
-
-  function capitalizeFirstLetter(str: string): string {
-    return str[0].toUpperCase() + str.slice(1);
   }
 
   return (

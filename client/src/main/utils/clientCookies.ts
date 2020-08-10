@@ -4,7 +4,11 @@
  * keep track of which ones are available.
  */
 
+import Debug from 'debug';
 import Cookies from 'js-cookie';
+
+const debug = Debug('clientCookies.ts');
+debug.enabled = true;
 
 /**
  * Gets a particular cookie.
@@ -36,6 +40,7 @@ export enum ClientCookies {
  */
 export function deleteAllCookies(): void {
   Object.keys(Cookies.getJSON()).forEach(key => {
+    debug(`Removing cookie with key: ${key}`);
     Cookies.remove(key);
   });
 }

@@ -1,16 +1,16 @@
 import moment from 'moment';
 import Debug from 'debug';
 import { CompletableType } from './dbTypes';
-import UserData from '../clientData/UserData';
+import Completables from '../models/Completables';
 
 const debug = Debug('sortingFunctions.ts');
 debug.enabled = false;
 
 function getCompletables(type: CompletableType) {
   if (type === 'project') {
-    return UserData.getProjects();
+    return Completables.getProjects();
   }
-  return UserData.getTasks();
+  return Completables.getTasks();
 }
 
 /**

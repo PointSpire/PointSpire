@@ -1,13 +1,14 @@
 import moment from 'moment';
 import { CompletableType } from './dbTypes';
-import UserData from '../clientData/UserData';
+import User from '../models/User';
+import Completables from '../models/Completables';
 
 export default function isFiltered(
   completableType: CompletableType,
   completableId: string
 ) {
-  const { filters } = UserData.getUser();
-  const completable = UserData.getCompletable(completableType, completableId);
+  const { filters } = User.get();
+  const completable = Completables.get(completableType, completableId);
 
   if (!filters.showCompletedTasks && completable.completed) {
     return true;
