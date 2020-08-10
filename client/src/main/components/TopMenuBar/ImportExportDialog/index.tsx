@@ -11,17 +11,19 @@ import {
 } from '@material-ui/core';
 import ImportBackupButton from './ImportBackupButton';
 import SaveBackupButton from './SaveBackupButton';
+import { AlertFunction } from '../../../App';
 
 const debug = Debug('ImportExportDialog');
-debug.enabled = true;
+debug.enabled = false;
 
 export type ImportExportDialogProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
+  alert: AlertFunction;
 };
 
 function ImportExportDialog(props: ImportExportDialogProps) {
-  const { open, setOpen } = props;
+  const { open, setOpen, alert } = props;
 
   function handleClose() {
     setOpen(false);
@@ -38,7 +40,7 @@ function ImportExportDialog(props: ImportExportDialogProps) {
       <DialogContent dividers>
         <List>
           <ListItem>
-            <ImportBackupButton />
+            <ImportBackupButton alert={alert} />
           </ListItem>
           <ListItem>
             <SaveBackupButton />

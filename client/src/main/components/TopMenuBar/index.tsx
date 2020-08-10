@@ -304,6 +304,7 @@ function TopMenuBar(props: TopMenuBarProps): JSX.Element {
       />
       {settingsDialog}
       <ImportExportDialog
+        alert={alert}
         open={importExportOpen}
         setOpen={setImportExportOpen}
       />

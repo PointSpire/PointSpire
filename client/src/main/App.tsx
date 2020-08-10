@@ -22,6 +22,15 @@ debug.enabled = false;
  */
 type SnackBarSeverity = 'error' | 'warning' | 'info' | 'success';
 
+/**
+ * The type of the method `alert`. This can be used to specify
+ * the functions type when passing it down as a prop to other components.
+ */
+export type AlertFunction = (
+  severity: SnackBarSeverity,
+  message: string
+) => void;
+
 // Set the githubClientId. See the .env file for details.
 let githubClientId: string;
 if (process.env.REACT_APP_AUTH === 'LOCAL') {
@@ -83,11 +92,14 @@ const App = () => {
    * for error
    * @param {string} message The message to display in the toast message
    */
-  function alert(severity: SnackBarSeverity, message: string): void {
+  const alert: AlertFunction = (
+    severity: SnackBarSeverity,
+    message: string
+  ) => {
     setSnackBarOpen(true);
     setSnackBarSeverity(severity);
     setSnackBarText(message);
-  }
+  };
 
   return (
     <div className="App">
@@ -118,11 +130,5 @@ const App = () => {
     </div>
   );
 };
-
-/**
- * The type of the method `alert` on the App class. This can be used to specify
- * the functions type when passing it down as a prop to other components.
- */
-export type AlertFunction = typeof App.prototype.alert;
 
 export default App;
