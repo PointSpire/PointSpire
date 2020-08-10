@@ -11,6 +11,14 @@ export interface Document extends IndexableProperties {
   __v?: number;
 }
 
+export function isDocument(obj: object): obj is Document {
+  const objToTest = obj as Document;
+  if (objToTest._id && typeof objToTest === 'string') {
+    return true;
+  }
+  return false;
+}
+
 /**
  * Can be used to make it so that an object is indexable.
  */
