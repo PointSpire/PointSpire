@@ -4,7 +4,7 @@
  */
 
 import Debug from 'debug';
-import { AppSaveStatus, SavedStatus } from '../clientData/AppSaveStatus';
+import { AppSaveStatus, SavedStatus } from '../models/AppSaveStatus';
 
 const debug = Debug('savingTimer.ts');
 debug.enabled = false;

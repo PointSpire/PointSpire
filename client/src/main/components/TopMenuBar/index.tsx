@@ -27,7 +27,7 @@ import UnstyledLink from '../UnstyledLink';
 import { AlertFunction } from '../../App';
 import { logout } from '../../utils/fetchMethods';
 import { manualSave, windowUnloadListener } from '../../utils/savingTimer';
-import { AppSaveStatus } from '../../clientData/AppSaveStatus';
+import { AppSaveStatus } from '../../models/AppSaveStatus';
 import User from '../../models/User';
 import ImportExportDialog from './ImportExportDialog';
 
