@@ -7,8 +7,7 @@ import {
   InputLabel,
 } from '@material-ui/core';
 import PriorityDialog from './PriorityDialog';
-import { CompletableType } from '../../../../utils/dbTypes';
-import Completables from '../../../../models/Completables';
+import Completables, { CompletableType } from '../../../../models/Completables';
 
 function styles() {
   return createStyles({

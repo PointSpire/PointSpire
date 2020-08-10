@@ -12,8 +12,7 @@ import sortingFunctions from '../../utils/sortingFunctions';
 import CompletableRow from './CompletableRow';
 import FilterButton from './FilterButton';
 import HiddenItemsCaption from './HiddenItemsCaption';
-import { CompletableType } from '../../utils/dbTypes';
-import Completables from '../../models/Completables';
+import Completables, { CompletableType } from '../../models/Completables';
 import User from '../../models/User';
 
 /* This eslint comment is not a good solution, but the alternative seems to be 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Typography } from '@material-ui/core';
-import { CompletableType } from '../../utils/dbTypes';
+import { CompletableType } from '../../models/Completables';
 
 export interface HiddenItemsCaptionProps {
   numHiddenItems: number;

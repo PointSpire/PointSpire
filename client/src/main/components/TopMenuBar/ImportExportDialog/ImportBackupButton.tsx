@@ -31,6 +31,12 @@ function ImportBackupButton(props: ImportBackupButtonProps) {
     if (fileInput.files && fileInput.files[0]) {
       parsedObj = await parseJson(fileInput.files[0]);
       debug(parsedObj);
+
+      // What happens next?
+      // Make sure that certain properties exist.
+      // Try to import the user object
+
+      // Try to import the
     }
   }
 

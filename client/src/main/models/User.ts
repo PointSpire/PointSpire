@@ -8,6 +8,8 @@ import {
 import { patchUser, deleteTag } from '../utils/fetchMethods';
 import scheduleCallback from '../utils/savingTimer';
 import Completables from './Completables';
+import { ProjectObjects } from './Project';
+import { TaskObjects } from './Task';
 
 const debug = Debug('User.ts');
 debug.enabled = true;
@@ -60,6 +62,12 @@ export type UserListeners = {
     [listenerId: string]: UserListenerCallback;
   };
   propertyListeners: PropertyListeners;
+};
+
+export type AllUserData = {
+  user: UserDoc;
+  projects: ProjectObjects;
+  tasks: TaskObjects;
 };
 
 /**

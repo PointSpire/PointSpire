@@ -1,7 +1,6 @@
 import moment from 'moment';
 import Debug from 'debug';
-import { CompletableType } from './dbTypes';
-import Completables from '../models/Completables';
+import Completables, { CompletableType } from '../models/Completables';
 
 const debug = Debug('sortingFunctions.ts');
 debug.enabled = false;

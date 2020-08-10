@@ -4,19 +4,14 @@
 
 import Debug from 'debug';
 import {
-  Project,
-  AllUserData,
-  UserDoc,
-  tasksAreEqual,
-  projectsAreEqual,
-} from './dbTypes';
-import {
   setCookie,
   ClientCookies,
   getCookie,
   deleteAllCookies,
 } from './clientCookies';
-import Task from '../models/Task';
+import Task, { tasksAreEqual } from '../models/Task';
+import Project, { projectsAreEqual } from '../models/Project';
+import { UserDoc, AllUserData } from '../models/User';
 
 const debug = Debug('fetchMethods.ts');
 debug.enabled = false;

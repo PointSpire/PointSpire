@@ -9,8 +9,8 @@ import {
   postNewTask,
   postNewProject,
 } from '../utils/fetchMethods';
-import Project from './Project';
-import Task from './Task';
+import Project, { ProjectObjects } from './Project';
+import Task, { TaskObjects } from './Task';
 import { PropertyListenerCallback, PropertyListeners } from '../utils/dbTypes';
 import User from './User';
 
@@ -30,14 +30,6 @@ export type CompletableListeners = {
     };
     propertyListeners: PropertyListeners;
   };
-};
-
-export type ProjectObjects = {
-  [id: string]: Project;
-};
-
-export type TaskObjects = {
-  [id: string]: Task;
 };
 
 /**

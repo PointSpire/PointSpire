@@ -11,7 +11,8 @@ import {
   ListSubheader,
   ListItemText,
 } from '@material-ui/core';
-import { ProjectObjects, TaskObjects } from '../../utils/dbTypes';
+import { TaskObjects } from '../../models/Task';
+import { ProjectObjects } from '../../models/Project';
 
 function styles(theme: Theme) {
   return createStyles({

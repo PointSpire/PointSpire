@@ -11,7 +11,6 @@ import {
 } from '@material-ui/core';
 import Debug from 'debug';
 import { useHistory } from 'react-router-dom';
-import { CompletableType } from '../../../utils/dbTypes';
 import NoteInput from './NoteInput';
 import DateInput from './DateInput';
 import TaskMenu from './TaskMenu';
@@ -25,7 +24,7 @@ import isFiltered from '../../../utils/filterFunctions';
 import HiddenItemsCaption from '../HiddenItemsCaption';
 import { MobileContext } from '../../../utils/contexts';
 import User from '../../../models/User';
-import Completables from '../../../models/Completables';
+import Completables, { CompletableType } from '../../../models/Completables';
 import CompletableTitle from '../../CompletableTitle';
 
 const debug = Debug('CompletableRow');

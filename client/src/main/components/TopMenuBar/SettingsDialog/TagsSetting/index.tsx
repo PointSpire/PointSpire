@@ -6,9 +6,8 @@ import {
   WithStyles,
   Theme,
 } from '@material-ui/core';
-import { UserTags } from '../../../../utils/dbTypes';
 import SettingsTagChip from './SettingsTagChip';
-import User from '../../../../models/User';
+import User, { UserTags } from '../../../../models/User';
 
 function styles(theme: Theme) {
   return createStyles({

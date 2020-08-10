@@ -6,11 +6,10 @@ import MuiAlert from '@material-ui/lab/Alert';
 import { Snackbar } from '@material-ui/core';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import TopMenuBar from './components/TopMenuBar';
-import { AllUserData } from './utils/dbTypes';
 import { getUserData, getTestUserData } from './utils/fetchMethods';
 import baseThemeOptions from './AppTheme';
 import Completables from './models/Completables';
-import User from './models/User';
+import User, { AllUserData } from './models/User';
 import AppRoutes from './components/AppRoutes';
 import MobileProvider from './components/MobileProvider';
 

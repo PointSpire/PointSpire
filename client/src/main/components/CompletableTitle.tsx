@@ -4,9 +4,8 @@ import { InputBase } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
 import { MobileContext } from '../utils/contexts';
 import SimpleTextInput from './CompletableTable/CompletableRow/SimpleTextInput';
-import { CompletableType } from '../utils/dbTypes';
 import capitalizeFirstLetter from '../utils/stringFunctions';
-import Completables from '../models/Completables';
+import Completables, { CompletableType } from '../models/Completables';
 
 const debug = Debug('CompletableTitle.tsx');
 debug.enabled = true;

@@ -10,7 +10,7 @@ import {
   WithStyles,
   withStyles,
 } from '@material-ui/core';
-import { TaskObjects } from '../../utils/dbTypes';
+import { TaskObjects } from '../../models/Task';
 
 function styles(theme: Theme) {
   return createStyles({

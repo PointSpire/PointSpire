@@ -9,9 +9,8 @@ import {
   Select,
   MenuItem,
 } from '@material-ui/core';
-import { UserTag } from '../../../../utils/dbTypes';
 import colors, { createThemeFromColorName } from '../../../../utils/colors';
-import User from '../../../../models/User';
+import User, { UserTag } from '../../../../models/User';
 import capitalizeFirstLetter from '../../../../utils/stringFunctions';
 
 export interface EditTagDialogProps {

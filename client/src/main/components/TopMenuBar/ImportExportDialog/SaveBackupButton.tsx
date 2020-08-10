@@ -1,8 +1,7 @@
 import React from 'react';
 import { Button } from '@material-ui/core';
 import FileSaver from 'file-saver';
-import { AllUserData } from '../../../utils/dbTypes';
-import User from '../../../models/User';
+import User, { AllUserData } from '../../../models/User';
 import Completables from '../../../models/Completables';
 
 function SaveBackupButton() {

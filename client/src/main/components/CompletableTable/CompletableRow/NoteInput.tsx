@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { TextField } from '@material-ui/core';
 import { resetTimer } from '../../../utils/savingTimer';
-import { CompletableType } from '../../../utils/dbTypes';
-import Completables from '../../../models/Completables';
+import Completables, { CompletableType } from '../../../models/Completables';
 
 export type NoteInputProps = {
   completableType: CompletableType;

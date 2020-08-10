@@ -10,9 +10,9 @@ import {
   WithStyles,
   withStyles,
 } from '@material-ui/core';
-import { TaskObjects, ProjectObjects } from '../../utils/dbTypes';
-import Task from '../../models/Task';
+import Task, { TaskObjects } from '../../models/Task';
 import PrereqTaskManager from '.';
+import { ProjectObjects } from '../../models/Project';
 
 function styles(theme: Theme) {
   return createStyles({

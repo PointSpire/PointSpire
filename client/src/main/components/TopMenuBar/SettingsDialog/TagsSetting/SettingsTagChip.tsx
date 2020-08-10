@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Chip, ThemeProvider, createMuiTheme } from '@material-ui/core';
-import { UserTag } from '../../../../utils/dbTypes';
 import EditTagDialog from './EditTagDialog';
+import { UserTag } from '../../../../models/User';
 
 export interface SettingsTagChipProps {
   userTagId: string;

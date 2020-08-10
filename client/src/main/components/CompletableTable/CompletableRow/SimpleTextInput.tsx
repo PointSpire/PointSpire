@@ -3,8 +3,7 @@ import Debug from 'debug';
 import { TextField } from '@material-ui/core';
 import { ObjectId } from 'bson';
 import { resetTimer } from '../../../utils/savingTimer';
-import { CompletableType } from '../../../utils/dbTypes';
-import Completables from '../../../models/Completables';
+import Completables, { CompletableType } from '../../../models/Completables';
 
 const debug = Debug('SimpletTextInput.tsx');
 debug.enabled = false;

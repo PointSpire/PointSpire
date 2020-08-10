@@ -1,7 +1,6 @@
 import moment from 'moment';
-import { CompletableType } from './dbTypes';
 import User from '../models/User';
-import Completables from '../models/Completables';
+import Completables, { CompletableType } from '../models/Completables';
 
 export default function isFiltered(
   completableType: CompletableType,

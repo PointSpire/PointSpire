@@ -17,8 +17,7 @@ import NoteInput from './CompletableTable/CompletableRow/NoteInput';
 import DateInput from './CompletableTable/CompletableRow/DateInput';
 import PriorityButton from './CompletableTable/CompletableRow/PriorityButton';
 import CompletableTable from './CompletableTable';
-import { CompletableType } from '../utils/dbTypes';
-import Completables from '../models/Completables';
+import Completables, { CompletableType } from '../models/Completables';
 import TagRow from './TagRow';
 import BreadCrumb from './BreadCrumb';
 
