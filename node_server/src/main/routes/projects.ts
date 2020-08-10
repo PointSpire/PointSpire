@@ -238,6 +238,102 @@ function createProjectsRouter(db: typeof mongoose): Router {
     }
   });
 
+  /**
+   * @swagger
+   * /projects/validate:
+   *   post:
+   *     summary: 'Validates that the provided object is a valid Project object'
+   *     tags:
+   *       - Project
+   *     requestBody:
+   *       description: 'The object to test'
+   *       required: true
+   *     responses:
+   *       '200':
+   *         description: 'The project validation has completed and the result is in the response.'
+   *         content:
+   *          'application/json':
+   *            schema:
+   *              $ref: '#/components/schemas/validationResponse'
+   *       '400':
+   *         description: 'The body was not provided'
+   */
+  router.post('/validate', (req, res) => {
+    if (req.body) {
+      const userDocToTest = new Project(req.body);
+      userDocToTest.validate(err => {
+        if (err) {
+          res.status(200).json({
+            validated: false,
+            err,
+          });
+        } else {
+          res.status(200).json({
+            validated: true,
+          });
+        }
+      });
+    } else {
+      res
+        .status(400)
+        .send('Body not provided. Please provide body to validate.');
+    }
+  });
+
+  /**
+   * @swagger
+   * /projects/validate-all:
+   *    post:
+   *      summary: 'Validates that the provided array of objects are all a valid Project object'
+   *      tags:
+   *        - Project
+   *      requestBody:
+   *        description: 'The array of objects to test'
+   *        required: true
+   *        content:
+   *          'application/json':
+   *            schema:
+   *              type: 'array'
+   *      responses:
+   *        '200':
+   *          description: 'The project validation has completed and the result is in the response.'
+   *          content:
+   *            'application/json':
+   *              schema:
+   *                $ref: '#/components/schemas/validationResponse'
+   *        '400':
+   *          description: "The body was not provided or the body was not an array"
+   */
+  router.post('/validate-all', (req, res) => {
+    if (req.body && Array.isArray(req.body)) {
+      if (req.body.length !== 0) {
+        const userDocToTest = new Project(req.body);
+        userDocToTest.validate(err => {
+          if (err) {
+            res.status(200).json({
+              validated: false,
+              err,
+            });
+          } else {
+            res.status(200).json({
+              validated: true,
+            });
+          }
+        });
+      } else {
+        res.status(200).json({
+          validated: true,
+        });
+      }
+    } else {
+      res
+        .status(400)
+        .send(
+          "Body not provided or wasn't an array. Please provide body to validate."
+        );
+    }
+  });
+
   return router;
 }
 
