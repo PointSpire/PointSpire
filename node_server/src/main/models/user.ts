@@ -1,5 +1,5 @@
 import mongoose, { Model, Schema, Document } from 'mongoose';
-import { ProjectObjects, createProjectModel } from './project';
+import { ProjectObjects } from './project';
 import { TaskObjects } from './task';
 
 const ObjectId = mongoose.Types.ObjectId;
@@ -67,6 +67,29 @@ export type AllUserData = {
 };
 
 /**
+ * Type Guard for `AllUserData`. This only checks that each property in
+ * `AllUserData` exists, it does not check to see that each property is the
+ * correct type. To do that, mongosoe validation can be used.
+ *
+ * @param {object} obj the object to test if it is an `AllUserData` object
+ * @returns {boolean} true if it is and false if not
+ */
+export function isAllUserData(obj: object): obj is AllUserData {
+  const objToTest = obj as AllUserData;
+  if (
+    objToTest.user &&
+    typeof objToTest.user === 'object' &&
+    objToTest.projects &&
+    typeof objToTest.projects === 'object' &&
+    objToTest.tasks &&
+    typeof objToTest.tasks === 'object'
+  ) {
+    return true;
+  }
+  return false;
+}
+
+/**
  * The type representing a User document in the database.
  */
 export interface UserDoc extends Document {
@@ -111,23 +134,6 @@ export type UserModel = Model<UserDoc>;
  * @returns {UserModel} the `User` class
  */
 export function createUserModel(db: typeof mongoose): UserModel {
-  const Project = createProjectModel(db);
-
   const User = db.model<UserDoc>('User', userSchema);
-
-  // Setup ObjectId validation for User
-  User.schema.path('projects').validate(async (projectIds: Array<string>) => {
-    const count = await Project.countDocuments({
-      _id: {
-        $in: projectIds,
-      },
-    }).exec();
-    if (count !== projectIds.length) {
-      return false;
-    } else {
-      return true;
-    }
-  }, 'Atleast one project ID does not exist in the Users "projects" property');
-
   return User;
 }

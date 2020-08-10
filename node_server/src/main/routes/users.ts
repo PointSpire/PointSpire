@@ -11,6 +11,7 @@ import {
   createUserModel,
   UserDoc,
   AllUserData,
+  isAllUserData,
 } from '../models/user';
 import { TaskModel, createTaskModel, TaskObjects } from '../models/task';
 
@@ -45,129 +46,7 @@ function createUsersRouter(db: typeof mongoose): Router {
   const Project: ProjectModel = createProjectModel(db);
   const Task: TaskModel = createTaskModel(db);
 
-  router.options('/', (req, res, next) => {
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    next();
-  });
-
-  /**
-   * @swagger
-   * /users:
-   *  get:
-   *    summary: Redirects to the user specified in the session, if available
-   *    tags:
-   *      - User
-   *    security:
-   *      - cookieAuth:
-   *          type: userId
-   *          in: cookie
-   *          name: JSESSIONID
-   *    description: Redirects to specific user api.
-   *    responses:
-   *      '302':
-   *        description: Found
-   *      '405':
-   *        description: Please specify a user ID by using /api/users/24 where "24" is the ID of the user.
-   */
-  router.get('/', (req, res) => {
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    if (req.session && req.session.userId) {
-      console.log(
-        'There was a session for the user and that is: ',
-        req.session
-      );
-      res.redirect(`/api/users/${req.session.userId}`);
-    } else {
-      // Clear their cookies if they don't have a session
-      res.clearCookie('connect.sid');
-      res.clearCookie('userId');
-      res.status(405).send(errorDescriptions.userIdNotSpecified);
-    }
-  });
-
-  /**
-   * @swagger
-   * /users:
-   *  post:
-   *    summary: Creates a new user with the details specified in the body
-   *    tags:
-   *      - User
-   *    requestBody:
-   *      description: The properties of the new user to be created
-   *      required: true
-   *      content:
-   *        'application/json':
-   *          schema:
-   *            type: 'object'
-   *            required: ['userName']
-   *            properties:
-   *              'userName':
-   *                type: 'string'
-   *              'firstName':
-   *                type: 'string'
-   *              'lastName':
-   *                type: 'string'
-   *              'githubId':
-   *                type: 'string'
-   *    responses:
-   *      201:
-   *        description: The user was successfully created
-   *        content:
-   *          'application/json':
-   *            schema:
-   *              $ref: '#/components/schemas/userObjectWithIds'
-   *            example:
-   *              _id: '5ed5b0b3c38d2174aafc363b'
-   *              userName: testUser
-   *              dateCreated: '2020-06-02T01:51:47.787Z'
-   *              __v: 0
-   *      400:
-   *        description: The user was not found or there was an error while finding the user
-   */
-  router.post('/', async (req, res) => {
-    if (req.body && req.body.userName) {
-      if (req.body._id) {
-        delete req.body._id;
-      }
-      let newUser = new User({ userName: req.body.userName });
-      newUser = Object.assign(newUser, req.body);
-      await newUser.save();
-      res.status(201);
-      res.json(newUser);
-    } else {
-      res.status(400);
-      res.send(errorDescriptions.newUserDetailsNotDefined);
-    }
-  });
-
-  /**
-   * Checks the given userId in the MongoDB and if there is an error it
-   * then "rejects" the promise with the error so it can be used elsewhere.
-   * If this is successful, it returns the user document.
-   *
-   * @param {string} userId the ID of the user to find
-   * @returns {Promise<UserDoc>} the promise that will reject if there is
-   * an error or if the doc is not found and resolves if the user document
-   * is found
-   */
-  function checkUserId(userId: string): Promise<UserDoc> {
-    return new Promise<UserDoc>((resolve, reject) => {
-      User.find({ _id: userId }).exec((err, users) => {
-        if (err) {
-          const updatedErr = Object.assign({}, err, {
-            additionalMessage: errorDescriptions.mongoUserFindErr,
-          });
-          reject(updatedErr);
-        } else if (users.length === 0) {
-          const err = new Error(errorDescriptions.userNotFound(userId));
-          reject(err);
-        } else {
-          resolve(users[0]);
-        }
-      });
-    });
-  }
-
+  // #region Functions
   /**
    * Removes duplicates from the given array in the most efficient possible way.
    * This is benchmarked in the following article:
@@ -324,6 +203,162 @@ function createUsersRouter(db: typeof mongoose): Router {
     }
   }
 
+  /**
+   * Deletes the given user as well as all of their projects and tasks.
+   *
+   * @param {string} userId the ID of the user to delete
+   * @returns {AllUserData} the deleted user data
+   */
+  async function deleteUser(userId: string): Promise<AllUserData> {
+    const userData = await graphQueryUser(userId);
+    const projectIds = Object.keys(userData.projects);
+    const taskIds = Object.keys(userData.tasks);
+    await Promise.all([
+      // Delete the user
+      User.deleteOne({ _id: userData.user._id }).exec(),
+
+      // Delete the projects
+      Project.deleteMany({
+        _id: {
+          $in: projectIds,
+        },
+      }).exec(),
+
+      // Delete the tasks
+      Task.deleteMany({
+        _id: {
+          $in: taskIds,
+        },
+      }).exec(),
+    ]);
+    return userData;
+  }
+  // #endregion
+
+  // #region Routes
+  router.options('/', (req, res, next) => {
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    next();
+  });
+
+  /**
+   * @swagger
+   * /users:
+   *  get:
+   *    summary: Redirects to the user specified in the session, if available
+   *    tags:
+   *      - User
+   *    security:
+   *      - cookieAuth:
+   *          type: userId
+   *          in: cookie
+   *          name: JSESSIONID
+   *    description: Redirects to specific user api.
+   *    responses:
+   *      '302':
+   *        description: Found
+   *      '405':
+   *        description: Please specify a user ID by using /api/users/24 where "24" is the ID of the user.
+   */
+  router.get('/', (req, res) => {
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    if (req.session && req.session.userId) {
+      console.log(
+        'There was a session for the user and that is: ',
+        req.session
+      );
+      res.redirect(`/api/users/${req.session.userId}`);
+    } else {
+      // Clear their cookies if they don't have a session
+      res.clearCookie('connect.sid');
+      res.clearCookie('userId');
+      res.status(405).send(errorDescriptions.userIdNotSpecified);
+    }
+  });
+
+  /**
+   * @swagger
+   * /users:
+   *  post:
+   *    summary: Creates a new user with the details specified in the body
+   *    tags:
+   *      - User
+   *    requestBody:
+   *      description: The properties of the new user to be created
+   *      required: true
+   *      content:
+   *        'application/json':
+   *          schema:
+   *            type: 'object'
+   *            required: ['userName']
+   *            properties:
+   *              'userName':
+   *                type: 'string'
+   *              'firstName':
+   *                type: 'string'
+   *              'lastName':
+   *                type: 'string'
+   *              'githubId':
+   *                type: 'string'
+   *    responses:
+   *      201:
+   *        description: The user was successfully created
+   *        content:
+   *          'application/json':
+   *            schema:
+   *              $ref: '#/components/schemas/userObjectWithIds'
+   *            example:
+   *              _id: '5ed5b0b3c38d2174aafc363b'
+   *              userName: testUser
+   *              dateCreated: '2020-06-02T01:51:47.787Z'
+   *              __v: 0
+   *      400:
+   *        description: The user was not found or there was an error while finding the user
+   */
+  router.post('/', async (req, res) => {
+    if (req.body && req.body.userName) {
+      if (req.body._id) {
+        delete req.body._id;
+      }
+      let newUser = new User({ userName: req.body.userName });
+      newUser = Object.assign(newUser, req.body);
+      await newUser.save();
+      res.status(201);
+      res.json(newUser);
+    } else {
+      res.status(400);
+      res.send(errorDescriptions.newUserDetailsNotDefined);
+    }
+  });
+
+  /**
+   * Checks the given userId in the MongoDB and if there is an error it
+   * then "rejects" the promise with the error so it can be used elsewhere.
+   * If this is successful, it returns the user document.
+   *
+   * @param {string} userId the ID of the user to find
+   * @returns {Promise<UserDoc>} the promise that will reject if there is
+   * an error or if the doc is not found and resolves if the user document
+   * is found
+   */
+  function checkUserId(userId: string): Promise<UserDoc> {
+    return new Promise<UserDoc>((resolve, reject) => {
+      User.find({ _id: userId }).exec((err, users) => {
+        if (err) {
+          const updatedErr = Object.assign({}, err, {
+            additionalMessage: errorDescriptions.mongoUserFindErr,
+          });
+          reject(updatedErr);
+        } else if (users.length === 0) {
+          const err = new Error(errorDescriptions.userNotFound(userId));
+          reject(err);
+        } else {
+          resolve(users[0]);
+        }
+      });
+    });
+  }
+
   router.options('/:userId', (req, res, next) => {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     next();
@@ -466,28 +501,7 @@ function createUsersRouter(db: typeof mongoose): Router {
    */
   router.delete('/:userId', async (req, res) => {
     try {
-      const userData = await graphQueryUser(req.params.userId);
-      const projectIds = Object.keys(userData.projects);
-      const taskIds = Object.keys(userData.tasks);
-      await Promise.all([
-        // Delete the user
-        User.deleteOne({ _id: userData.user._id }).exec(),
-
-        // Delete the projects
-        Project.deleteMany({
-          _id: {
-            $in: projectIds,
-          },
-        }).exec(),
-
-        // Delete the tasks
-        Task.deleteMany({
-          _id: {
-            $in: taskIds,
-          },
-        }).exec(),
-      ]);
-
+      const userData = await deleteUser(req.params.userId);
       res.status(200).json(userData);
     } catch (err) {
       res.status(400);
@@ -624,6 +638,100 @@ function createUsersRouter(db: typeof mongoose): Router {
         .send('Body not provided. Please provide body to validate.');
     }
   });
+
+  router.post('/:userId/import', async (req, res) => {
+    try {
+      await checkUserId(req.params.userId);
+    } catch (err) {
+      res.status(400).send({
+        valid: false,
+        err,
+      });
+      return;
+    }
+    if (!req.body) {
+      res
+        .status(400)
+        .send('Body not provided, please provide a body to import');
+      return;
+    }
+    if (typeof req.body !== 'object') {
+      res
+        .status(400)
+        .send('Body is not an object, please provide an object in the body');
+      return;
+    }
+    if (!isAllUserData(req.body)) {
+      res.status(200).json({
+        validated: false,
+        err: 'Body did not fit AllUserData type',
+      });
+      return;
+    }
+    const userData = req.body;
+    let valid = true;
+    const errors = Array<object>();
+    const userDocToTest = new User(userData.user);
+    const projectPromises = Object.values(userData.projects).map(project => {
+      const projectDocToTest = new Project(project);
+      return projectDocToTest.validate(err => {
+        if (err) {
+          valid = false;
+          errors.push(err);
+        }
+      });
+    });
+    const taskPromises = Object.values(userData.tasks).map(task => {
+      const taskDocToTest = new Task(task);
+      return taskDocToTest.validate(err => {
+        if (err) {
+          valid = false;
+          errors.push(err);
+        }
+      });
+    });
+    await Promise.all([
+      userDocToTest.validate(err => {
+        if (err) {
+          valid = false;
+          errors.push(err);
+        }
+      }),
+      ...projectPromises,
+      ...taskPromises,
+    ]);
+    if (!valid) {
+      res.status(200).json({
+        valid,
+        err: errors,
+      });
+      return;
+    }
+
+    // Data is valid, continue to the import portion
+    await deleteUser(req.params.userId);
+    const newUser = new User(userData.user);
+    userData.user = await newUser.save();
+    const projectDocs = await Project.insertMany(
+      Object.values(userData.projects)
+    );
+    delete userData.projects;
+    projectDocs.forEach(projectDoc => {
+      userData.projects = {};
+      userData.projects[projectDoc._id] = projectDoc;
+    });
+    const taskDocs = await Task.insertMany(Object.values(userData.tasks));
+    delete userData.tasks;
+    taskDocs.forEach(taskDoc => {
+      userData.tasks = {};
+      userData.tasks[taskDoc._id] = taskDoc;
+    });
+    res.status(200).json({
+      valid: true,
+      userData,
+    });
+  });
+  // #endregion
 
   return router;
 }
