@@ -313,10 +313,13 @@ const definition = {
         properties: {
           validated: {
             type: 'boolean',
+            required: true,
           },
           err: {
             type: 'object',
-            required: false,
+          },
+          userData: {
+            $ref: '#/components/schemas/allUserDataObject',
           },
         },
       },

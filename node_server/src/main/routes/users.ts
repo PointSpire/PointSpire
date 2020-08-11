@@ -639,6 +639,33 @@ function createUsersRouter(db: typeof mongoose): Router {
     }
   });
 
+  /**
+   * @swagger
+   * /users/{userId}/import:
+   *   post:
+   *     summary: 'Validates and imports an AllUserData object'
+   *     description: 'This can be used to import a backup for a user'
+   *     tags:
+   *       - User
+   *     requestBody:
+   *       description: 'An AllUserData object'
+   *       required: true
+   *       content:
+   *         'application/json':
+   *           schema:
+   *             $ref: '#/components/schemas/allUserDataObject'
+   *     responses:
+   *       '200':
+   *         description: 'The validation might have been successful, and if all went well, the data was imported.'
+   *         content:
+   *          'application/json':
+   *            schema:
+   *              $ref: '#/components/schemas/validationResponse'
+   *       '400':
+   *         description: 'There was a basic error in the request'
+   *   parameters:
+   *   - $ref: '#/components/parameters/userIdParam'
+   */
   router.post('/:userId/import', async (req, res) => {
     try {
       await checkUserId(req.params.userId);
