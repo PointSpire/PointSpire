@@ -97,6 +97,31 @@ class TaskContainer {
 }
 
 /**
+ * Generates a test task using the given task or project ID.
+ *
+ * @param {'project' | 'task'} parentType the type of the parent
+ * @param {string} parentId the ID of the user to assign the task to
+ * @returns {TaskDoc} the testTask
+ */
+export async function generateTestTaskWithId(
+  parentType: 'project' | 'task',
+  parentId: string
+): Promise<TaskDoc> {
+  const taskTitle = 'Some test task';
+  const res = await Globals.requester
+    .post(`/api/${parentType}s/${parentId}/subtasks`)
+    .send({
+      title: taskTitle,
+    });
+  assert.equal(res.status, 201);
+  assert.typeOf(res.body, 'object');
+  assert.equal(res.body.title, taskTitle);
+  assert.typeOf(res.body._id, 'string');
+  const testTask: TaskDoc = res.body;
+  return testTask;
+}
+
+/**
  * Generates a new testUser UserDoc by making a request to the server. It
  * also asserts that the returned item came back correctly.
  */

@@ -4,6 +4,8 @@ import Globals from './Globals';
 import { ProjectDoc } from '../main/models/project';
 import { UserDoc, AllUserData } from '../main/models/user';
 import { TaskDoc } from '../main/models/task';
+import { generateTestProjectWithId } from './apiProjectsTest';
+import { generateTestTaskWithId } from './apiTaskTest';
 
 // Configure chai
 chai.use(chaiHttp);
@@ -283,6 +285,58 @@ describe('DELETE /id/tags/tagId', () => {
     assert.deepEqual(userGetRes.body.user.filters.tagIdsToShow, []);
 
     // Remove the test user
+    await removeUser(testUser._id);
+  });
+});
+
+describe('POST /id/import', () => {
+  it('should accept a properly formatted AllUserData object and import all of the data', async () => {
+    // Create the testUser that the AllUserData will be built off of
+    const testUser = await generateTestUser();
+    const testProject = await generateTestProjectWithId(testUser._id);
+    const testTask = await generateTestTaskWithId('project', testProject._id);
+
+    // Build the AllUserData object manually
+    const allUserData: AllUserData = {
+      user: testUser,
+      projects: {
+        [testProject._id]: testProject,
+      },
+      tasks: {
+        [testTask._id]: testTask,
+      },
+    };
+
+    // Modify the testUser in the DB so it is different
+    const userModifyRes = await Globals.requester
+      .patch(`/api/users/${testUser._id}`)
+      .send({
+        firstName: 'Some guy',
+        lastName: 'Johnson',
+      });
+    assert.equal(userModifyRes.status, 200);
+    assert.typeOf(userModifyRes.body, 'object');
+    assert.equal(userModifyRes.body.firstName, 'Some guy');
+    const deleteTaskRes = await Globals.requester.delete(
+      `/api/tasks/${testTask._id}`
+    );
+    assert.equal(deleteTaskRes.status, 200);
+
+    // Import allUserData
+    const importRes = await Globals.requester
+      .post(`/api/users/${testUser._id}/import`)
+      .send(allUserData);
+    assert.equal(importRes.status, 200);
+    assert.typeOf(importRes.body, 'object');
+    assert.isUndefined(importRes.body.err);
+    assert.equal(importRes.body.valid, true);
+    assert.typeOf(importRes.body.userData, 'object');
+
+    // Make sure the task was added back
+    const taskRes = await Globals.requester.get(`/api/tasks/${testTask._id}`);
+    assert.equal(taskRes.status, 200);
+
+    // Remove the test user for good
     await removeUser(testUser._id);
   });
 });
