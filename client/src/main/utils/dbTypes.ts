@@ -3,6 +3,8 @@
  * for PointSpire.
  */
 
+import { AllUserData } from '../models/User';
+
 /**
  * The basic type for a document from MongoDB.
  */
@@ -33,3 +35,12 @@ export type PropertyListeners = {
 };
 
 export type PropertyListenerCallback = (updatedValue: unknown) => void;
+
+/**
+ * The type of object returned from an import request.
+ */
+export type ImportReturnObject = {
+  valid: boolean;
+  err?: object;
+  userData?: AllUserData;
+};

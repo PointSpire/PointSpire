@@ -12,6 +12,7 @@ import {
 import Task, { tasksAreEqual } from '../models/Task';
 import Project, { projectsAreEqual } from '../models/Project';
 import { UserDoc, AllUserData } from '../models/User';
+import { ImportReturnObject } from './dbTypes';
 
 const debug = Debug('fetchMethods.ts');
 debug.enabled = false;
@@ -442,4 +443,35 @@ export async function deleteTag(
     headers: fetchData.basicHeader,
   });
   return res.status === 200;
+}
+
+/**
+ * Makes a post request to the `/api/users/id/import` endpoint to import a
+ * given `AllUserData` object. The endpoint validates the data and sends back
+ * an object that contains the result.
+ *
+ * @param {string} userId the ID of the user to import to
+ * @param {object} allUserData the object that is estimated to be of the type
+ * `AllUserData`. The server will validate this.
+ * @returns {ImportReturnObject} contains the result of the import or validation
+ */
+export async function postUserImport(
+  userId: string,
+  allUserData: object
+): Promise<ImportReturnObject> {
+  const url = `${baseServerUrl}/api/users/${userId}/import`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: fetchData.basicHeader,
+    body: JSON.stringify(allUserData),
+  });
+  if (res.status === 200) {
+    const returnObj = (await res.json()) as ImportReturnObject;
+    return returnObj;
+  }
+  const err = await res.json();
+  return {
+    valid: false,
+    err,
+  };
 }
