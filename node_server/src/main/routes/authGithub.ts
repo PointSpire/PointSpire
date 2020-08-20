@@ -5,6 +5,7 @@ import {
   saveOrFindNewGithubUser,
 } from '../../lib/userLib';
 import mongoose from 'mongoose';
+import { createUserModel } from '../models/user';
 
 const router = express.Router();
 
@@ -26,6 +27,7 @@ if (process.env.AUTH_METHOD === 'LOCAL') {
  * @returns {Router} the Router for the `/auth/github` endpoint
  */
 function authGithubRouter(db: typeof mongoose): Router {
+  const User = createUserModel(db);
   router.options('/', (req, res, next) => {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     next();
@@ -38,10 +40,11 @@ function authGithubRouter(db: typeof mongoose): Router {
       // See if they have already logged in
       if (req.session && req.session.userId) {
         console.log(
-          'The user tried to authenticate when they were already' +
+          'The user tried to authenticate when they were already ' +
             'logged in to PointSpire'
         );
-        res.redirect(`/api/users/${req.session.userId}`);
+        const userDoc = await User.findById(req.session.userId).exec();
+        res.status(200).json(userDoc);
 
         // If they haven't already logged in, request the data from github
       } else if (req.body && req.body.code) {

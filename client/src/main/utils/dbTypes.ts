@@ -16,9 +16,17 @@ export interface Document extends IndexableProperties {
 /**
  * Can be used to make it so that an object is indexable.
  */
-interface IndexableProperties {
+export interface IndexableProperties {
   [key: string]: unknown;
 }
+
+export type PropertyListeners = {
+  [propertyName: string]: {
+    [listenerId: string]: PropertyListenerCallback;
+  };
+};
+
+export type PropertyListenerCallback = (updatedValue: unknown) => void;
 
 /**
  * Represents a completable type that is either a Task or a Project.
@@ -58,7 +66,7 @@ export interface UserTags {
   [tagId: string]: UserTag;
 }
 
-export interface User extends Document {
+export interface UserDoc extends Document {
   projects: Array<string>;
   firstName: string;
   lastName: string;
@@ -71,7 +79,7 @@ export interface User extends Document {
 }
 
 export type AllUserData = {
-  user: User;
+  user: UserDoc;
   projects: ProjectObjects;
   tasks: TaskObjects;
 };

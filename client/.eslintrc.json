@@ -69,6 +69,7 @@
             "assignment": false
           }
         ],
+        "react/jsx-curly-newline": "off",
         /* Disabled so that we can use things like _id off of objects */
         "no-underscore-dangle": "off",
         "import/extensions": "off",

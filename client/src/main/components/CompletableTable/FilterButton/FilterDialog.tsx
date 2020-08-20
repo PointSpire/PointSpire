@@ -11,7 +11,7 @@ import {
   FormControlLabel,
   Checkbox,
 } from '@material-ui/core';
-import UserData from '../../../clientData/UserData';
+import User from '../../../models/User';
 
 export interface FilterDialogProps {
   open: boolean;
@@ -20,10 +20,10 @@ export interface FilterDialogProps {
 
 function FilterDialog(props: FilterDialogProps) {
   const { open, setOpen } = props;
-  const [filters, setFilters] = useState(UserData.getUser().filters);
+  const [filters, setFilters] = useState(User.get().filters);
 
   function saveFilters() {
-    UserData.setAndSaveUserProperty('filters', { ...filters });
+    User.setAndSaveProperty('filters', { ...filters });
   }
 
   function handleClose() {
@@ -54,7 +54,7 @@ function FilterDialog(props: FilterDialogProps) {
    * This doesn't need to be subscribed to because this will load each time the
    * dialog comes up.
    */
-  const userTags = UserData.getUser().currentTags;
+  const userTags = User.get().currentTags;
 
   return (
     <Dialog

@@ -1,23 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Checkbox } from '@material-ui/core';
 import { CompletableType, Completable } from '../../../utils/dbTypes';
-import UserData from '../../../clientData/UserData';
+import Completables from '../../../models/Completables';
 
 export type CompletedCheckboxProps = {
   className?: string;
   completable: Completable;
   completableType: CompletableType;
+  clickProp?: boolean;
 };
 
 function CompletedCheckbox(props: CompletedCheckboxProps) {
-  const { className, completable, completableType } = props;
+  const { className, completable, completableType, clickProp = true } = props;
 
   /* Convert the project's completed boolean if needed. This isn't a very
   efficient way to do this, but it only happens once for each project
   that doesn't have a valid `completed` property yet. */
   if (typeof completable.completed !== 'boolean') {
     completable.completed = false;
-    UserData.setAndSaveCompletable(completableType, completable);
+    Completables.setAndSave(completableType, completable);
   }
 
   const listenerId = `${completable._id}.CompletedCheckbox`;
@@ -25,7 +26,7 @@ function CompletedCheckbox(props: CompletedCheckboxProps) {
   const [checked, setChecked] = useState(completable.completed);
 
   useEffect(() => {
-    UserData.addCompletablePropertyListener(
+    Completables.addPropertyListener(
       completableType,
       completable._id,
       listenerId,
@@ -37,7 +38,7 @@ function CompletedCheckbox(props: CompletedCheckboxProps) {
 
     // This will be ran when the component is unmounted
     return function cleanup() {
-      UserData.removeCompletablePropertyListener(
+      Completables.removePropertyListener(
         completableType,
         completable._id,
         listenerId,
@@ -47,12 +48,19 @@ function CompletedCheckbox(props: CompletedCheckboxProps) {
   }, []);
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
-    UserData.setAndSaveCompletableProperty(
+    Completables.setAndSaveProperty(
       completableType,
       completable._id,
       'completed',
       event.target.checked
     );
+  }
+
+  // Prevent click propagation for mobile UI
+  function handleClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+    if (!clickProp) {
+      event.stopPropagation();
+    }
   }
 
   return (
@@ -61,6 +69,7 @@ function CompletedCheckbox(props: CompletedCheckboxProps) {
       className={className}
       checked={checked}
       onChange={handleChange}
+      onClick={handleClick}
       color="primary"
       size="medium"
     />

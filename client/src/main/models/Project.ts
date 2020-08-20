@@ -1,3 +1,7 @@
-import Task from './Task';
+import Completable from './Completable';
 
-export default class Project extends Task {}
+/**
+ * Represents a new Project. This mirrors the database version of a Project
+ * completely.
+ */
+export default class Project extends Completable {}

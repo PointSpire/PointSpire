@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import Debug from 'debug';
 import { TextField } from '@material-ui/core';
+import { ObjectId } from 'bson';
 import { resetTimer } from '../../../utils/savingTimer';
-import UserData from '../../../clientData/UserData';
 import { CompletableType } from '../../../utils/dbTypes';
+import Completables from '../../../models/Completables';
+
+const debug = Debug('SimpletTextInput.tsx');
+debug.enabled = false;
 
 export type SimpleTextInputProps = {
   completableType: CompletableType;
@@ -10,6 +15,7 @@ export type SimpleTextInputProps = {
   completablePropertyName: string;
   label: string;
   className?: string;
+  fullWidth?: boolean;
 };
 
 function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
@@ -19,27 +25,26 @@ function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
     completableId,
     completableType,
     completablePropertyName,
+    fullWidth = true,
   } = props;
   const [value, setValue] = useState(
-    UserData.getCompletable(completableType, completableId)[
-      completablePropertyName
-    ]
+    Completables.get(completableType, completableId)[completablePropertyName]
   );
   const [disabled, setDisabled] = useState(
-    UserData.getCompletable(completableType, completableId).completed
+    Completables.get(completableType, completableId).completed
   );
 
   /**
    * The ID for this listener when set on some property or completable.
    */
-  const listenerId = `${completableId}.SimpleTextInput.${completablePropertyName}`;
+  const listenerId = new ObjectId().toHexString();
 
-  /**
-   * Add the property listener for the completed value so that it disables
-   * the text input when the completable is completed.
-   */
   useEffect(() => {
-    UserData.addCompletablePropertyListener(
+    /**
+     * Add the property listener for the completed value so that it disables
+     * the text input when the completable is completed.
+     */
+    Completables.addPropertyListener(
       completableType,
       completableId,
       listenerId,
@@ -49,13 +54,30 @@ function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
       }
     );
 
+    Completables.addPropertyListener(
+      completableType,
+      completableId,
+      listenerId,
+      completablePropertyName,
+      updatedValue => {
+        setValue(updatedValue as string);
+      }
+    );
+
     // This will be ran when the component is unmounted
     return function cleanup() {
-      UserData.removeCompletablePropertyListener(
+      Completables.removePropertyListener(
         completableType,
         completableId,
         listenerId,
         'completed'
+      );
+
+      Completables.removePropertyListener(
+        completableType,
+        completableId,
+        listenerId,
+        completablePropertyName
       );
     };
   }, []);
@@ -67,11 +89,11 @@ function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
 
   function handleLoseFocus(): void {
     if (
-      UserData.getCompletable(completableType, completableId)[
+      Completables.get(completableType, completableId)[
         completablePropertyName
       ] !== value
     ) {
-      UserData.setAndSaveCompletableProperty(
+      Completables.setAndSaveProperty(
         completableType,
         completableId,
         completablePropertyName,
@@ -85,7 +107,7 @@ function SimpleTextInput(props: SimpleTextInputProps): JSX.Element {
       className={className}
       disabled={disabled}
       size="small"
-      fullWidth
+      fullWidth={fullWidth}
       label={label}
       value={value}
       onChange={handleChange}
